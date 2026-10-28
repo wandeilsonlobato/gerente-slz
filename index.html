@@ -72,6 +72,7 @@
   .card-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
   .card-topo h2 { margin: 0; }
   .card-topo .acoes { margin-left: auto; }
+  .largo { grid-column: 1 / -1; }
 
   /* ---------- cores de tendência: vermelho = gastou mais, verde = gastou menos ---------- */
   .mais { color: var(--vermelho); }
@@ -111,6 +112,8 @@
   .tag.pendente { background: var(--amarelo-claro); color: var(--amarelo); }
   .tag.atrasada { background: var(--vermelho-claro); color: var(--vermelho); }
   .miudo { font-size: 12px; color: var(--cinza); }
+  .cod { font-variant-numeric: tabular-nums; color: var(--cinza); font-weight: 600; font-size: 12px; margin-right: 6px; white-space: nowrap; }
+  tr.grupo .cod, tr.total .cod { color: inherit; font-size: inherit; }
 
   /* ---------- botões e campos ---------- */
   .btn { background: var(--azul); color: #fff; border: 0; padding: 9px 16px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
@@ -136,11 +139,12 @@
   td input.valor { width: 130px; }
   td input.dia { width: 76px; }
   td input[type="date"] { width: 150px; }
-  td select.inline { width: 130px; }
+  td select.inline { width: 150px; }
 
   [hidden] { display: none !important; }
   form.lancar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
   form.lancar > div { flex: 0 0 160px; min-width: 0; }
+  form.lancar .f-cat { flex-basis: 210px; }
   form.lancar .f-qtd { flex-basis: 110px; }
   form.lancar .desc { flex: 1 1 240px; }
   form.lancar .f-valor { flex-basis: 150px; }
@@ -149,16 +153,27 @@
   td.sub2 { padding-left: 40px; color: var(--cinza); }
   .qtd { font-size: 12px; color: var(--cinza); white-space: nowrap; }
   td input.qtd-in { width: 80px; text-align: right; }
+  .nome-cod { display: flex; align-items: center; gap: 4px; }
 
-  /* ---------- ajustes: listas editáveis ---------- */
+  /* ---------- ajustes: listas editáveis e plano de contas ---------- */
   .lista-edit { display: grid; gap: 8px; }
   .lista-edit .linha { display: flex; gap: 8px; align-items: center; }
   .lista-edit .linha input { flex: 1; min-width: 0; }
+  .lista-edit .linha select { width: auto; flex: 0 0 190px; }
+  .lista-edit .linha .cod { min-width: 58px; }
+  .lista-edit .linha.sub { padding-left: 28px; }
   .lista-edit .fixo { font-size: 12px; color: var(--cinza); white-space: nowrap; padding: 0 4px; }
+  .grupo-plano { border: 1px solid var(--borda); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+  .grupo-plano .cab input { font-weight: 700; color: var(--azul); }
+  .grupo-plano .cab .cod { color: var(--azul); font-size: 15px; }
+  .grupo-plano .so-ler { font-size: 14px; padding: 4px 0; }
   form.add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; padding-top: 12px; border-top: 1px dashed var(--borda); }
   form.add input { flex: 1 1 160px; width: auto; min-width: 0; }
   form.add input.dia { flex: 0 0 96px; }
   form.add input.valor { flex: 0 1 140px; }
+  form.add.mini { margin-top: 0; padding-top: 0; border-top: 0; }
+  form.add.mini input { min-height: 34px; padding: 6px 10px; font-size: 14px; }
+  form.add.mini.sub { padding-left: 28px; }
 
   /* ---------- filtro do balancete ---------- */
   details.card > summary { cursor: pointer; font-weight: 700; color: var(--azul); font-size: 16px; list-style: none; display: flex; align-items: center; gap: 8px; }
@@ -172,6 +187,7 @@
   .opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
   label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 99px; font-size: 13px; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: #fff; user-select: none; }
   label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); font-weight: 600; }
+  label.check.forte { font-weight: 700; }
   label.check.desab { opacity: .45; pointer-events: none; }
   .filtro-ativo { font-size: 13px; color: var(--cinza); margin: -6px 0 14px; }
   .filtro-ativo strong { color: var(--azul); }
@@ -270,6 +286,11 @@
     .filtro .total { width: 100%; margin-left: 0; text-align: right; }
     .presets .btn { flex: 1 1 calc(50% - 4px); }
     form.add .btn { flex: 1 1 100%; }
+    /* código + nome + botão na mesma linha; seletor de grupo embaixo */
+    .lista-edit .linha:not(.so-ler) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+    .lista-edit .linha select { grid-column: 2 / 4; grid-row: 2; min-height: 34px; padding: 5px 8px; font-size: 13px; }
+    .lista-edit .linha .cod { min-width: 44px; }
+    .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
 
     /* tabelas viram cartões */
     table.resp thead { display: none; }
@@ -283,6 +304,8 @@
     table.resp td.sub { padding-left: 0; }
     table.resp td input, table.resp td select, table.resp td input[type="date"], table.resp td input.valor, table.resp td select.inline { width: auto; min-width: 0; max-width: 62%; flex: 1; }
     table.resp td input.inline, table.resp td select.inline { border-color: var(--borda); background: #fff; text-align: right; }
+    table.resp td .nome-cod { flex: 1; }
+    table.resp td .nome-cod input { max-width: none; }
     table.resp tr.grupo { background: var(--cinza-claro); }
     table.resp tr.total { background: var(--azul-claro); border-color: #c8cef3; color: var(--azul); }
     table.resp td.vazio { justify-content: center; }
@@ -345,7 +368,7 @@
         <div id="painelContas"></div>
       </div>
       <div class="card">
-        <h2>Gastos por categoria</h2>
+        <h2>Gastos por conta</h2>
         <div class="legenda">
           <span><i style="background:var(--neutro)"></i>Mês anterior</span>
           <span><i style="background:var(--vermelho)"></i>Gastou mais</span>
@@ -383,11 +406,11 @@
     <div class="card nao-imprimir">
       <div class="card-topo">
         <h2>Lançar despesa</h2>
-        <button class="link-btn" data-ir="config" style="margin-left:auto">Gerenciar categorias</button>
+        <button class="link-btn" data-ir="config" style="margin-left:auto">Gerenciar plano de contas</button>
       </div>
       <form class="lancar" id="formDespesa">
         <div><label for="fData">Data</label><input type="date" id="fData" min="2026-11-01" required></div>
-        <div><label for="fCat">Categoria</label><select id="fCat"></select></div>
+        <div class="f-cat"><label for="fCat">Conta</label><select id="fCat"></select></div>
         <div class="so-outros" hidden><label for="fItem">Item</label><select id="fItem"></select></div>
         <div class="so-outros f-qtd" hidden><label for="fQtd">Quantidade</label><input type="number" id="fQtd" min="1" step="1" value="1" inputmode="numeric"></div>
         <div class="desc"><label for="fDesc">Descrição</label><input id="fDesc" placeholder="Ex.: almoço equipe, corrida até condomínio X" autocomplete="off"></div>
@@ -397,7 +420,7 @@
     </div>
     <div class="card mt">
       <h2>Despesas de <span class="mesTxt"></span></h2>
-      <p class="ajuda">Comparação com o mês anterior por categoria. Toque em uma categoria para filtrar. Você pode corrigir data, categoria, item, descrição, quantidade e valor direto na lista.</p>
+      <p class="ajuda">Comparação com o mês anterior por conta. Toque em uma conta para filtrar. Você pode corrigir data, conta, item, descrição, quantidade e valor direto na lista.</p>
       <div class="chips" id="chips"></div>
       <div class="filtro">
         <label for="filtroCat" style="margin:0">Filtrar:</label>
@@ -405,7 +428,7 @@
         <span class="total" id="filtroTotal"></span>
       </div>
       <table class="resp">
-        <thead><tr><th>Data</th><th>Categoria</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th><th></th></tr></thead>
+        <thead><tr><th>Data</th><th>Conta</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th><th></th></tr></thead>
         <tbody id="tabDespesas"></tbody>
       </table>
     </div>
@@ -423,7 +446,7 @@
         <button class="btn sec peq" data-preset="completo">Completo</button>
         <button class="btn sec peq" data-preset="fixas">Só contas fixas</button>
         <button class="btn sec peq" data-preset="mes">Só despesas do mês</button>
-        <button class="btn sec peq" data-preset="copa">Só copa (Outros)</button>
+        <button class="btn sec peq" data-preset="copa">Só copa</button>
       </div>
       <div id="opcoesFiltro"></div>
       <p class="ajuda" style="margin-bottom:0">O que estiver marcado aparece aqui na tela, na impressão/PDF e na planilha.</p>
@@ -439,12 +462,12 @@
       <p class="filtro-ativo" id="filtroAtivo"></p>
       <div id="resumoBal"></div>
       <table class="resp" id="tabelaBal">
-        <thead><tr><th>Categoria</th><th class="num comp" id="thAnt">Mês anterior</th><th class="num" id="thAtu">Mês atual</th><th class="num comp">Diferença</th><th class="num comp">Variação</th></tr></thead>
+        <thead><tr><th>Conta</th><th class="num comp" id="thAnt">Mês anterior</th><th class="num" id="thAtu">Mês atual</th><th class="num comp">Diferença</th><th class="num comp">Variação</th></tr></thead>
         <tbody id="tabBal"></tbody>
       </table>
     </div>
     <div class="card mt" id="cardCompras">
-      <h2>Outros — o que foi comprado em <span class="mesTxt"></span></h2>
+      <h2><span id="tituloCompras"></span> — o que foi comprado em <span class="mesTxt"></span></h2>
       <table class="resp">
         <thead><tr><th>Data</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th></tr></thead>
         <tbody id="tabOutros"></tbody>
@@ -453,18 +476,42 @@
     <div class="card mt" id="cardLista">
       <h2>Despesas lançadas em <span class="mesTxt"></span></h2>
       <table class="resp">
-        <thead><tr><th>Data</th><th>Categoria</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th></tr></thead>
+        <thead><tr><th>Data</th><th>Conta</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th></tr></thead>
         <tbody id="tabLista"></tbody>
       </table>
     </div>
   </section>
 
+  <!-- PLANO DE CONTAS (só para impressão) -->
+  <section class="aba" id="aba-plano">
+    <div class="print-head">
+      <img src="logo-slz.png" alt="SLZ">
+      <div><strong style="font-size:18px;color:var(--azul)">Plano de Contas do Escritório</strong><br><span id="planoData"></span></div>
+    </div>
+    <table><thead><tr><th style="width:110px">Código</th><th>Conta</th></tr></thead><tbody id="tabPlanoImpressao"></tbody></table>
+  </section>
+
   <!-- CONFIG -->
   <section class="aba" id="aba-config">
     <div class="grid g2">
+      <div class="card largo">
+        <div class="card-topo">
+          <h2>Plano de contas</h2>
+          <div class="acoes">
+            <button class="btn sec peq" id="btnImprimirPlano">Imprimir / PDF</button>
+            <button class="btn sec peq" id="btnCsvPlano">Baixar planilha</button>
+          </div>
+        </div>
+        <p class="ajuda">Grupos e contas com código. Renomeie direto no campo, mude a conta de grupo ou adicione novas — o código é dado automaticamente. Uma conta removida que já tem lançamentos continua aparecendo nos meses em que foi usada.</p>
+        <div class="lista-edit" id="planoEditor"></div>
+        <form class="add" id="formNovoGrupo">
+          <input id="ngNome" placeholder="Novo grupo (ex.: Manutenção do escritório)" autocomplete="off" required>
+          <button class="btn sec" type="submit">+ Adicionar grupo</button>
+        </form>
+      </div>
       <div class="card">
         <h2>Contas fixas</h2>
-        <p class="ajuda">Nome, dia de vencimento e valor padrão de cada conta. Uma conta nova entra a partir do mês aberto no topo. Ao remover, ela some desse mês em diante, e os meses anteriores ficam como estão.</p>
+        <p class="ajuda">Nome, dia de vencimento e valor padrão de cada conta do grupo 1. Uma conta nova entra a partir do mês aberto no topo. Ao remover, ela some desse mês em diante, e os meses anteriores ficam como estão.</p>
         <table class="resp">
           <thead><tr><th>Conta</th><th>Dia venc.</th><th class="num">Valor padrão (R$)</th><th></th></tr></thead>
           <tbody id="tabConfig"></tbody>
@@ -475,24 +522,6 @@
           <input id="nfDia" class="dia" type="number" min="1" max="31" inputmode="numeric" placeholder="Dia" required>
           <input id="nfValor" class="valor" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
           <button class="btn sec" type="submit">+ Adicionar conta</button>
-        </form>
-      </div>
-      <div class="card">
-        <h2>Categorias das despesas do mês</h2>
-        <p class="ajuda">Renomeie direto no campo. Uma categoria removida que já tem lançamentos continua aparecendo nos meses em que foi usada.</p>
-        <div class="lista-edit" id="listaCats"></div>
-        <form class="add" id="formNovaCat">
-          <input id="ncNome" placeholder="Nova categoria (ex.: Material de limpeza)" autocomplete="off" required>
-          <button class="btn sec" type="submit">+ Adicionar categoria</button>
-        </form>
-      </div>
-      <div class="card">
-        <h2>Itens de Outros (copa)</h2>
-        <p class="ajuda">Itens que aparecem ao lançar uma despesa em “Outros”, com quantidade no balancete.</p>
-        <div class="lista-edit" id="listaItens"></div>
-        <form class="add" id="formNovoItem">
-          <input id="niNome" placeholder="Novo item (ex.: Água mineral)" autocomplete="off" required>
-          <button class="btn sec" type="submit">+ Adicionar item</button>
         </form>
       </div>
       <div class="card">
@@ -508,7 +537,7 @@
       <div class="card">
         <h2>Instalar no celular</h2>
         <p class="ajuda">Abra este endereço no celular:</p>
-        <p><a class="link-app" href="https://wandeilsonlobato.github.io/gerente-slz/" target="_blank" rel="noopener">wandeilsonlobato.github.io/gerente-slz</a></p>
+        <p><a class="link-app" href="https://gerente-slz.vercel.app/" target="_blank" rel="noopener">gerente-slz.vercel.app</a></p>
         <ol class="passos">
           <li><strong>Android (Chrome):</strong> toque em “Instalar app” no topo, ou no menu ⋮ → “Instalar app”.</li>
           <li><strong>iPhone (Safari):</strong> toque em Compartilhar <span aria-hidden="true">⬆️</span> → “Adicionar à Tela de Início”.</li>
@@ -525,9 +554,10 @@
 <script>
 (function () {
   const CHAVE = 'slz-controle-gastos-v1';
-  const CHAVE_FILTRO = 'slz-filtro-balancete';
+  const CHAVE_FILTRO = 'slz-filtro-balancete-v2';
   const MES_INICIAL = '2026-11';
   const NOMES_MES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const SEQ_AVULSO = 99; // "Outro item" fica sempre no fim: 4.02.99
 
   const FIXAS_PADRAO = [
     { id: 'energia', nome: 'Energia', dia: 25, valor: 0 },
@@ -540,9 +570,9 @@
     { id: 'toner', nome: 'Toner' },
     { id: 'tinta', nome: 'Tinta' },
     { id: 'uber', nome: 'Uber' },
-    { id: 'outros', nome: 'Outros' }
+    { id: 'outros', nome: 'Copa' }
   ];
-  // itens da categoria "Outros" (copa), com quantidade comprada
+  // itens da copa (conta "outros"), com quantidade comprada
   const ITENS_PADRAO = [
     { id: 'cafe', nome: 'Café' },
     { id: 'acucar', nome: 'Açúcar' },
@@ -551,8 +581,18 @@
     { id: 'bolo', nome: 'Bolo' },
     { id: 'outro', nome: 'Outro item' }
   ];
+  // plano de contas aprovado para o escritório
+  const GRUPOS_PADRAO = [
+    { id: 'g-fixas', num: 1, nome: 'Despesas fixas', tipo: 'fixas' },
+    { id: 'g-adm', num: 2, nome: 'Despesas administrativas' },
+    { id: 'g-transp', num: 3, nome: 'Transporte' },
+    { id: 'g-alim', num: 4, nome: 'Alimentação' }
+  ];
+  const GRUPO_DA_CATEGORIA = { papel: 'g-adm', toner: 'g-adm', tinta: 'g-adm', uber: 'g-transp', almoco: 'g-alim', outros: 'g-alim' };
 
   // ---------- dados ----------
+  const proxSeq = (lista, filtro) => Math.max(0, ...lista.filter(filtro).map(x => x.seq || 0).filter(s => s < SEQ_AVULSO)) + 1;
+
   // completa dados antigos com o que as versões novas precisam
   function atualizarDados(d) {
     // aplica uma única vez os dias de vencimento padrão (Energia 25, Internet 5, Superlógica 10)
@@ -563,6 +603,21 @@
     d.fixas.forEach(f => { f.desde = f.desde || MES_INICIAL; });
     if (!d.categorias) d.categorias = CATEGORIAS_PADRAO.map(c => ({ ...c, ativa: true }));
     if (!d.itensOutros) d.itensOutros = ITENS_PADRAO.map(i => ({ ...i, ativa: true }));
+
+    // plano de contas: grupos, códigos permanentes e "Outros" passa a se chamar "Copa"
+    if (!d.grupos) {
+      d.grupos = GRUPOS_PADRAO.map(g => ({ ...g, ativa: true }));
+      const semGrupo = d.categorias.filter(c => !GRUPO_DA_CATEGORIA[c.id]);
+      if (semGrupo.length) d.grupos.push({ id: 'g-outras', num: 5, nome: 'Outras despesas', ativa: true });
+      d.categorias.forEach(c => { c.grupo = GRUPO_DA_CATEGORIA[c.id] || 'g-outras'; });
+      const ordem = ['almoco', 'outros'];
+      d.categorias.slice().sort((a, b) => (ordem.indexOf(a.id) + 1 || 50) - (ordem.indexOf(b.id) + 1 || 50))
+        .forEach(c => { c.seq = proxSeq(d.categorias, x => x.grupo === c.grupo && x.seq); });
+      const copa = d.categorias.find(c => c.id === 'outros');
+      if (copa && copa.nome === 'Outros') copa.nome = 'Copa';
+      d.fixas.forEach(f => { f.seq = proxSeq(d.fixas, x => x.seq); });
+      d.itensOutros.forEach(i => { i.seq = i.id === 'outro' ? SEQ_AVULSO : proxSeq(d.itensOutros, x => x.seq); });
+    }
     return d;
   }
   function carregar() {
@@ -595,7 +650,8 @@
     }
     return m;
   }
-  const fixasDoMes = chave => { const m = dados.meses[chave]; return m ? dados.fixas.filter(f => m.contas[f.id]) : []; };
+  const porSeq = (a, b) => a.seq - b.seq;
+  const fixasDoMes = chave => { const m = dados.meses[chave]; return m ? dados.fixas.filter(f => m.contas[f.id]).sort(porSeq) : []; };
   const usadaEm = (chaves, teste) => chaves.some(k => dados.meses[k] && dados.meses[k].despesas.some(teste));
   const novoId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
@@ -615,6 +671,7 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmtData = iso => iso ? iso.split('-').reverse().join('/') : '';
   const hojeISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const pad2 = n => String(n).padStart(2, '0');
 
   function somaMes(chave, desloc) {
     const [a, m] = chave.split('-').map(Number);
@@ -640,16 +697,29 @@
     return { cls: 'pendente', txt: dias === 0 ? 'Vence hoje' : 'Vence em ' + dias + (dias === 1 ? ' dia' : ' dias'), dias };
   }
 
-  // ---------- categorias e itens ----------
-  // categorias visíveis nos meses informados: as ativas + as removidas que tiveram lançamento
-  const catsVisiveis = chaves => dados.categorias.filter(c => c.ativa || usadaEm(chaves, d => d.categoria === c.id));
-  const nomeCat = id => (dados.categorias.find(c => c.id === id) || { nome: id }).nome;
+  // ---------- plano de contas ----------
+  const grupoFixas = () => dados.grupos.find(g => g.tipo === 'fixas');
+  const grupoPorId = id => dados.grupos.find(g => g.id === id) || { num: 0, nome: '' };
+  const gruposOrdenados = () => dados.grupos.slice().sort((a, b) => a.num - b.num);
+  const codFixa = f => grupoFixas().num + '.' + pad2(f.seq);
+  const codCat = c => grupoPorId(c.grupo).num + '.' + pad2(c.seq);
+  const copa = () => dados.categorias.find(c => c.id === 'outros');
+  const codItem = i => codCat(copa()) + '.' + pad2(i.seq);
+  const catPorId = id => dados.categorias.find(c => c.id === id);
+  const nomeCat = id => (catPorId(id) || { nome: id }).nome;
+  const rotCat = id => { const c = catPorId(id); return c ? codCat(c) + ' ' + c.nome : id; };
   const nomeItem = id => (dados.itensOutros.find(i => i.id === id) || { nome: 'Outro item' }).nome;
+  const rotItem = id => { const i = dados.itensOutros.find(x => x.id === id); return i ? codItem(i) + ' ' + i.nome : 'Outro item'; };
   const itemDe = d => d.item || 'outro';
   const qtdDe = d => d.qtd || 1;
   const fmtQtd = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' un';
+  const ordemCat = (a, b) => grupoPorId(a.grupo).num - grupoPorId(b.grupo).num || a.seq - b.seq;
 
-  // Totais por categoria: fixas pelo id da conta + despesas variáveis
+  // contas visíveis nos meses informados: as ativas + as removidas que tiveram lançamento
+  const catsVisiveis = chaves => dados.categorias
+    .filter(c => c.ativa || usadaEm(chaves, d => d.categoria === c.id)).sort(ordemCat);
+
+  // Totais por conta: fixas pelo id da conta + despesas variáveis
   function totais(chave) {
     const m = dados.meses[chave];
     const t = {};
@@ -660,13 +730,17 @@
     m.despesas.forEach(d => { t[d.categoria] = (t[d.categoria] || 0) + d.valor; variaveis += d.valor; });
     return { porCat: t, fixas, variaveis, total: fixas + variaveis, existe: true };
   }
-  // linhas de categoria (fixas + variáveis) que aparecem ao comparar estes meses
+  // linhas do plano (fixas + variáveis) que aparecem ao comparar estes meses
   function todasCategorias(chaves) {
-    const fixas = dados.fixas.filter(f => chaves.some(k => dados.meses[k] && dados.meses[k].contas[f.id]));
-    return [...fixas.map(f => ({ id: f.id, nome: f.nome, fixa: true })), ...catsVisiveis(chaves)];
+    const gF = grupoFixas();
+    const fixas = dados.fixas.filter(f => chaves.some(k => dados.meses[k] && dados.meses[k].contas[f.id])).sort(porSeq);
+    return [
+      ...fixas.map(f => ({ id: f.id, nome: f.nome, cod: codFixa(f), grupo: gF.id, fixa: true })),
+      ...catsVisiveis(chaves).map(c => ({ id: c.id, nome: c.nome, cod: codCat(c), grupo: c.grupo }))
+    ];
   }
 
-  // valor e quantidade por item de "Outros" no mês, mais a lista de compras
+  // valor e quantidade por item da copa no mês, mais a lista de compras
   function itensMes(chave) {
     const m = dados.meses[chave];
     const porItem = {};
@@ -710,8 +784,8 @@
   let mesSel = mesPadrao();
   let filtro = '';
 
-  // filtro do balancete (fica salvo neste aparelho)
-  const FILTRO_PADRAO = { fixas: true, variaveis: true, fixasSel: {}, cats: {}, itens: true, compras: true, lista: false, comparar: true, resumo: true };
+  // filtro do balancete por grupo e por conta do plano (fica salvo neste aparelho)
+  const FILTRO_PADRAO = { grupos: {}, contas: {}, itens: true, compras: true, lista: false, comparar: true, resumo: true };
   let filtroBal = { ...FILTRO_PADRAO };
   try { const f = JSON.parse(localStorage.getItem(CHAVE_FILTRO)); if (f) filtroBal = { ...FILTRO_PADRAO, ...f }; } catch (e) {}
   const salvarFiltro = () => { try { localStorage.setItem(CHAVE_FILTRO, JSON.stringify(filtroBal)); } catch (e) {} };
@@ -774,7 +848,7 @@
     document.getElementById('painelBarras').innerHTML = cats.map(c => {
       const a = tA.porCat[c.id] || 0, p = tP.porCat[c.id] || 0;
       const t = tendencia(a, p, tP.existe);
-      return `<div class="barra-linha"><div>${esc(c.nome)}</div><div class="barra-par">
+      return `<div class="barra-linha"><div title="${c.cod} ${esc(c.nome)}">${esc(c.nome)}</div><div class="barra-par">
         <div class="b"><div class="trilho"><div class="barra" style="width:${w(p)}"></div></div><span>${tP.existe ? brl(p) : '—'}</span></div>
         <div class="b atu"><div class="trilho"><div class="barra atu ${t}" style="width:${w(a)}"></div></div><span class="${t === 'mais' || t === 'menos' ? t : ''}">${brl(a)}</span></div>
       </div></div>`;
@@ -800,7 +874,7 @@
       const c = m.contas[f.id], s = situacao(mesSel, f, c);
       const cAnt = mAnt && mAnt.contas[f.id];
       return `<tr>
-        <td class="titulo-linha"><strong>${esc(f.nome)}</strong></td>
+        <td class="titulo-linha"><span class="cod">${codFixa(f)}</span><strong>${esc(f.nome)}</strong></td>
         <td data-label="Vencimento"><input type="date" class="inline" data-conta-venc="${f.id}" value="${vencConta(mesSel, f, c)}"></td>
         <td data-label="Valor (R$)" class="num"><input class="inline valor" inputmode="decimal" data-conta-valor="${f.id}" value="${fmtValorInput(c.valor)}"></td>
         <td data-label="× mês anterior" class="num">${pilula(c.valor, cAnt ? cAnt.valor : 0, !!cAnt)}</td>
@@ -812,16 +886,20 @@
       `<tr class="total"><td class="titulo-linha" colspan="2">Total contas fixas</td><td class="num" data-label="Valor">${brl(totais(mesSel).fixas)}</td><td colspan="4"></td></tr>`;
   }
 
-  // opções de categoria/item: só as ativas, mais a atual da linha (mesmo se removida)
+  // opções de conta agrupadas pelo plano: só as ativas, mais a atual da linha (mesmo se removida)
   function opcoesCat(sel) {
-    return dados.categorias.filter(c => c.ativa || c.id === sel)
-      .map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+    return gruposOrdenados().filter(g => g.tipo !== 'fixas').map(g => {
+      const cats = dados.categorias.filter(c => c.grupo === g.id && (c.ativa || c.id === sel)).sort(porSeq);
+      if (!cats.length) return '';
+      return `<optgroup label="${g.num} · ${esc(g.nome)}">` +
+        cats.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${codCat(c)} ${esc(c.nome)}</option>`).join('') + '</optgroup>';
+    }).join('');
   }
   function opcoesItem(sel) {
-    return dados.itensOutros.filter(i => i.ativa || i.id === sel)
-      .map(i => `<option value="${i.id}" ${i.id === sel ? 'selected' : ''}>${esc(i.nome)}</option>`).join('');
+    return dados.itensOutros.filter(i => i.ativa || i.id === sel).sort(porSeq)
+      .map(i => `<option value="${i.id}" ${i.id === sel ? 'selected' : ''}>${codItem(i)} ${esc(i.nome)}</option>`).join('');
   }
-  // campos de item e quantidade só aparecem para a categoria "Outros"
+  // campos de item e quantidade só aparecem para a conta da copa
   function atualizarFormOutros() {
     const outros = document.getElementById('fCat').value === 'outros';
     document.querySelectorAll('.so-outros').forEach(el => el.hidden = !outros);
@@ -832,7 +910,7 @@
 
   function renderDespesas() {
     const ant = somaMes(mesSel, -1);
-    // recria as listas preservando a escolha atual (categorias podem ter mudado nos Ajustes)
+    // recria as listas preservando a escolha atual (o plano pode ter mudado nos Ajustes)
     const fCat = document.getElementById('fCat');
     const catAtual = fCat.value;
     fCat.innerHTML = opcoesCat();
@@ -846,13 +924,13 @@
     const cats = catsVisiveis([mesSel, ant]);
     if (filtro && !cats.some(c => c.id === filtro)) filtro = '';
     const filt = document.getElementById('filtroCat');
-    filt.innerHTML = '<option value="">Todas as categorias</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+    filt.innerHTML = '<option value="">Todas as contas</option>' + cats.map(c => `<option value="${c.id}">${codCat(c)} ${esc(c.nome)}</option>`).join('');
     filt.value = filtro;
 
     const fData = document.getElementById('fData');
     if (!fData.value || fData.value.slice(0, 7) !== mesSel) fData.value = hojeISO().slice(0, 7) === mesSel ? hojeISO() : mesSel + '-01';
 
-    // resumo por categoria com cor de tendência
+    // resumo por conta com cor de tendência
     const tA = totais(mesSel), tP = totais(ant);
     document.getElementById('chips').innerHTML = cats.map(c => {
       const a = tA.porCat[c.id] || 0, p = tP.porCat[c.id] || 0;
@@ -860,7 +938,7 @@
       const d = t === 'sem' ? '<span class="neutro">sem comparação</span>'
         : t === 'igual' ? '<span class="neutro">= mês anterior</span>'
         : `<span class="${t}">${t === 'mais' ? '▲ +' : '▼ −'}${brl(Math.abs(a - p))}</span>`;
-      return `<button type="button" class="chip ${t} ${filtro === c.id ? 'sel' : ''}" data-chip="${c.id}"><div class="n">${esc(c.nome)}</div><div class="v">${brl(a)}</div><div class="d">${d}</div></button>`;
+      return `<button type="button" class="chip ${t} ${filtro === c.id ? 'sel' : ''}" data-chip="${c.id}"><div class="n">${codCat(c)} ${esc(c.nome)}</div><div class="v">${brl(a)}</div><div class="d">${d}</div></button>`;
     }).join('');
 
     const lista = dados.meses[mesSel].despesas
@@ -871,7 +949,7 @@
     document.getElementById('tabDespesas').innerHTML = lista.length
       ? lista.map(d => `<tr>
           <td data-label="Data"><input type="date" class="inline" min="2026-11-01" data-edit="data" data-id="${d.id}" value="${d.data}"></td>
-          <td data-label="Categoria"><select class="inline" data-edit="categoria" data-id="${d.id}">${opcoesCat(d.categoria)}</select></td>
+          <td data-label="Conta"><select class="inline" data-edit="categoria" data-id="${d.id}">${opcoesCat(d.categoria)}</select></td>
           ${d.categoria === 'outros'
             ? `<td data-label="Item"><select class="inline" data-edit="item" data-id="${d.id}">${opcoesItem(itemDe(d))}</select></td>`
             : '<td class="so-desk neutro">—</td>'}
@@ -882,55 +960,61 @@
           <td data-label="Valor" class="num"><input class="inline valor" inputmode="decimal" data-edit="valor" data-id="${d.id}" value="${fmtValorInput(d.valor)}"></td>
           <td class="num"><button class="btn perigo peq" data-excluir="${d.id}">Excluir</button></td>
         </tr>`).join('')
-      : `<tr><td colspan="7" class="vazio">${filtro ? 'Nenhuma despesa de ' + esc(nomeCat(filtro)) + ' neste mês.' : 'Nenhuma despesa lançada ainda.'}</td></tr>`;
+      : `<tr><td colspan="7" class="vazio">${filtro ? 'Nenhuma despesa em ' + esc(rotCat(filtro)) + ' neste mês.' : 'Nenhuma despesa lançada ainda.'}</td></tr>`;
   }
 
-  // ---------- balancete (aplica o filtro de personalização) ----------
+  // ---------- balancete (organizado pelo plano de contas, com filtro de personalização) ----------
   function dadosBalancete() {
     const f = filtroBal;
     const ant = somaMes(mesSel, -1);
     const tA = totais(mesSel), tP = totais(ant);
     const linhas = todasCategorias([mesSel, ant]).map(c => ({ ...c, ant: tP.porCat[c.id] || 0, atu: tA.porCat[c.id] || 0 }));
-    const todasFix = linhas.filter(l => l.fixa), todasVar = linhas.filter(l => !l.fixa);
-    const fixasL = f.fixas ? todasFix.filter(l => marcado(f.fixasSel, l.id)) : [];
-    const varsL = f.variaveis ? todasVar.filter(l => marcado(f.cats, l.id)) : [];
     const soma = (ls, k) => ls.reduce((s, l) => s + l[k], 0);
-    const temOutros = varsL.some(l => l.id === 'outros');
+
+    const grupos = gruposOrdenados().map(g => ({ g, todas: linhas.filter(l => l.grupo === g.id) })).filter(x => x.todas.length);
+    grupos.forEach(x => {
+      x.sel = marcado(f.grupos, x.g.id) ? x.todas.filter(l => marcado(f.contas, l.id)) : [];
+      x.atu = soma(x.sel, 'atu'); x.ant = soma(x.sel, 'ant');
+    });
+    const gruposSel = grupos.filter(x => x.sel.length);
+    const sel = gruposSel.flatMap(x => x.sel);
+    const completo = grupos.every(x => x.sel.length === x.todas.length);
+    const temCopa = sel.some(l => l.id === 'outros');
 
     const iA = itensMes(mesSel), iP = itensMes(ant);
     // itens ativos sempre aparecem; removidos e "Outro item" só quando houver compra
-    const itens = dados.itensOutros
+    const itens = dados.itensOutros.slice().sort(porSeq)
       .filter(i => (i.ativa && i.id !== 'outro') || iA.porItem[i.id].qtd || iP.porItem[i.id].qtd)
-      .map(i => ({ nome: i.nome, ant: iP.porItem[i.id].valor, atu: iA.porItem[i.id].valor, qAnt: iP.porItem[i.id].qtd, qAtu: iA.porItem[i.id].qtd }));
+      .map(i => ({ nome: i.nome, cod: codItem(i), ant: iP.porItem[i.id].valor, atu: iA.porItem[i.id].valor, qAnt: iP.porItem[i.id].qtd, qAtu: iA.porItem[i.id].qtd }));
 
-    const catsSel = new Set(varsL.map(l => l.id));
-    const completo = fixasL.length === todasFix.length && varsL.length === todasVar.length;
-    const partes = [];
-    if (fixasL.length) partes.push(fixasL.length === todasFix.length ? 'Contas fixas' : fixasL.map(l => l.nome).join(', '));
-    if (varsL.length) partes.push(varsL.length === todasVar.length ? 'Despesas do mês' : varsL.map(l => l.nome).join(', '));
+    const ids = new Set(sel.map(l => l.id));
+    const descricao = gruposSel.map(x => x.sel.length === x.todas.length
+      ? x.g.num + ' ' + x.g.nome
+      : x.sel.map(l => l.cod + ' ' + l.nome).join(', ')).join(' + ');
 
     return {
-      f, ant, tA, tP, todasFix, todasVar, fixasL, varsL, completo,
-      descricao: partes.join(' + ') || 'nada selecionado',
-      fixAtu: soma(fixasL, 'atu'), fixAnt: soma(fixasL, 'ant'),
-      varAtu: soma(varsL, 'atu'), varAnt: soma(varsL, 'ant'),
-      totAtu: soma(fixasL, 'atu') + soma(varsL, 'atu'), totAnt: soma(fixasL, 'ant') + soma(varsL, 'ant'),
-      itens: f.itens && temOutros ? itens : [],
-      compras: f.compras && temOutros ? iA.compras.slice().sort((a, b) => a.data.localeCompare(b.data)) : null,
-      lista: f.lista ? dados.meses[mesSel].despesas.filter(d => catsSel.has(d.categoria)).sort((a, b) => a.data.localeCompare(b.data)) : null
+      f, ant, tA, tP, grupos, gruposSel, sel, completo,
+      descricao: descricao || 'nada selecionado',
+      totAtu: soma(sel, 'atu'), totAnt: soma(sel, 'ant'),
+      itens: f.itens && temCopa ? itens : [],
+      compras: f.compras && temCopa ? iA.compras.slice().sort((a, b) => a.data.localeCompare(b.data)) : null,
+      lista: f.lista ? dados.meses[mesSel].despesas.filter(d => ids.has(d.categoria)).sort((a, b) => a.data.localeCompare(b.data)) : null
     };
   }
 
   function renderFiltroBal(B) {
     const f = B.f;
-    const chk = (attr, val, rot, on, desab) =>
-      `<label class="check ${desab ? 'desab' : ''}"><input type="checkbox" ${attr}="${val}" ${on ? 'checked' : ''}> ${esc(rot)}</label>`;
+    const chk = (attr, val, rot, on, desab, forte) =>
+      `<label class="check ${desab ? 'desab' : ''} ${forte ? 'forte' : ''}"><input type="checkbox" ${attr}="${val}" ${on ? 'checked' : ''}> ${esc(rot)}</label>`;
     const grupo = (titulo, conteudo) => `<div class="check-grupo"><h3>${titulo}</h3><div class="opcoes">${conteudo}</div></div>`;
     document.getElementById('opcoesFiltro').innerHTML =
-      grupo('Seções', chk('data-fb', 'fixas', 'Contas fixas', f.fixas) + chk('data-fb', 'variaveis', 'Despesas do mês', f.variaveis)) +
-      (B.todasFix.length ? grupo('Contas fixas', B.todasFix.map(l => chk('data-fb-fixa', l.id, l.nome, marcado(f.fixasSel, l.id), !f.fixas)).join('')) : '') +
-      grupo('Categorias das despesas do mês', B.todasVar.map(l => chk('data-fb-cat', l.id, l.nome, marcado(f.cats, l.id), !f.variaveis)).join('')) +
-      grupo('Detalhes', chk('data-fb', 'itens', 'Itens de Outros com quantidades', f.itens) + chk('data-fb', 'compras', 'Lista de compras de Outros', f.compras) + chk('data-fb', 'lista', 'Lista de todas as despesas lançadas', f.lista)) +
+      B.grupos.map(x => {
+        const on = marcado(f.grupos, x.g.id);
+        return grupo(esc(x.g.num + ' · ' + x.g.nome),
+          chk('data-fb-grupo', x.g.id, 'Grupo inteiro', on, false, true) +
+          x.todas.map(l => chk('data-fb-conta', l.id, l.cod + ' ' + l.nome, marcado(f.contas, l.id), !on)).join(''));
+      }).join('') +
+      grupo('Detalhes', chk('data-fb', 'itens', 'Itens da copa com quantidades', f.itens) + chk('data-fb', 'compras', 'Lista de compras da copa', f.compras) + chk('data-fb', 'lista', 'Lista de todas as despesas lançadas', f.lista)) +
       grupo('Exibição', chk('data-fb', 'comparar', 'Comparar com o mês anterior', f.comparar) + chk('data-fb', 'resumo', 'Resumo do mês', f.resumo));
   }
 
@@ -953,31 +1037,30 @@
       <td class="num" data-label="${lAtu}">${txtAtu}</td>
       <td class="num comp" data-label="Diferença">${pilula(a, p, tP.existe)}</td>
       <td class="num comp" data-label="Variação">${pilula(a, p, tP.existe, 'pct')}</td>`;
-    const linha = (cls, rot, a, p) => `<tr class="${cls}">
-      <td class="titulo-linha ${cls === '' ? 'sub' : ''}">${cls ? '<strong>' + rot + '</strong>' : esc(rot)}</td>${celulas(a, p, brl(p), brl(a))}</tr>`;
+    const linhaGrupo = (cls, rot, a, p) => `<tr class="${cls}"><td class="titulo-linha"><strong>${rot}</strong></td>${celulas(a, p, brl(p), brl(a))}</tr>`;
+    const linhaConta = l => `<tr><td class="titulo-linha sub"><span class="cod">${l.cod}</span>${esc(l.nome)}</td>${celulas(l.atu, l.ant, brl(l.ant), brl(l.atu))}</tr>`;
     const linhaItem = it => `<tr class="item">
-      <td class="titulo-linha sub2">↳ ${esc(it.nome)}</td>${celulas(it.atu, it.ant,
+      <td class="titulo-linha sub2"><span class="cod">${it.cod}</span>${esc(it.nome)}</td>${celulas(it.atu, it.ant,
         brl(it.ant) + ' <span class="qtd">· ' + fmtQtd(it.qAnt) + '</span>',
         brl(it.atu) + ' <span class="qtd">· ' + fmtQtd(it.qAtu) + '</span>')}</tr>`;
-    const corpo = ls => ls.map(l => linha('', l.nome, l.atu, l.ant) + (l.id === 'outros' ? B.itens.map(linhaItem).join('') : '')).join('');
 
-    let html = '';
-    if (B.fixasL.length) html += linha('grupo', 'Contas fixas', B.fixAtu, B.fixAnt) + corpo(B.fixasL);
-    if (B.varsL.length) html += linha('grupo', 'Despesas do mês', B.varAtu, B.varAnt) + corpo(B.varsL);
-    html += B.fixasL.length || B.varsL.length
-      ? linha('total', B.completo ? 'TOTAL DO MÊS' : 'TOTAL SELECIONADO', B.totAtu, B.totAnt)
+    let html = B.gruposSel.map(x =>
+      linhaGrupo('grupo', `<span class="cod">${x.g.num}</span>${esc(x.g.nome)}`, x.atu, x.ant) +
+      x.sel.map(l => linhaConta(l) + (l.id === 'outros' ? B.itens.map(linhaItem).join('') : '')).join('')).join('');
+    html += B.sel.length
+      ? linhaGrupo('total', B.completo ? 'TOTAL DO MÊS' : 'TOTAL SELECIONADO', B.totAtu, B.totAnt)
       : '<tr><td colspan="5" class="vazio">Nada selecionado. Abra “Personalizar balancete e impressão” e marque o que deseja ver.</td></tr>';
     document.getElementById('tabBal').innerHTML = html;
 
     // resumo com os totais do que está selecionado
     let resumo = '';
     if (f.resumo) {
-      const quem = B.completo ? 'O escritório' : 'Nos itens selecionados, o escritório';
+      const quem = B.completo ? 'O escritório' : 'Nas contas selecionadas, o escritório';
       const d = B.totAtu - B.totAnt;
       if (!comp) resumo = `<div class="resumo igual">${f.comparar && !tP.existe ? nomeMes(mesSel) + ' é o primeiro mês com lançamentos — a comparação começa a partir do próximo mês. ' : ''}${B.completo ? 'Total gasto' : 'Total selecionado'}: <strong>${brl(B.totAtu)}</strong>.</div>`;
       else {
-        const maiores = [...B.fixasL, ...B.varsL].map(l => ({ ...l, d: l.atu - l.ant })).filter(l => Math.abs(l.d) > 0.005).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 2);
-        const destaque = maiores.length ? ' Maior variação: ' + maiores.map(l => `<span class="${l.d > 0 ? 'mais' : 'menos'}">${esc(l.nome)} (${l.d > 0 ? '+' : '−'}${brl(Math.abs(l.d))})</span>`).join(', ') + '.' : '';
+        const maiores = B.sel.map(l => ({ ...l, d: l.atu - l.ant })).filter(l => Math.abs(l.d) > 0.005).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 2);
+        const destaque = maiores.length ? ' Maior variação: ' + maiores.map(l => `<span class="${l.d > 0 ? 'mais' : 'menos'}">${l.cod} ${esc(l.nome)} (${l.d > 0 ? '+' : '−'}${brl(Math.abs(l.d))})</span>`).join(', ') + '.' : '';
         if (Math.abs(d) < 0.005) resumo = `<div class="resumo igual">${quem} gastou <strong>o mesmo valor</strong> que em ${nomeMes(ant)}: ${brl(B.totAtu)}.${destaque}</div>`;
         else if (d > 0) resumo = `<div class="resumo mais">${quem} <strong class="mais">▲ gastou ${brl(d)} a mais</strong> que em ${nomeMes(ant)}${B.totAnt ? ' (' + pct(d / B.totAnt * 100) + ')' : ''}.${destaque}</div>`;
         else resumo = `<div class="resumo menos">${quem} <strong class="menos">▼ gastou ${brl(-d)} a menos</strong> que em ${nomeMes(ant)} (${pct(d / B.totAnt * 100)}).${destaque}</div>`;
@@ -985,18 +1068,20 @@
     }
     document.getElementById('resumoBal').innerHTML = resumo;
 
+    const nomeCopa = copa() ? rotCat('outros') : 'Copa';
+    document.getElementById('tituloCompras').textContent = nomeCopa;
     document.getElementById('cardCompras').hidden = !B.compras;
     if (B.compras) {
       const l = B.compras;
       document.getElementById('tabOutros').innerHTML = l.length
         ? l.map(d => `<tr>
             <td data-label="Data">${fmtData(d.data)}</td>
-            <td class="titulo-linha"><strong>${esc(nomeItem(itemDe(d)))}</strong></td>
+            <td class="titulo-linha"><strong>${esc(rotItem(itemDe(d)))}</strong></td>
             <td data-label="Descrição">${esc(d.descricao || '—')}</td>
             <td class="num" data-label="Quantidade">${fmtQtd(qtdDe(d))}</td>
             <td class="num" data-label="Valor">${brl(d.valor)}</td></tr>`).join('') +
-          `<tr class="total"><td class="titulo-linha" colspan="3">Total de Outros</td><td class="num" data-label="Quantidade">${fmtQtd(l.reduce((s, d) => s + qtdDe(d), 0))}</td><td class="num" data-label="Valor">${brl(l.reduce((s, d) => s + d.valor, 0))}</td></tr>`
-        : '<tr><td colspan="5" class="vazio">Nenhuma compra em Outros neste mês.</td></tr>';
+          `<tr class="total"><td class="titulo-linha" colspan="3">Total — ${esc(nomeCopa)}</td><td class="num" data-label="Quantidade">${fmtQtd(l.reduce((s, d) => s + qtdDe(d), 0))}</td><td class="num" data-label="Valor">${brl(l.reduce((s, d) => s + d.valor, 0))}</td></tr>`
+        : '<tr><td colspan="5" class="vazio">Nenhuma compra da copa neste mês.</td></tr>';
     }
 
     document.getElementById('cardLista').hidden = !B.lista;
@@ -1007,32 +1092,67 @@
             const outros = d.categoria === 'outros';
             return `<tr>
               <td data-label="Data">${fmtData(d.data)}</td>
-              <td class="titulo-linha"><strong>${esc(nomeCat(d.categoria))}</strong></td>
-              <td data-label="Item">${outros ? esc(nomeItem(itemDe(d))) : '—'}</td>
+              <td class="titulo-linha"><strong>${esc(rotCat(d.categoria))}</strong></td>
+              <td data-label="Item">${outros ? esc(rotItem(itemDe(d))) : '—'}</td>
               <td data-label="Descrição">${esc(d.descricao || '—')}</td>
               <td class="num" data-label="Quantidade">${outros ? fmtQtd(qtdDe(d)) : '—'}</td>
               <td class="num" data-label="Valor">${brl(d.valor)}</td></tr>`;
           }).join('') +
           `<tr class="total"><td class="titulo-linha" colspan="5">Total das despesas listadas</td><td class="num" data-label="Valor">${brl(l.reduce((s, d) => s + d.valor, 0))}</td></tr>`
-        : '<tr><td colspan="6" class="vazio">Nenhuma despesa lançada nas categorias selecionadas.</td></tr>';
+        : '<tr><td colspan="6" class="vazio">Nenhuma despesa lançada nas contas selecionadas.</td></tr>';
     }
   }
 
+  // plano de contas completo (ativos), na ordem dos códigos
+  function linhasPlano() {
+    const out = [];
+    gruposOrdenados().filter(g => g.ativa).forEach(g => {
+      out.push({ nivel: 0, cod: String(g.num), nome: g.nome });
+      if (g.tipo === 'fixas') dados.fixas.filter(f => !f.ate).sort(porSeq).forEach(f => out.push({ nivel: 1, cod: codFixa(f), nome: f.nome }));
+      dados.categorias.filter(c => c.grupo === g.id && c.ativa).sort(porSeq).forEach(c => {
+        out.push({ nivel: 1, cod: codCat(c), nome: c.nome });
+        if (c.id === 'outros') dados.itensOutros.filter(i => i.ativa).sort(porSeq).forEach(i => out.push({ nivel: 2, cod: codItem(i), nome: i.nome }));
+      });
+    });
+    return out;
+  }
+
   function renderConfig() {
-    const ativas = dados.fixas.filter(f => !f.ate);
+    const ativas = dados.fixas.filter(f => !f.ate).sort(porSeq);
     document.getElementById('tabConfig').innerHTML = ativas.length ? ativas.map(f => `<tr>
-      <td data-label="Nome"><input data-cfg-nome="${f.id}" value="${esc(f.nome)}"></td>
+      <td data-label="Conta"><div class="nome-cod"><span class="cod">${codFixa(f)}</span><input data-cfg-nome="${f.id}" value="${esc(f.nome)}"></div></td>
       <td data-label="Dia do vencimento"><input class="dia" type="number" inputmode="numeric" min="1" max="31" data-cfg-dia="${f.id}" value="${f.dia}"></td>
       <td class="num" data-label="Valor padrão (R$)"><input class="valor" inputmode="decimal" data-cfg-valor="${f.id}" value="${fmtValorInput(f.valor)}"></td>
       <td class="num"><button class="btn perigo peq" data-rem-fixa="${f.id}">Remover</button></td></tr>`).join('')
       : '<tr><td colspan="4" class="vazio">Nenhuma conta fixa cadastrada.</td></tr>';
 
-    const lista = (arr, attrNome, attrRem, fixoId, fixoTxt) => arr.filter(x => x.ativa).map(x => `<div class="linha">
-      <input data-${attrNome}="${x.id}" value="${esc(x.nome)}" aria-label="Nome">
-      ${x.id === fixoId ? `<span class="fixo">${fixoTxt}</span>` : `<button class="btn perigo peq" data-${attrRem}="${x.id}">Remover</button>`}
-    </div>`).join('');
-    document.getElementById('listaCats').innerHTML = lista(dados.categorias, 'cat-nome', 'rem-cat', 'outros', 'tem itens da copa');
-    document.getElementById('listaItens').innerHTML = lista(dados.itensOutros, 'item-nome', 'rem-item', 'outro', 'para itens avulsos');
+    // editor do plano de contas
+    const gruposAtivos = gruposOrdenados().filter(g => g.ativa);
+    const opcoesGrupo = sel => gruposAtivos.filter(g => g.tipo !== 'fixas')
+      .map(g => `<option value="${g.id}" ${g.id === sel ? 'selected' : ''}>Grupo ${g.num} · ${esc(g.nome)}</option>`).join('');
+    document.getElementById('planoEditor').innerHTML = gruposAtivos.map(g => {
+      const cab = `<div class="linha cab"><span class="cod">${g.num}</span><input data-grupo-nome="${g.id}" value="${esc(g.nome)}" aria-label="Nome do grupo">`;
+      if (g.tipo === 'fixas') {
+        return `<div class="grupo-plano">${cab}<span class="fixo">contas fixas</span></div>` +
+          dados.fixas.filter(f => !f.ate).sort(porSeq).map(f => `<div class="linha so-ler"><span class="cod">${codFixa(f)}</span>${esc(f.nome)}</div>`).join('') +
+          `<p class="miudo" style="margin:0">As contas deste grupo são cadastradas no card “Contas fixas”, com vencimento e valor.</p></div>`;
+      }
+      const cats = dados.categorias.filter(c => c.grupo === g.id && c.ativa).sort(porSeq);
+      return `<div class="grupo-plano">${cab}${cats.length ? '' : `<button class="btn perigo peq" data-rem-grupo="${g.id}">Remover</button>`}</div>` +
+        cats.map(c => `<div class="linha"><span class="cod">${codCat(c)}</span>
+            <input data-cat-nome="${c.id}" value="${esc(c.nome)}" aria-label="Nome da conta">
+            <select data-cat-grupo="${c.id}" aria-label="Grupo">${opcoesGrupo(c.grupo)}</select>
+            ${c.id === 'outros' ? '<span class="fixo">tem itens</span>' : `<button class="btn perigo peq" data-rem-cat="${c.id}">Remover</button>`}
+          </div>` +
+          (c.id === 'outros'
+            ? dados.itensOutros.filter(i => i.ativa).sort(porSeq).map(i => `<div class="linha sub"><span class="cod">${codItem(i)}</span>
+                <input data-item-nome="${i.id}" value="${esc(i.nome)}" aria-label="Nome do item">
+                ${i.id === 'outro' ? '<span class="fixo">avulsos</span>' : `<button class="btn perigo peq" data-rem-item="${i.id}">Remover</button>`}
+              </div>`).join('') +
+              `<form class="add mini sub" data-add-item><input placeholder="Novo item em ${esc(c.nome)} (ex.: Água mineral)" autocomplete="off" required><button class="btn sec peq" type="submit">+ Item</button></form>`
+            : '')).join('') +
+        `<form class="add mini" data-add-cat="${g.id}"><input placeholder="Nova conta em ${esc(g.nome)}" autocomplete="off" required><button class="btn sec peq" type="submit">+ Conta</button></form></div>`;
+    }).join('');
 
     document.getElementById('ultimoBackup').textContent = dados.ultimoBackup
       ? 'Último backup: ' + new Date(dados.ultimoBackup).toLocaleString('pt-BR')
@@ -1049,7 +1169,7 @@
   }
   document.querySelectorAll('nav.abas button').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.aba); window.scrollTo(0, 0); }));
   document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.ir); window.scrollTo(0, 0); }));
-  try { const a = sessionStorage.getItem('slz-aba'); if (a && document.getElementById('aba-' + a)) irParaAba(a); } catch (e) {}
+  try { const a = sessionStorage.getItem('slz-aba'); if (a && a !== 'plano' && document.getElementById('aba-' + a)) irParaAba(a); } catch (e) {}
 
   document.getElementById('fab').onclick = () => {
     irParaAba('despesas');
@@ -1107,7 +1227,7 @@
     const chave = data.slice(0, 7);
     if (chave < MES_INICIAL) { toast('O controle começa em Novembro de 2026'); return; }
     const categoria = document.getElementById('fCat').value;
-    if (!categoria) { toast('Cadastre uma categoria nos Ajustes'); return; }
+    if (!categoria) { toast('Cadastre uma conta no plano de contas (Ajustes)'); return; }
     const descricao = document.getElementById('fDesc').value.trim();
     const nova = { id: novoId('d'), data, categoria, descricao, valor };
     if (categoria === 'outros') {
@@ -1205,9 +1325,10 @@
     if (!nome) { toast('Informe o nome da conta'); return; }
     if (!(dia >= 1 && dia <= 31)) { toast('Informe o dia do vencimento (1 a 31)'); return; }
     if (isNaN(valor) || valor < 0) { toast('Valor inválido'); return; }
-    dados.fixas.push({ id: novoId('f'), nome, dia, valor, desde: mesSel });
+    const f = { id: novoId('f'), nome, dia, valor, desde: mesSel, seq: proxSeq(dados.fixas, () => true) };
+    dados.fixas.push(f);
     e.target.reset();
-    salvar(); render(); toast(nome + ' adicionada a partir de ' + nomeMes(mesSel));
+    salvar(); render(); toast(codFixa(f) + ' ' + nome + ' adicionada a partir de ' + nomeMes(mesSel));
   });
   document.getElementById('tabConfig').addEventListener('click', e => {
     const id = e.target.dataset.remFixa;
@@ -1224,68 +1345,106 @@
     salvar(); render(); toast(f.nome + ' removida');
   });
 
-  // ---------- ajustes: categorias e itens ----------
-  function renomear(lista, id, nome, campo) {
-    const x = lista.find(i => i.id === id);
-    if (!nome) { toast('O nome não pode ficar vazio'); renderConfig(); return; }
-    x.nome = nome;
-    salvar(); render(); toast(campo + ' renomeado');
-  }
-  function remover(chaveLista, id, emUso, rotulo) {
-    const lista = dados[chaveLista];
-    const x = lista.find(i => i.id === id);
-    if (!confirm(`Remover "${x.nome}"?` + (emUso ? '\nOs lançamentos antigos continuam no histórico.' : ''))) return;
-    // com lançamentos: só esconde; sem lançamentos: apaga
-    if (emUso) x.ativa = false; else dados[chaveLista] = lista.filter(i => i.id !== id);
-    salvar(); render(); toast(rotulo + ' removido');
-  }
+  // ---------- ajustes: plano de contas ----------
   const todosMeses = () => Object.keys(dados.meses);
-  document.getElementById('listaCats').addEventListener('change', e => {
-    if (e.target.dataset.catNome) renomear(dados.categorias, e.target.dataset.catNome, e.target.value.trim(), 'Categoria');
+  const mesmoNome = (a, b) => a.toLowerCase() === b.toLowerCase();
+  const editor = document.getElementById('planoEditor');
+  editor.addEventListener('change', e => {
+    const t = e.target, d = t.dataset;
+    const nome = t.value.trim();
+    if ((d.grupoNome || d.catNome || d.itemNome) && !nome) { toast('O nome não pode ficar vazio'); renderConfig(); return; }
+    if (d.grupoNome) { dados.grupos.find(g => g.id === d.grupoNome).nome = nome; toast('Grupo renomeado'); }
+    else if (d.catNome) { catPorId(d.catNome).nome = nome; toast('Conta renomeada'); }
+    else if (d.itemNome) { dados.itensOutros.find(i => i.id === d.itemNome).nome = nome; toast('Item renomeado'); }
+    else if (d.catGrupo) {
+      // mudar de grupo dá o próximo código livre no grupo novo
+      const c = catPorId(d.catGrupo);
+      c.grupo = t.value;
+      c.seq = proxSeq(dados.categorias, x => x.grupo === c.grupo && x.id !== c.id);
+      toast('Conta movida para ' + codCat(c));
+    } else return;
+    salvar(); render();
   });
-  document.getElementById('listaCats').addEventListener('click', e => {
-    const id = e.target.dataset.remCat;
-    if (id) remover('categorias', id, usadaEm(todosMeses(), d => d.categoria === id), 'Categoria');
-  });
-  document.getElementById('listaItens').addEventListener('change', e => {
-    if (e.target.dataset.itemNome) renomear(dados.itensOutros, e.target.dataset.itemNome, e.target.value.trim(), 'Item');
-  });
-  document.getElementById('listaItens').addEventListener('click', e => {
-    const id = e.target.dataset.remItem;
-    if (id) remover('itensOutros', id, usadaEm(todosMeses(), d => d.categoria === 'outros' && itemDe(d) === id), 'Item');
-  });
-  // novos nomes entram antes do "coringa" (Outros / Outro item); um nome removido antes é reativado
-  function adicionarNaLista(lista, nome, prefixo, antesDe, msg) {
-    if (!nome) return false;
-    const igual = x => x.nome.toLowerCase() === nome.toLowerCase();
-    if (lista.some(x => x.ativa && igual(x))) { toast('Esse nome já existe'); return false; }
-    const antigo = lista.find(x => !x.ativa && igual(x));
-    if (antigo) antigo.ativa = true;
-    else {
-      const pos = lista.findIndex(x => x.id === antesDe);
-      lista.splice(pos < 0 ? lista.length : pos, 0, { id: novoId(prefixo), nome, ativa: true });
+  editor.addEventListener('click', e => {
+    const d = e.target.dataset;
+    if (d.remCat) {
+      const c = catPorId(d.remCat);
+      const emUso = usadaEm(todosMeses(), x => x.categoria === c.id);
+      if (!confirm(`Remover "${codCat(c)} ${c.nome}"?` + (emUso ? '\nOs lançamentos antigos continuam no histórico.' : ''))) return;
+      // com lançamentos: só esconde (o código continua reservado); sem lançamentos: apaga
+      if (emUso) c.ativa = false; else dados.categorias = dados.categorias.filter(x => x.id !== c.id);
+      salvar(); render(); toast('Conta removida');
+    } else if (d.remItem) {
+      const i = dados.itensOutros.find(x => x.id === d.remItem);
+      const emUso = usadaEm(todosMeses(), x => x.categoria === 'outros' && itemDe(x) === i.id);
+      if (!confirm(`Remover "${codItem(i)} ${i.nome}"?` + (emUso ? '\nOs lançamentos antigos continuam no histórico.' : ''))) return;
+      if (emUso) i.ativa = false; else dados.itensOutros = dados.itensOutros.filter(x => x.id !== i.id);
+      salvar(); render(); toast('Item removido');
+    } else if (d.remGrupo) {
+      const g = dados.grupos.find(x => x.id === d.remGrupo);
+      if (!confirm(`Remover o grupo "${g.num} ${g.nome}"?`)) return;
+      if (dados.categorias.some(c => c.grupo === g.id)) g.ativa = false; else dados.grupos = dados.grupos.filter(x => x.id !== g.id);
+      salvar(); render(); toast('Grupo removido');
     }
-    salvar(); render(); toast(msg);
-    return true;
+  });
+  editor.addEventListener('submit', e => {
+    e.preventDefault();
+    const form = e.target, nome = form.querySelector('input').value.trim();
+    if (!nome) return;
+    if (form.hasAttribute('data-add-item')) {
+      const lista = dados.itensOutros;
+      if (lista.some(i => i.ativa && mesmoNome(i.nome, nome))) { toast('Esse item já existe'); return; }
+      const antigo = lista.find(i => !i.ativa && mesmoNome(i.nome, nome));
+      if (antigo) antigo.ativa = true;
+      else lista.push({ id: novoId('i'), nome, ativa: true, seq: proxSeq(lista, () => true) });
+      salvar(); render(); toast('Item adicionado');
+    } else if (form.dataset.addCat) {
+      const grupo = form.dataset.addCat;
+      if (dados.categorias.some(c => c.ativa && mesmoNome(c.nome, nome))) { toast('Essa conta já existe'); return; }
+      const antigo = dados.categorias.find(c => !c.ativa && mesmoNome(c.nome, nome));
+      let c;
+      if (antigo) { c = antigo; c.ativa = true; if (c.grupo !== grupo) { c.grupo = grupo; c.seq = proxSeq(dados.categorias, x => x.grupo === grupo && x.id !== c.id); } }
+      else { c = { id: novoId('c'), nome, ativa: true, grupo, seq: proxSeq(dados.categorias, x => x.grupo === grupo) }; dados.categorias.push(c); }
+      salvar(); render(); toast(codCat(c) + ' ' + nome + ' adicionada');
+    }
+  });
+  document.getElementById('formNovoGrupo').addEventListener('submit', e => {
+    e.preventDefault();
+    const nome = document.getElementById('ngNome').value.trim();
+    if (!nome) return;
+    const antigo = dados.grupos.find(g => mesmoNome(g.nome, nome));
+    if (antigo && antigo.ativa) { toast('Esse grupo já existe'); return; }
+    if (antigo) antigo.ativa = true;
+    else dados.grupos.push({ id: novoId('g'), num: Math.max(0, ...dados.grupos.map(g => g.num)) + 1, nome, ativa: true });
+    e.target.reset();
+    salvar(); render(); toast('Grupo adicionado');
+  });
+
+  function imprimirSecao(id) {
+    const s = document.getElementById(id);
+    s.classList.add('imprimir'); window.print(); s.classList.remove('imprimir');
   }
-  document.getElementById('formNovaCat').addEventListener('submit', e => {
-    e.preventDefault();
-    if (adicionarNaLista(dados.categorias, document.getElementById('ncNome').value.trim(), 'c', 'outros', 'Categoria adicionada')) e.target.reset();
-  });
-  document.getElementById('formNovoItem').addEventListener('submit', e => {
-    e.preventDefault();
-    if (adicionarNaLista(dados.itensOutros, document.getElementById('niNome').value.trim(), 'i', 'outro', 'Item adicionado')) e.target.reset();
-  });
+  document.getElementById('btnImprimirPlano').onclick = () => {
+    document.getElementById('planoData').textContent = 'Emitido em ' + fmtData(hojeISO());
+    document.getElementById('tabPlanoImpressao').innerHTML = linhasPlano().map(l =>
+      `<tr class="${l.nivel === 0 ? 'grupo' : ''}"><td><strong>${l.cod}</strong></td><td style="padding-left:${10 + l.nivel * 22}px">${l.nivel === 0 ? '<strong>' + esc(l.nome) + '</strong>' : esc(l.nome)}</td></tr>`).join('');
+    imprimirSecao('aba-plano');
+  };
 
   // ---------- personalização do balancete ----------
   const PRESETS = {
     completo: () => ({ ...FILTRO_PADRAO }),
-    fixas: () => ({ ...FILTRO_PADRAO, variaveis: false, compras: false, lista: false }),
-    mes: () => ({ ...FILTRO_PADRAO, fixas: false, lista: true }),
+    fixas: () => {
+      const grupos = {};
+      dados.grupos.forEach(g => { if (g.tipo !== 'fixas') grupos[g.id] = false; });
+      return { ...FILTRO_PADRAO, grupos, compras: false };
+    },
+    mes: () => ({ ...FILTRO_PADRAO, grupos: { [grupoFixas().id]: false }, lista: true }),
     copa: () => {
-      const cats = {};
-      dados.categorias.forEach(c => { if (c.id !== 'outros') cats[c.id] = false; });
-      return { ...FILTRO_PADRAO, fixas: false, cats };
+      const c = copa(), grupos = {}, contas = {};
+      dados.grupos.forEach(g => { if (!c || g.id !== c.grupo) grupos[g.id] = false; });
+      dados.categorias.forEach(x => { if (x.id !== 'outros') contas[x.id] = false; });
+      return { ...FILTRO_PADRAO, grupos, contas };
     }
   };
   document.querySelector('.presets').addEventListener('click', e => {
@@ -1297,16 +1456,13 @@
   document.getElementById('opcoesFiltro').addEventListener('change', e => {
     const t = e.target, d = t.dataset;
     if (d.fb) filtroBal[d.fb] = t.checked;
-    else if (d.fbFixa) filtroBal.fixasSel = { ...filtroBal.fixasSel, [d.fbFixa]: t.checked };
-    else if (d.fbCat) filtroBal.cats = { ...filtroBal.cats, [d.fbCat]: t.checked };
+    else if (d.fbGrupo) filtroBal.grupos = { ...filtroBal.grupos, [d.fbGrupo]: t.checked };
+    else if (d.fbConta) filtroBal.contas = { ...filtroBal.contas, [d.fbConta]: t.checked };
     else return;
     salvarFiltro(); renderBalancete();
   });
 
-  document.getElementById('btnImprimir').onclick = () => {
-    const s = document.getElementById('aba-balancete');
-    s.classList.add('imprimir'); window.print(); s.classList.remove('imprimir');
-  };
+  document.getElementById('btnImprimir').onclick = () => imprimirSecao('aba-balancete');
 
   function baixar(nome, conteudo, tipo) {
     const a = document.createElement('a');
@@ -1315,34 +1471,40 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+  const paraCsv = rows => '﻿' + rows.map(r => r.map(c => '"' + String(c ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n');
+
+  document.getElementById('btnCsvPlano').onclick = () => {
+    const rows = [['Código', 'Conta', 'Nível']];
+    linhasPlano().forEach(l => rows.push([l.cod, l.nome, ['Grupo', 'Conta', 'Item'][l.nivel]]));
+    baixar('plano-de-contas-slz.csv', paraCsv(rows), 'text/csv;charset=utf-8');
+  };
+
   document.getElementById('btnCsv').onclick = () => {
     const B = dadosBalancete();
     const n = v => v.toFixed(2).replace('.', ',');
     const q = v => String(v).replace('.', ',');
     const rows = [];
     if (!B.completo) rows.push(['Filtro: ' + B.descricao], []);
-    rows.push(['Categoria', nomeMes(B.ant), nomeMes(mesSel), 'Diferença', 'Qtd ' + nomeMes(B.ant), 'Qtd ' + nomeMes(mesSel)]);
-    const bloco = (titulo, ls, a, p) => {
-      if (!ls.length) return;
-      rows.push([titulo, n(p), n(a), n(a - p)]);
-      ls.forEach(l => {
-        rows.push(['   ' + l.nome, n(l.ant), n(l.atu), n(l.atu - l.ant)]);
-        if (l.id === 'outros') B.itens.forEach(it => rows.push(['      ' + it.nome, n(it.ant), n(it.atu), n(it.atu - it.ant), q(it.qAnt), q(it.qAtu)]));
+    rows.push(['Código', 'Conta', nomeMes(B.ant), nomeMes(mesSel), 'Diferença', 'Qtd ' + nomeMes(B.ant), 'Qtd ' + nomeMes(mesSel)]);
+    B.gruposSel.forEach(x => {
+      rows.push([x.g.num, x.g.nome, n(x.ant), n(x.atu), n(x.atu - x.ant)]);
+      x.sel.forEach(l => {
+        rows.push([l.cod, l.nome, n(l.ant), n(l.atu), n(l.atu - l.ant)]);
+        if (l.id === 'outros') B.itens.forEach(it => rows.push([it.cod, it.nome, n(it.ant), n(it.atu), n(it.atu - it.ant), q(it.qAnt), q(it.qAtu)]));
       });
-    };
-    bloco('Contas fixas', B.fixasL, B.fixAtu, B.fixAnt);
-    bloco('Despesas do mês', B.varsL, B.varAtu, B.varAnt);
-    rows.push([B.completo ? 'TOTAL' : 'TOTAL SELECIONADO', n(B.totAnt), n(B.totAtu), n(B.totAtu - B.totAnt)]);
-    const despesas = B.lista || dados.meses[mesSel].despesas.filter(d => B.varsL.some(l => l.id === d.categoria)).sort((a, b) => a.data.localeCompare(b.data));
+    });
+    rows.push(['', B.completo ? 'TOTAL' : 'TOTAL SELECIONADO', n(B.totAnt), n(B.totAtu), n(B.totAtu - B.totAnt)]);
+    const ids = new Set(B.sel.map(l => l.id));
+    const despesas = B.lista || dados.meses[mesSel].despesas.filter(d => ids.has(d.categoria)).sort((a, b) => a.data.localeCompare(b.data));
     if (despesas.length) {
-      rows.push([], ['Despesas lançadas'], ['Data', 'Categoria', 'Item', 'Descrição', 'Quantidade', 'Valor']);
+      rows.push([], ['Despesas lançadas'], ['Data', 'Código', 'Conta', 'Item', 'Descrição', 'Quantidade', 'Valor']);
       despesas.forEach(d => {
         const outros = d.categoria === 'outros';
-        rows.push([fmtData(d.data), nomeCat(d.categoria), outros ? nomeItem(itemDe(d)) : '', d.descricao, outros ? q(qtdDe(d)) : '', n(d.valor)]);
+        const c = catPorId(d.categoria);
+        rows.push([fmtData(d.data), c ? codCat(c) : '', nomeCat(d.categoria), outros ? rotItem(itemDe(d)) : '', d.descricao, outros ? q(qtdDe(d)) : '', n(d.valor)]);
       });
     }
-    const csv = '﻿' + rows.map(r => r.map(c => '"' + String(c ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n');
-    baixar(`balancete-slz-${mesSel}.csv`, csv, 'text/csv;charset=utf-8');
+    baixar(`balancete-slz-${mesSel}.csv`, paraCsv(rows), 'text/csv;charset=utf-8');
   };
 
   document.getElementById('btnExportar').onclick = () => {

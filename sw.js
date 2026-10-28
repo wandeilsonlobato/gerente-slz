@@ -1,6 +1,6 @@
 // Service worker: deixa o app funcionando offline e instalável no celular.
 // Ao alterar arquivos do app, aumente a versão para forçar a atualização do cache.
-const VERSAO = 'gastos-slz-v6';
+const VERSAO = 'gastos-slz-v7';
 const ARQUIVOS = [
   './',
   './index.html',
