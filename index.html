@@ -120,6 +120,7 @@
   .btn.peq { padding: 6px 11px; font-size: 13px; }
   .btn.perigo { background: none; color: var(--vermelho); border: 1px solid var(--borda); }
   .btn.perigo:hover { background: var(--vermelho-claro); }
+  .link-btn { background: none; border: 0; color: var(--azul); font-weight: 600; padding: 0; text-decoration: underline; font-size: 13px; }
   .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
   label { font-size: 12px; color: var(--cinza); display: block; margin-bottom: 4px; font-weight: 600; }
   input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--borda); border-radius: 8px; background: #fff; min-height: 40px; }
@@ -127,6 +128,7 @@
   input.valor { text-align: right; font-variant-numeric: tabular-nums; }
   input[type="date"] { cursor: pointer; }
   input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .7; }
+  input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; accent-color: var(--azul); flex-shrink: 0; }
   /* campos editáveis dentro das tabelas: discretos até passar o mouse ou focar */
   .inline { border-color: transparent; background: transparent; padding: 6px 8px; min-height: 34px; }
   .inline:hover { border-color: var(--borda); background: #fff; }
@@ -147,6 +149,33 @@
   td.sub2 { padding-left: 40px; color: var(--cinza); }
   .qtd { font-size: 12px; color: var(--cinza); white-space: nowrap; }
   td input.qtd-in { width: 80px; text-align: right; }
+
+  /* ---------- ajustes: listas editáveis ---------- */
+  .lista-edit { display: grid; gap: 8px; }
+  .lista-edit .linha { display: flex; gap: 8px; align-items: center; }
+  .lista-edit .linha input { flex: 1; min-width: 0; }
+  .lista-edit .fixo { font-size: 12px; color: var(--cinza); white-space: nowrap; padding: 0 4px; }
+  form.add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; padding-top: 12px; border-top: 1px dashed var(--borda); }
+  form.add input { flex: 1 1 160px; width: auto; min-width: 0; }
+  form.add input.dia { flex: 0 0 96px; }
+  form.add input.valor { flex: 0 1 140px; }
+
+  /* ---------- filtro do balancete ---------- */
+  details.card > summary { cursor: pointer; font-weight: 700; color: var(--azul); font-size: 16px; list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
+  details.card[open] > summary::after { transform: rotate(180deg); }
+  details.card[open] > summary { margin-bottom: 14px; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .check-grupo { margin-bottom: 14px; }
+  .check-grupo h3 { font-size: 12px; margin: 0 0 8px; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; }
+  .opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
+  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 99px; font-size: 13px; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: #fff; user-select: none; }
+  label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); font-weight: 600; }
+  label.check.desab { opacity: .45; pointer-events: none; }
+  .filtro-ativo { font-size: 13px; color: var(--cinza); margin: -6px 0 14px; }
+  .filtro-ativo strong { color: var(--azul); }
+  .sem-comp .comp { display: none !important; }
 
   /* ---------- resumo por categoria ---------- */
   .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
@@ -239,6 +268,8 @@
     .card-topo .acoes .btn { flex: 1; }
     .filtro select { flex: 1; }
     .filtro .total { width: 100%; margin-left: 0; text-align: right; }
+    .presets .btn { flex: 1 1 calc(50% - 4px); }
+    form.add .btn { flex: 1 1 100%; }
 
     /* tabelas viram cartões */
     table.resp thead { display: none; }
@@ -271,6 +302,7 @@
     .card { border: 0; padding: 0; margin-bottom: 18px; box-shadow: none; }
     .print-head { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--azul); padding-bottom: 10px; margin-bottom: 18px; }
     .print-head img { height: 50px; }
+    .filtro-ativo { display: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
@@ -338,7 +370,7 @@
   <section class="aba" id="aba-contas">
     <div class="card">
       <h2>Contas fixas — <span class="mesTxt"></span></h2>
-      <p class="ajuda">Energia, internet e sistema Superlógica. Toque na data para abrir o calendário, ajuste o valor da fatura e marque como paga quando quitar.</p>
+      <p class="ajuda">Toque na data para abrir o calendário, ajuste o valor da fatura e marque como paga quando quitar. <button class="link-btn" data-ir="config">Adicionar ou remover contas fixas</button></p>
       <table class="resp">
         <thead><tr><th>Conta</th><th>Vencimento</th><th class="num">Valor (R$)</th><th class="num">× mês anterior</th><th>Situação</th><th>Pago em</th><th></th></tr></thead>
         <tbody id="tabContas"></tbody>
@@ -349,7 +381,10 @@
   <!-- DESPESAS -->
   <section class="aba" id="aba-despesas">
     <div class="card nao-imprimir">
-      <h2>Lançar despesa</h2>
+      <div class="card-topo">
+        <h2>Lançar despesa</h2>
+        <button class="link-btn" data-ir="config" style="margin-left:auto">Gerenciar categorias</button>
+      </div>
       <form class="lancar" id="formDespesa">
         <div><label for="fData">Data</label><input type="date" id="fData" min="2026-11-01" required></div>
         <div><label for="fCat">Categoria</label><select id="fCat"></select></div>
@@ -380,27 +415,46 @@
   <section class="aba" id="aba-balancete">
     <div class="print-head">
       <img src="logo-slz.png" alt="SLZ">
-      <div><strong style="font-size:18px;color:var(--azul)">Balancete Mensal do Escritório</strong><br><span class="mesTxt"></span></div>
+      <div><strong style="font-size:18px;color:var(--azul)">Balancete Mensal do Escritório</strong><br><span class="mesTxt"></span><span id="printFiltro"></span></div>
     </div>
+    <details class="card nao-imprimir" id="cardFiltro" style="margin-bottom:16px">
+      <summary>⚙️ Personalizar balancete e impressão</summary>
+      <div class="presets">
+        <button class="btn sec peq" data-preset="completo">Completo</button>
+        <button class="btn sec peq" data-preset="fixas">Só contas fixas</button>
+        <button class="btn sec peq" data-preset="mes">Só despesas do mês</button>
+        <button class="btn sec peq" data-preset="copa">Só copa (Outros)</button>
+      </div>
+      <div id="opcoesFiltro"></div>
+      <p class="ajuda" style="margin-bottom:0">O que estiver marcado aparece aqui na tela, na impressão/PDF e na planilha.</p>
+    </details>
     <div class="card">
       <div class="card-topo">
-        <h2>Balancete — <span class="mesTxt"></span> × <span id="mesAntTxt"></span></h2>
+        <h2 id="tituloBal"></h2>
         <div class="acoes nao-imprimir">
           <button class="btn sec peq" id="btnImprimir">Imprimir / PDF</button>
           <button class="btn sec peq" id="btnCsv">Exportar planilha</button>
         </div>
       </div>
+      <p class="filtro-ativo" id="filtroAtivo"></p>
       <div id="resumoBal"></div>
-      <table class="resp">
-        <thead><tr><th>Categoria</th><th class="num" id="thAnt">Mês anterior</th><th class="num" id="thAtu">Mês atual</th><th class="num">Diferença</th><th class="num">Variação</th></tr></thead>
+      <table class="resp" id="tabelaBal">
+        <thead><tr><th>Categoria</th><th class="num comp" id="thAnt">Mês anterior</th><th class="num" id="thAtu">Mês atual</th><th class="num comp">Diferença</th><th class="num comp">Variação</th></tr></thead>
         <tbody id="tabBal"></tbody>
       </table>
     </div>
-    <div class="card mt">
+    <div class="card mt" id="cardCompras">
       <h2>Outros — o que foi comprado em <span class="mesTxt"></span></h2>
       <table class="resp">
         <thead><tr><th>Data</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th></tr></thead>
         <tbody id="tabOutros"></tbody>
+      </table>
+    </div>
+    <div class="card mt" id="cardLista">
+      <h2>Despesas lançadas em <span class="mesTxt"></span></h2>
+      <table class="resp">
+        <thead><tr><th>Data</th><th>Categoria</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th></tr></thead>
+        <tbody id="tabLista"></tbody>
       </table>
     </div>
   </section>
@@ -409,13 +463,37 @@
   <section class="aba" id="aba-config">
     <div class="grid g2">
       <div class="card">
-        <h2>Valores padrão das contas fixas</h2>
-        <p class="ajuda">Entram automaticamente em cada mês novo. A fatura real de cada mês você ajusta na aba “Contas fixas”.</p>
+        <h2>Contas fixas</h2>
+        <p class="ajuda">Nome, dia de vencimento e valor padrão de cada conta. Uma conta nova entra a partir do mês aberto no topo. Ao remover, ela some desse mês em diante, e os meses anteriores ficam como estão.</p>
         <table class="resp">
-          <thead><tr><th>Conta</th><th>Dia venc.</th><th class="num">Valor padrão (R$)</th></tr></thead>
+          <thead><tr><th>Conta</th><th>Dia venc.</th><th class="num">Valor padrão (R$)</th><th></th></tr></thead>
           <tbody id="tabConfig"></tbody>
         </table>
-        <div style="margin-top:12px"><button class="btn" id="btnSalvarConfig">Salvar</button></div>
+        <div style="margin-top:12px"><button class="btn" id="btnSalvarConfig">Salvar alterações</button></div>
+        <form class="add" id="formNovaFixa">
+          <input id="nfNome" placeholder="Nova conta fixa (ex.: Água, Aluguel)" autocomplete="off" required>
+          <input id="nfDia" class="dia" type="number" min="1" max="31" inputmode="numeric" placeholder="Dia" required>
+          <input id="nfValor" class="valor" inputmode="decimal" placeholder="Valor R$" autocomplete="off">
+          <button class="btn sec" type="submit">+ Adicionar conta</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Categorias das despesas do mês</h2>
+        <p class="ajuda">Renomeie direto no campo. Uma categoria removida que já tem lançamentos continua aparecendo nos meses em que foi usada.</p>
+        <div class="lista-edit" id="listaCats"></div>
+        <form class="add" id="formNovaCat">
+          <input id="ncNome" placeholder="Nova categoria (ex.: Material de limpeza)" autocomplete="off" required>
+          <button class="btn sec" type="submit">+ Adicionar categoria</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Itens de Outros (copa)</h2>
+        <p class="ajuda">Itens que aparecem ao lançar uma despesa em “Outros”, com quantidade no balancete.</p>
+        <div class="lista-edit" id="listaItens"></div>
+        <form class="add" id="formNovoItem">
+          <input id="niNome" placeholder="Novo item (ex.: Água mineral)" autocomplete="off" required>
+          <button class="btn sec" type="submit">+ Adicionar item</button>
+        </form>
       </div>
       <div class="card">
         <h2>Backup dos dados</h2>
@@ -447,6 +525,7 @@
 <script>
 (function () {
   const CHAVE = 'slz-controle-gastos-v1';
+  const CHAVE_FILTRO = 'slz-filtro-balancete';
   const MES_INICIAL = '2026-11';
   const NOMES_MES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
@@ -455,7 +534,7 @@
     { id: 'internet', nome: 'Internet', dia: 5, valor: 0 },
     { id: 'superlogica', nome: 'Sistema Superlógica', dia: 10, valor: 0 }
   ];
-  const CATEGORIAS = [
+  const CATEGORIAS_PADRAO = [
     { id: 'almoco', nome: 'Almoço' },
     { id: 'papel', nome: 'Papel' },
     { id: 'toner', nome: 'Toner' },
@@ -464,7 +543,7 @@
     { id: 'outros', nome: 'Outros' }
   ];
   // itens da categoria "Outros" (copa), com quantidade comprada
-  const ITENS_OUTROS = [
+  const ITENS_PADRAO = [
     { id: 'cafe', nome: 'Café' },
     { id: 'acucar', nome: 'Açúcar' },
     { id: 'leite', nome: 'Leite' },
@@ -474,12 +553,16 @@
   ];
 
   // ---------- dados ----------
-  // aplica uma única vez os dias de vencimento padrão (Energia 25, Internet 5, Superlógica 10)
+  // completa dados antigos com o que as versões novas precisam
   function atualizarDados(d) {
+    // aplica uma única vez os dias de vencimento padrão (Energia 25, Internet 5, Superlógica 10)
     if (!d.diasPadraoV2) {
       d.fixas.forEach(f => { const p = FIXAS_PADRAO.find(x => x.id === f.id); if (p) f.dia = p.dia; });
       d.diasPadraoV2 = true;
     }
+    d.fixas.forEach(f => { f.desde = f.desde || MES_INICIAL; });
+    if (!d.categorias) d.categorias = CATEGORIAS_PADRAO.map(c => ({ ...c, ativa: true }));
+    if (!d.itensOutros) d.itensOutros = ITENS_PADRAO.map(i => ({ ...i, ativa: true }));
     return d;
   }
   function carregar() {
@@ -487,7 +570,7 @@
       const d = JSON.parse(localStorage.getItem(CHAVE));
       if (d && d.meses) return atualizarDados(d);
     } catch (e) {}
-    return { fixas: FIXAS_PADRAO.map(f => ({ ...f })), meses: {}, ultimoBackup: null, diasPadraoV2: true };
+    return atualizarDados({ fixas: FIXAS_PADRAO.map(f => ({ ...f })), meses: {}, ultimoBackup: null, diasPadraoV2: true });
   }
   let dados = carregar();
 
@@ -495,6 +578,9 @@
     try { localStorage.setItem(CHAVE, JSON.stringify(dados)); }
     catch (e) { alert('Não foi possível salvar no navegador. Faça um backup agora.'); }
   }
+
+  // conta fixa vale do mês "desde" até antes do mês "ate" (quando removida)
+  const fixaAtivaEm = (f, chave) => f.desde <= chave && (!f.ate || chave < f.ate);
 
   function mesDados(chave, criar) {
     if (!dados.meses[chave]) {
@@ -504,11 +590,14 @@
     const m = dados.meses[chave];
     if (criar) {
       dados.fixas.forEach(f => {
-        if (!m.contas[f.id]) m.contas[f.id] = { valor: f.valor, pago: false, pagoEm: '' };
+        if (fixaAtivaEm(f, chave) && !m.contas[f.id]) m.contas[f.id] = { valor: f.valor, pago: false, pagoEm: '' };
       });
     }
     return m;
   }
+  const fixasDoMes = chave => { const m = dados.meses[chave]; return m ? dados.fixas.filter(f => m.contas[f.id]) : []; };
+  const usadaEm = (chaves, teste) => chaves.some(k => dados.meses[k] && dados.meses[k].despesas.some(teste));
+  const novoId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // ---------- utilidades ----------
   const brl = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -551,30 +640,37 @@
     return { cls: 'pendente', txt: dias === 0 ? 'Vence hoje' : 'Vence em ' + dias + (dias === 1 ? ' dia' : ' dias'), dias };
   }
 
+  // ---------- categorias e itens ----------
+  // categorias visíveis nos meses informados: as ativas + as removidas que tiveram lançamento
+  const catsVisiveis = chaves => dados.categorias.filter(c => c.ativa || usadaEm(chaves, d => d.categoria === c.id));
+  const nomeCat = id => (dados.categorias.find(c => c.id === id) || { nome: id }).nome;
+  const nomeItem = id => (dados.itensOutros.find(i => i.id === id) || { nome: 'Outro item' }).nome;
+  const itemDe = d => d.item || 'outro';
+  const qtdDe = d => d.qtd || 1;
+  const fmtQtd = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' un';
+
   // Totais por categoria: fixas pelo id da conta + despesas variáveis
   function totais(chave) {
     const m = dados.meses[chave];
     const t = {};
-    dados.fixas.forEach(f => t[f.id] = 0);
-    CATEGORIAS.forEach(c => t[c.id] = 0);
+    dados.categorias.forEach(c => t[c.id] = 0);
     if (!m) return { porCat: t, fixas: 0, variaveis: 0, total: 0, existe: false };
     let fixas = 0, variaveis = 0;
-    dados.fixas.forEach(f => { const v = m.contas[f.id] ? m.contas[f.id].valor : 0; t[f.id] = v; fixas += v; });
+    fixasDoMes(chave).forEach(f => { const v = m.contas[f.id].valor; t[f.id] = v; fixas += v; });
     m.despesas.forEach(d => { t[d.categoria] = (t[d.categoria] || 0) + d.valor; variaveis += d.valor; });
     return { porCat: t, fixas, variaveis, total: fixas + variaveis, existe: true };
   }
-  const todasCategorias = () => [...dados.fixas.map(f => ({ id: f.id, nome: f.nome, fixa: true })), ...CATEGORIAS];
-  const nomeCat = id => (CATEGORIAS.find(c => c.id === id) || { nome: id }).nome;
-  const nomeItem = id => (ITENS_OUTROS.find(i => i.id === id) || ITENS_OUTROS[ITENS_OUTROS.length - 1]).nome;
-  const itemDe = d => d.item || 'outro';
-  const qtdDe = d => d.qtd || 1;
-  const fmtQtd = q => q.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' un';
+  // linhas de categoria (fixas + variáveis) que aparecem ao comparar estes meses
+  function todasCategorias(chaves) {
+    const fixas = dados.fixas.filter(f => chaves.some(k => dados.meses[k] && dados.meses[k].contas[f.id]));
+    return [...fixas.map(f => ({ id: f.id, nome: f.nome, fixa: true })), ...catsVisiveis(chaves)];
+  }
 
   // valor e quantidade por item de "Outros" no mês, mais a lista de compras
   function itensMes(chave) {
     const m = dados.meses[chave];
     const porItem = {};
-    ITENS_OUTROS.forEach(i => porItem[i.id] = { valor: 0, qtd: 0 });
+    dados.itensOutros.forEach(i => porItem[i.id] = { valor: 0, qtd: 0 });
     const compras = m ? m.despesas.filter(d => d.categoria === 'outros') : [];
     compras.forEach(d => { const it = porItem[itemDe(d)] || porItem.outro; it.valor += d.valor; it.qtd += qtdDe(d); });
     return { porItem, compras };
@@ -614,6 +710,13 @@
   let mesSel = mesPadrao();
   let filtro = '';
 
+  // filtro do balancete (fica salvo neste aparelho)
+  const FILTRO_PADRAO = { fixas: true, variaveis: true, fixasSel: {}, cats: {}, itens: true, compras: true, lista: false, comparar: true, resumo: true };
+  let filtroBal = { ...FILTRO_PADRAO };
+  try { const f = JSON.parse(localStorage.getItem(CHAVE_FILTRO)); if (f) filtroBal = { ...FILTRO_PADRAO, ...f }; } catch (e) {}
+  const salvarFiltro = () => { try { localStorage.setItem(CHAVE_FILTRO, JSON.stringify(filtroBal)); } catch (e) {} };
+  const marcado = (mapa, id) => mapa[id] !== false;
+
   // ---------- render ----------
   function render() {
     mesDados(mesSel, true);
@@ -633,10 +736,9 @@
     // Lembretes de contas: atrasadas em qualquer mês + as que vencem nos próximos 5 dias
     const itens = [];
     Object.keys(dados.meses).sort().forEach(chave => {
-      const m = dados.meses[chave];
-      dados.fixas.forEach(f => {
-        const c = m.contas[f.id];
-        if (!c || c.pago) return;
+      fixasDoMes(chave).forEach(f => {
+        const c = dados.meses[chave].contas[f.id];
+        if (c.pago) return;
         const s = situacao(chave, f, c);
         const venc = fmtData(vencConta(chave, f, c));
         if (s.cls === 'atrasada') itens.push(`<div class="alerta atrasada">⚠️ <span><strong>${esc(f.nome)}</strong> de ${nomeMes(chave)} está <strong>atrasada</strong> — venceu em ${venc} · ${brl(c.valor)}</span></div>`);
@@ -650,7 +752,8 @@
     const ant = somaMes(mesSel, -1);
     const tA = totais(mesSel), tP = totais(ant);
     const m = dados.meses[mesSel];
-    const pendentes = dados.fixas.filter(f => !m.contas[f.id].pago);
+    const fixas = fixasDoMes(mesSel);
+    const pendentes = fixas.filter(f => !m.contas[f.id].pago);
     const valorPend = pendentes.reduce((s, f) => s + m.contas[f.id].valor, 0);
     const kpi = (rot, a, p) => `<div class="card kpi t-${tendencia(a, p, tP.existe)}"><div class="rot">${rot}</div><div class="val">${brl(a)}</div><div class="det">${variacaoTxt(a, p, tP.existe)}</div></div>`;
 
@@ -658,14 +761,14 @@
       kpi('Total gasto no mês', tA.total, tP.total) +
       kpi('Contas fixas', tA.fixas, tP.fixas) +
       kpi('Despesas variáveis', tA.variaveis, tP.variaveis) +
-      `<div class="card kpi ${pendentes.length ? 't-alerta' : 't-ok'}"><div class="rot">Contas a pagar</div><div class="val" style="color:${pendentes.length ? 'var(--amarelo)' : 'var(--verde)'}">${pendentes.length ? brl(valorPend) : 'Tudo pago'}</div><div class="det neutro">${pendentes.length ? pendentes.length + ' de ' + dados.fixas.length + ' pendentes' : 'Nenhuma conta pendente'}</div></div>`;
+      `<div class="card kpi ${pendentes.length ? 't-alerta' : 't-ok'}"><div class="rot">Contas a pagar</div><div class="val" style="color:${pendentes.length ? 'var(--amarelo)' : 'var(--verde)'}">${pendentes.length ? brl(valorPend) : 'Tudo pago'}</div><div class="det neutro">${pendentes.length ? pendentes.length + ' de ' + fixas.length + ' pendentes' : 'Nenhuma conta pendente'}</div></div>`;
 
-    document.getElementById('painelContas').innerHTML = '<table><tbody>' + dados.fixas.map(f => {
+    document.getElementById('painelContas').innerHTML = fixas.length ? '<table><tbody>' + fixas.map(f => {
       const c = m.contas[f.id], s = situacao(mesSel, f, c);
       return `<tr><td><strong>${esc(f.nome)}</strong><br><span class="miudo">Vence ${fmtData(vencConta(mesSel, f, c))}</span></td><td class="num">${brl(c.valor)}</td><td class="num"><span class="tag ${s.cls}">${s.txt}</span></td></tr>`;
-    }).join('') + '</tbody></table>';
+    }).join('') + '</tbody></table>' : '<p class="vazio">Nenhuma conta fixa neste mês.</p>';
 
-    const cats = todasCategorias();
+    const cats = todasCategorias([mesSel, ant]);
     const max = Math.max(1, ...cats.map(c => Math.max(tA.porCat[c.id] || 0, tP.porCat[c.id] || 0)));
     const w = v => (v ? Math.max(v / max * 100, 1.5) : 0) + '%';
     document.getElementById('painelBarras').innerHTML = cats.map(c => {
@@ -692,7 +795,8 @@
   function renderContas() {
     const m = dados.meses[mesSel];
     const mAnt = dados.meses[somaMes(mesSel, -1)];
-    document.getElementById('tabContas').innerHTML = dados.fixas.map(f => {
+    const fixas = fixasDoMes(mesSel);
+    document.getElementById('tabContas').innerHTML = (fixas.length ? fixas.map(f => {
       const c = m.contas[f.id], s = situacao(mesSel, f, c);
       const cAnt = mAnt && mAnt.contas[f.id];
       return `<tr>
@@ -704,11 +808,18 @@
         <td data-label="Pago em">${c.pago ? fmtData(c.pagoEm) : '—'}</td>
         <td class="num"><button class="btn peq ${c.pago ? 'sec' : ''}" data-conta-pagar="${f.id}">${c.pago ? 'Desmarcar' : 'Marcar como paga'}</button></td>
       </tr>`;
-    }).join('') + `<tr class="total"><td class="titulo-linha" colspan="2">Total contas fixas</td><td class="num" data-label="Valor">${brl(totais(mesSel).fixas)}</td><td colspan="4"></td></tr>`;
+    }).join('') : '<tr><td colspan="7" class="vazio">Nenhuma conta fixa neste mês.</td></tr>') +
+      `<tr class="total"><td class="titulo-linha" colspan="2">Total contas fixas</td><td class="num" data-label="Valor">${brl(totais(mesSel).fixas)}</td><td colspan="4"></td></tr>`;
   }
 
+  // opções de categoria/item: só as ativas, mais a atual da linha (mesmo se removida)
+  function opcoesCat(sel) {
+    return dados.categorias.filter(c => c.ativa || c.id === sel)
+      .map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+  }
   function opcoesItem(sel) {
-    return ITENS_OUTROS.map(i => `<option value="${i.id}" ${i.id === sel ? 'selected' : ''}>${i.nome}</option>`).join('');
+    return dados.itensOutros.filter(i => i.ativa || i.id === sel)
+      .map(i => `<option value="${i.id}" ${i.id === sel ? 'selected' : ''}>${esc(i.nome)}</option>`).join('');
   }
   // campos de item e quantidade só aparecem para a categoria "Outros"
   function atualizarFormOutros() {
@@ -719,32 +830,37 @@
       : item === 'outro' ? 'Descreva o item comprado' : 'Ex.: marca, tamanho (opcional)';
   }
 
-  function opcoesCat(sel) {
-    return CATEGORIAS.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${c.nome}</option>`).join('');
-  }
-
   function renderDespesas() {
+    const ant = somaMes(mesSel, -1);
+    // recria as listas preservando a escolha atual (categorias podem ter mudado nos Ajustes)
     const fCat = document.getElementById('fCat');
-    if (!fCat.options.length) fCat.innerHTML = opcoesCat();
+    const catAtual = fCat.value;
+    fCat.innerHTML = opcoesCat();
+    if ([...fCat.options].some(o => o.value === catAtual)) fCat.value = catAtual;
     const fItem = document.getElementById('fItem');
-    if (!fItem.options.length) fItem.innerHTML = opcoesItem();
+    const itemAtual = fItem.value;
+    fItem.innerHTML = opcoesItem();
+    if ([...fItem.options].some(o => o.value === itemAtual)) fItem.value = itemAtual;
     atualizarFormOutros();
+
+    const cats = catsVisiveis([mesSel, ant]);
+    if (filtro && !cats.some(c => c.id === filtro)) filtro = '';
     const filt = document.getElementById('filtroCat');
-    if (!filt.options.length) filt.innerHTML = '<option value="">Todas as categorias</option>' + opcoesCat();
+    filt.innerHTML = '<option value="">Todas as categorias</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
     filt.value = filtro;
 
     const fData = document.getElementById('fData');
     if (!fData.value || fData.value.slice(0, 7) !== mesSel) fData.value = hojeISO().slice(0, 7) === mesSel ? hojeISO() : mesSel + '-01';
 
     // resumo por categoria com cor de tendência
-    const tA = totais(mesSel), tP = totais(somaMes(mesSel, -1));
-    document.getElementById('chips').innerHTML = CATEGORIAS.map(c => {
+    const tA = totais(mesSel), tP = totais(ant);
+    document.getElementById('chips').innerHTML = cats.map(c => {
       const a = tA.porCat[c.id] || 0, p = tP.porCat[c.id] || 0;
       const t = tendencia(a, p, tP.existe);
       const d = t === 'sem' ? '<span class="neutro">sem comparação</span>'
         : t === 'igual' ? '<span class="neutro">= mês anterior</span>'
         : `<span class="${t}">${t === 'mais' ? '▲ +' : '▼ −'}${brl(Math.abs(a - p))}</span>`;
-      return `<button type="button" class="chip ${t} ${filtro === c.id ? 'sel' : ''}" data-chip="${c.id}"><div class="n">${c.nome}</div><div class="v">${brl(a)}</div><div class="d">${d}</div></button>`;
+      return `<button type="button" class="chip ${t} ${filtro === c.id ? 'sel' : ''}" data-chip="${c.id}"><div class="n">${esc(c.nome)}</div><div class="v">${brl(a)}</div><div class="d">${d}</div></button>`;
     }).join('');
 
     const lista = dados.meses[mesSel].despesas
@@ -766,77 +882,158 @@
           <td data-label="Valor" class="num"><input class="inline valor" inputmode="decimal" data-edit="valor" data-id="${d.id}" value="${fmtValorInput(d.valor)}"></td>
           <td class="num"><button class="btn perigo peq" data-excluir="${d.id}">Excluir</button></td>
         </tr>`).join('')
-      : `<tr><td colspan="7" class="vazio">${filtro ? 'Nenhuma despesa de ' + nomeCat(filtro) + ' neste mês.' : 'Nenhuma despesa lançada ainda.'}</td></tr>`;
+      : `<tr><td colspan="7" class="vazio">${filtro ? 'Nenhuma despesa de ' + esc(nomeCat(filtro)) + ' neste mês.' : 'Nenhuma despesa lançada ainda.'}</td></tr>`;
   }
 
-  function linhasBalancete() {
+  // ---------- balancete (aplica o filtro de personalização) ----------
+  function dadosBalancete() {
+    const f = filtroBal;
     const ant = somaMes(mesSel, -1);
     const tA = totais(mesSel), tP = totais(ant);
+    const linhas = todasCategorias([mesSel, ant]).map(c => ({ ...c, ant: tP.porCat[c.id] || 0, atu: tA.porCat[c.id] || 0 }));
+    const todasFix = linhas.filter(l => l.fixa), todasVar = linhas.filter(l => !l.fixa);
+    const fixasL = f.fixas ? todasFix.filter(l => marcado(f.fixasSel, l.id)) : [];
+    const varsL = f.variaveis ? todasVar.filter(l => marcado(f.cats, l.id)) : [];
+    const soma = (ls, k) => ls.reduce((s, l) => s + l[k], 0);
+    const temOutros = varsL.some(l => l.id === 'outros');
+
     const iA = itensMes(mesSel), iP = itensMes(ant);
-    // Café, Açúcar, Leite, Biscoito e Bolo sempre aparecem; "Outro item" só quando houver compra
-    const itens = ITENS_OUTROS.filter(i => i.id !== 'outro' || iA.porItem.outro.qtd || iP.porItem.outro.qtd).map(i => ({
-      nome: i.nome, ant: iP.porItem[i.id].valor, atu: iA.porItem[i.id].valor, qAnt: iP.porItem[i.id].qtd, qAtu: iA.porItem[i.id].qtd
-    }));
-    return { ant, tA, tP, itens, compras: iA.compras,
-      linhas: todasCategorias().map(c => ({ id: c.id, nome: c.nome, ant: tP.porCat[c.id] || 0, atu: tA.porCat[c.id] || 0 })) };
+    // itens ativos sempre aparecem; removidos e "Outro item" só quando houver compra
+    const itens = dados.itensOutros
+      .filter(i => (i.ativa && i.id !== 'outro') || iA.porItem[i.id].qtd || iP.porItem[i.id].qtd)
+      .map(i => ({ nome: i.nome, ant: iP.porItem[i.id].valor, atu: iA.porItem[i.id].valor, qAnt: iP.porItem[i.id].qtd, qAtu: iA.porItem[i.id].qtd }));
+
+    const catsSel = new Set(varsL.map(l => l.id));
+    const completo = fixasL.length === todasFix.length && varsL.length === todasVar.length;
+    const partes = [];
+    if (fixasL.length) partes.push(fixasL.length === todasFix.length ? 'Contas fixas' : fixasL.map(l => l.nome).join(', '));
+    if (varsL.length) partes.push(varsL.length === todasVar.length ? 'Despesas do mês' : varsL.map(l => l.nome).join(', '));
+
+    return {
+      f, ant, tA, tP, todasFix, todasVar, fixasL, varsL, completo,
+      descricao: partes.join(' + ') || 'nada selecionado',
+      fixAtu: soma(fixasL, 'atu'), fixAnt: soma(fixasL, 'ant'),
+      varAtu: soma(varsL, 'atu'), varAnt: soma(varsL, 'ant'),
+      totAtu: soma(fixasL, 'atu') + soma(varsL, 'atu'), totAnt: soma(fixasL, 'ant') + soma(varsL, 'ant'),
+      itens: f.itens && temOutros ? itens : [],
+      compras: f.compras && temOutros ? iA.compras.slice().sort((a, b) => a.data.localeCompare(b.data)) : null,
+      lista: f.lista ? dados.meses[mesSel].despesas.filter(d => catsSel.has(d.categoria)).sort((a, b) => a.data.localeCompare(b.data)) : null
+    };
+  }
+
+  function renderFiltroBal(B) {
+    const f = B.f;
+    const chk = (attr, val, rot, on, desab) =>
+      `<label class="check ${desab ? 'desab' : ''}"><input type="checkbox" ${attr}="${val}" ${on ? 'checked' : ''}> ${esc(rot)}</label>`;
+    const grupo = (titulo, conteudo) => `<div class="check-grupo"><h3>${titulo}</h3><div class="opcoes">${conteudo}</div></div>`;
+    document.getElementById('opcoesFiltro').innerHTML =
+      grupo('Seções', chk('data-fb', 'fixas', 'Contas fixas', f.fixas) + chk('data-fb', 'variaveis', 'Despesas do mês', f.variaveis)) +
+      (B.todasFix.length ? grupo('Contas fixas', B.todasFix.map(l => chk('data-fb-fixa', l.id, l.nome, marcado(f.fixasSel, l.id), !f.fixas)).join('')) : '') +
+      grupo('Categorias das despesas do mês', B.todasVar.map(l => chk('data-fb-cat', l.id, l.nome, marcado(f.cats, l.id), !f.variaveis)).join('')) +
+      grupo('Detalhes', chk('data-fb', 'itens', 'Itens de Outros com quantidades', f.itens) + chk('data-fb', 'compras', 'Lista de compras de Outros', f.compras) + chk('data-fb', 'lista', 'Lista de todas as despesas lançadas', f.lista)) +
+      grupo('Exibição', chk('data-fb', 'comparar', 'Comparar com o mês anterior', f.comparar) + chk('data-fb', 'resumo', 'Resumo do mês', f.resumo));
   }
 
   function renderBalancete() {
-    const { ant, tA, tP, linhas, itens, compras } = linhasBalancete();
-    document.getElementById('mesAntTxt').textContent = nomeMes(ant);
+    const B = dadosBalancete();
+    const { f, ant, tP } = B;
+    const comp = f.comparar && tP.existe;
+    renderFiltroBal(B);
+
+    document.getElementById('tituloBal').textContent = 'Balancete — ' + nomeMes(mesSel) + (f.comparar ? ' × ' + nomeMes(ant) : '');
     document.getElementById('thAnt').textContent = nomeMesCurto(ant);
     document.getElementById('thAtu').textContent = nomeMesCurto(mesSel);
+    document.getElementById('tabelaBal').classList.toggle('sem-comp', !f.comparar);
+    document.getElementById('filtroAtivo').innerHTML = B.completo ? '' : 'Mostrando: <strong>' + esc(B.descricao) + '</strong>';
+    document.getElementById('printFiltro').textContent = B.completo ? '' : ' · ' + B.descricao;
     const lAnt = nomeMesCurto(ant), lAtu = nomeMesCurto(mesSel);
 
+    const celulas = (a, p, txtAnt, txtAtu) => `
+      <td class="num comp" data-label="${lAnt}">${tP.existe ? txtAnt : '—'}</td>
+      <td class="num" data-label="${lAtu}">${txtAtu}</td>
+      <td class="num comp" data-label="Diferença">${pilula(a, p, tP.existe)}</td>
+      <td class="num comp" data-label="Variação">${pilula(a, p, tP.existe, 'pct')}</td>`;
     const linha = (cls, rot, a, p) => `<tr class="${cls}">
-      <td class="titulo-linha ${cls === '' ? 'sub' : ''}">${cls ? '<strong>' + rot + '</strong>' : esc(rot)}</td>
-      <td class="num" data-label="${lAnt}">${tP.existe ? brl(p) : '—'}</td>
-      <td class="num" data-label="${lAtu}">${brl(a)}</td>
-      <td class="num" data-label="Diferença">${pilula(a, p, tP.existe)}</td>
-      <td class="num" data-label="Variação">${pilula(a, p, tP.existe, 'pct')}</td></tr>`;
-    const nFix = dados.fixas.length;
+      <td class="titulo-linha ${cls === '' ? 'sub' : ''}">${cls ? '<strong>' + rot + '</strong>' : esc(rot)}</td>${celulas(a, p, brl(p), brl(a))}</tr>`;
     const linhaItem = it => `<tr class="item">
-      <td class="titulo-linha sub2">↳ ${esc(it.nome)}</td>
-      <td class="num" data-label="${lAnt}">${tP.existe ? brl(it.ant) + ' <span class="qtd">· ' + fmtQtd(it.qAnt) + '</span>' : '—'}</td>
-      <td class="num" data-label="${lAtu}">${brl(it.atu)} <span class="qtd">· ${fmtQtd(it.qAtu)}</span></td>
-      <td class="num" data-label="Diferença">${pilula(it.atu, it.ant, tP.existe)}</td>
-      <td class="num" data-label="Variação">${pilula(it.atu, it.ant, tP.existe, 'pct')}</td></tr>`;
-    const corpo = ls => ls.map(l => linha('', l.nome, l.atu, l.ant) + (l.id === 'outros' ? itens.map(linhaItem).join('') : '')).join('');
+      <td class="titulo-linha sub2">↳ ${esc(it.nome)}</td>${celulas(it.atu, it.ant,
+        brl(it.ant) + ' <span class="qtd">· ' + fmtQtd(it.qAnt) + '</span>',
+        brl(it.atu) + ' <span class="qtd">· ' + fmtQtd(it.qAtu) + '</span>')}</tr>`;
+    const corpo = ls => ls.map(l => linha('', l.nome, l.atu, l.ant) + (l.id === 'outros' ? B.itens.map(linhaItem).join('') : '')).join('');
 
-    document.getElementById('tabBal').innerHTML =
-      linha('grupo', 'Contas fixas', tA.fixas, tP.fixas) + corpo(linhas.slice(0, nFix)) +
-      linha('grupo', 'Despesas variáveis', tA.variaveis, tP.variaveis) + corpo(linhas.slice(nFix)) +
-      linha('total', 'TOTAL DO MÊS', tA.total, tP.total);
+    let html = '';
+    if (B.fixasL.length) html += linha('grupo', 'Contas fixas', B.fixAtu, B.fixAnt) + corpo(B.fixasL);
+    if (B.varsL.length) html += linha('grupo', 'Despesas do mês', B.varAtu, B.varAnt) + corpo(B.varsL);
+    html += B.fixasL.length || B.varsL.length
+      ? linha('total', B.completo ? 'TOTAL DO MÊS' : 'TOTAL SELECIONADO', B.totAtu, B.totAnt)
+      : '<tr><td colspan="5" class="vazio">Nada selecionado. Abra “Personalizar balancete e impressão” e marque o que deseja ver.</td></tr>';
+    document.getElementById('tabBal').innerHTML = html;
 
-    let resumo;
-    if (!tP.existe) resumo = `<div class="resumo igual">${nomeMes(mesSel)} é o primeiro mês com lançamentos — a comparação começa a partir do próximo mês. Total gasto: <strong>${brl(tA.total)}</strong>.</div>`;
-    else {
-      const d = tA.total - tP.total;
-      const maiores = linhas.map(l => ({ ...l, d: l.atu - l.ant })).filter(l => Math.abs(l.d) > 0.005).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 2);
-      const destaque = maiores.length ? ' Maior variação: ' + maiores.map(l => `<span class="${l.d > 0 ? 'mais' : 'menos'}">${esc(l.nome)} (${l.d > 0 ? '+' : '−'}${brl(Math.abs(l.d))})</span>`).join(', ') + '.' : '';
-      if (Math.abs(d) < 0.005) resumo = `<div class="resumo igual">O escritório gastou <strong>o mesmo valor</strong> que em ${nomeMes(ant)}: ${brl(tA.total)}.${destaque}</div>`;
-      else if (d > 0) resumo = `<div class="resumo mais"><strong class="mais">▲ Gastou ${brl(d)} a mais</strong> que em ${nomeMes(ant)}${tP.total ? ' (' + pct(d / tP.total * 100) + ')' : ''}.${destaque}</div>`;
-      else resumo = `<div class="resumo menos"><strong class="menos">▼ Gastou ${brl(-d)} a menos</strong> que em ${nomeMes(ant)} (${pct(d / tP.total * 100)}).${destaque}</div>`;
+    // resumo com os totais do que está selecionado
+    let resumo = '';
+    if (f.resumo) {
+      const quem = B.completo ? 'O escritório' : 'Nos itens selecionados, o escritório';
+      const d = B.totAtu - B.totAnt;
+      if (!comp) resumo = `<div class="resumo igual">${f.comparar && !tP.existe ? nomeMes(mesSel) + ' é o primeiro mês com lançamentos — a comparação começa a partir do próximo mês. ' : ''}${B.completo ? 'Total gasto' : 'Total selecionado'}: <strong>${brl(B.totAtu)}</strong>.</div>`;
+      else {
+        const maiores = [...B.fixasL, ...B.varsL].map(l => ({ ...l, d: l.atu - l.ant })).filter(l => Math.abs(l.d) > 0.005).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 2);
+        const destaque = maiores.length ? ' Maior variação: ' + maiores.map(l => `<span class="${l.d > 0 ? 'mais' : 'menos'}">${esc(l.nome)} (${l.d > 0 ? '+' : '−'}${brl(Math.abs(l.d))})</span>`).join(', ') + '.' : '';
+        if (Math.abs(d) < 0.005) resumo = `<div class="resumo igual">${quem} gastou <strong>o mesmo valor</strong> que em ${nomeMes(ant)}: ${brl(B.totAtu)}.${destaque}</div>`;
+        else if (d > 0) resumo = `<div class="resumo mais">${quem} <strong class="mais">▲ gastou ${brl(d)} a mais</strong> que em ${nomeMes(ant)}${B.totAnt ? ' (' + pct(d / B.totAnt * 100) + ')' : ''}.${destaque}</div>`;
+        else resumo = `<div class="resumo menos">${quem} <strong class="menos">▼ gastou ${brl(-d)} a menos</strong> que em ${nomeMes(ant)} (${pct(d / B.totAnt * 100)}).${destaque}</div>`;
+      }
     }
     document.getElementById('resumoBal').innerHTML = resumo;
 
-    const lista = compras.slice().sort((a, b) => a.data.localeCompare(b.data));
-    document.getElementById('tabOutros').innerHTML = lista.length
-      ? lista.map(d => `<tr>
-          <td data-label="Data">${fmtData(d.data)}</td>
-          <td class="titulo-linha"><strong>${esc(nomeItem(itemDe(d)))}</strong></td>
-          <td data-label="Descrição">${esc(d.descricao || '—')}</td>
-          <td class="num" data-label="Quantidade">${fmtQtd(qtdDe(d))}</td>
-          <td class="num" data-label="Valor">${brl(d.valor)}</td></tr>`).join('') +
-        `<tr class="total"><td class="titulo-linha" colspan="3">Total de Outros</td><td class="num" data-label="Quantidade">${fmtQtd(lista.reduce((s, d) => s + qtdDe(d), 0))}</td><td class="num" data-label="Valor">${brl(lista.reduce((s, d) => s + d.valor, 0))}</td></tr>`
-      : '<tr><td colspan="5" class="vazio">Nenhuma compra em Outros neste mês.</td></tr>';
+    document.getElementById('cardCompras').hidden = !B.compras;
+    if (B.compras) {
+      const l = B.compras;
+      document.getElementById('tabOutros').innerHTML = l.length
+        ? l.map(d => `<tr>
+            <td data-label="Data">${fmtData(d.data)}</td>
+            <td class="titulo-linha"><strong>${esc(nomeItem(itemDe(d)))}</strong></td>
+            <td data-label="Descrição">${esc(d.descricao || '—')}</td>
+            <td class="num" data-label="Quantidade">${fmtQtd(qtdDe(d))}</td>
+            <td class="num" data-label="Valor">${brl(d.valor)}</td></tr>`).join('') +
+          `<tr class="total"><td class="titulo-linha" colspan="3">Total de Outros</td><td class="num" data-label="Quantidade">${fmtQtd(l.reduce((s, d) => s + qtdDe(d), 0))}</td><td class="num" data-label="Valor">${brl(l.reduce((s, d) => s + d.valor, 0))}</td></tr>`
+        : '<tr><td colspan="5" class="vazio">Nenhuma compra em Outros neste mês.</td></tr>';
+    }
+
+    document.getElementById('cardLista').hidden = !B.lista;
+    if (B.lista) {
+      const l = B.lista;
+      document.getElementById('tabLista').innerHTML = l.length
+        ? l.map(d => {
+            const outros = d.categoria === 'outros';
+            return `<tr>
+              <td data-label="Data">${fmtData(d.data)}</td>
+              <td class="titulo-linha"><strong>${esc(nomeCat(d.categoria))}</strong></td>
+              <td data-label="Item">${outros ? esc(nomeItem(itemDe(d))) : '—'}</td>
+              <td data-label="Descrição">${esc(d.descricao || '—')}</td>
+              <td class="num" data-label="Quantidade">${outros ? fmtQtd(qtdDe(d)) : '—'}</td>
+              <td class="num" data-label="Valor">${brl(d.valor)}</td></tr>`;
+          }).join('') +
+          `<tr class="total"><td class="titulo-linha" colspan="5">Total das despesas listadas</td><td class="num" data-label="Valor">${brl(l.reduce((s, d) => s + d.valor, 0))}</td></tr>`
+        : '<tr><td colspan="6" class="vazio">Nenhuma despesa lançada nas categorias selecionadas.</td></tr>';
+    }
   }
 
   function renderConfig() {
-    document.getElementById('tabConfig').innerHTML = dados.fixas.map(f => `<tr>
-      <td class="titulo-linha"><strong>${esc(f.nome)}</strong></td>
+    const ativas = dados.fixas.filter(f => !f.ate);
+    document.getElementById('tabConfig').innerHTML = ativas.length ? ativas.map(f => `<tr>
+      <td data-label="Nome"><input data-cfg-nome="${f.id}" value="${esc(f.nome)}"></td>
       <td data-label="Dia do vencimento"><input class="dia" type="number" inputmode="numeric" min="1" max="31" data-cfg-dia="${f.id}" value="${f.dia}"></td>
-      <td class="num" data-label="Valor padrão (R$)"><input class="valor" inputmode="decimal" data-cfg-valor="${f.id}" value="${fmtValorInput(f.valor)}"></td></tr>`).join('');
+      <td class="num" data-label="Valor padrão (R$)"><input class="valor" inputmode="decimal" data-cfg-valor="${f.id}" value="${fmtValorInput(f.valor)}"></td>
+      <td class="num"><button class="btn perigo peq" data-rem-fixa="${f.id}">Remover</button></td></tr>`).join('')
+      : '<tr><td colspan="4" class="vazio">Nenhuma conta fixa cadastrada.</td></tr>';
+
+    const lista = (arr, attrNome, attrRem, fixoId, fixoTxt) => arr.filter(x => x.ativa).map(x => `<div class="linha">
+      <input data-${attrNome}="${x.id}" value="${esc(x.nome)}" aria-label="Nome">
+      ${x.id === fixoId ? `<span class="fixo">${fixoTxt}</span>` : `<button class="btn perigo peq" data-${attrRem}="${x.id}">Remover</button>`}
+    </div>`).join('');
+    document.getElementById('listaCats').innerHTML = lista(dados.categorias, 'cat-nome', 'rem-cat', 'outros', 'tem itens da copa');
+    document.getElementById('listaItens').innerHTML = lista(dados.itensOutros, 'item-nome', 'rem-item', 'outro', 'para itens avulsos');
+
     document.getElementById('ultimoBackup').textContent = dados.ultimoBackup
       ? 'Último backup: ' + new Date(dados.ultimoBackup).toLocaleString('pt-BR')
       : 'Nenhum backup feito ainda.';
@@ -851,6 +1048,7 @@
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
   }
   document.querySelectorAll('nav.abas button').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.aba); window.scrollTo(0, 0); }));
+  document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.ir); window.scrollTo(0, 0); }));
   try { const a = sessionStorage.getItem('slz-aba'); if (a && document.getElementById('aba-' + a)) irParaAba(a); } catch (e) {}
 
   document.getElementById('fab').onclick = () => {
@@ -909,10 +1107,11 @@
     const chave = data.slice(0, 7);
     if (chave < MES_INICIAL) { toast('O controle começa em Novembro de 2026'); return; }
     const categoria = document.getElementById('fCat').value;
+    if (!categoria) { toast('Cadastre uma categoria nos Ajustes'); return; }
     const descricao = document.getElementById('fDesc').value.trim();
-    const nova = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), data, categoria, descricao, valor };
+    const nova = { id: novoId('d'), data, categoria, descricao, valor };
     if (categoria === 'outros') {
-      nova.item = document.getElementById('fItem').value;
+      nova.item = document.getElementById('fItem').value || 'outro';
       nova.qtd = parseFloat(String(document.getElementById('fQtd').value).replace(',', '.'));
       if (!(nova.qtd > 0)) { toast('Informe a quantidade'); return; }
       if (nova.item === 'outro' && !descricao) { toast('Descreva o item comprado'); document.getElementById('fDesc').focus(); return; }
@@ -981,19 +1180,128 @@
     renderDespesas();
   });
 
+  // ---------- ajustes: contas fixas ----------
   document.getElementById('btnSalvarConfig').onclick = () => {
-    for (const f of dados.fixas) {
+    const ativas = dados.fixas.filter(f => !f.ate);
+    for (const f of ativas) {
+      const nome = document.querySelector(`[data-cfg-nome="${f.id}"]`).value.trim();
       const v = lerValor(document.querySelector(`[data-cfg-valor="${f.id}"]`).value);
       const dia = parseInt(document.querySelector(`[data-cfg-dia="${f.id}"]`).value, 10);
-      if (isNaN(v) || v < 0 || !(dia >= 1 && dia <= 31)) { toast('Confira os valores de ' + f.nome); return; }
-      f.valor = v; f.dia = dia;
+      if (!nome || isNaN(v) || v < 0 || !(dia >= 1 && dia <= 31)) { toast('Confira os dados de ' + (nome || f.nome)); return; }
+      f.nome = nome; f.valor = v; f.dia = dia;
     }
     // aplica o novo valor padrão nas contas ainda não pagas do mês selecionado em diante
     Object.keys(dados.meses).filter(k => k >= mesSel).forEach(k => {
-      dados.fixas.forEach(f => { const c = dados.meses[k].contas[f.id]; if (c && !c.pago) { c.valor = f.valor; delete c.venc; } });
+      ativas.forEach(f => { const c = dados.meses[k].contas[f.id]; if (c && !c.pago) { c.valor = f.valor; delete c.venc; } });
     });
-    salvar(); render(); toast('Configurações salvas');
+    salvar(); render(); toast('Contas fixas salvas');
   };
+  document.getElementById('formNovaFixa').addEventListener('submit', e => {
+    e.preventDefault();
+    const nome = document.getElementById('nfNome').value.trim();
+    const dia = parseInt(document.getElementById('nfDia').value, 10);
+    const valorTxt = document.getElementById('nfValor').value.trim();
+    const valor = valorTxt ? lerValor(valorTxt) : 0;
+    if (!nome) { toast('Informe o nome da conta'); return; }
+    if (!(dia >= 1 && dia <= 31)) { toast('Informe o dia do vencimento (1 a 31)'); return; }
+    if (isNaN(valor) || valor < 0) { toast('Valor inválido'); return; }
+    dados.fixas.push({ id: novoId('f'), nome, dia, valor, desde: mesSel });
+    e.target.reset();
+    salvar(); render(); toast(nome + ' adicionada a partir de ' + nomeMes(mesSel));
+  });
+  document.getElementById('tabConfig').addEventListener('click', e => {
+    const id = e.target.dataset.remFixa;
+    if (!id) return;
+    const f = dados.fixas.find(x => x.id === id);
+    if (!confirm(`Remover "${f.nome}" a partir de ${nomeMes(mesSel)}?\nOs meses anteriores e as faturas já pagas continuam no histórico.`)) return;
+    f.ate = mesSel;
+    Object.keys(dados.meses).filter(k => k >= mesSel).forEach(k => {
+      const c = dados.meses[k].contas[id];
+      if (c && !c.pago) delete dados.meses[k].contas[id];
+    });
+    // se nunca foi usada em mês nenhum, some de vez
+    if (!Object.values(dados.meses).some(m => m.contas[id])) dados.fixas = dados.fixas.filter(x => x.id !== id);
+    salvar(); render(); toast(f.nome + ' removida');
+  });
+
+  // ---------- ajustes: categorias e itens ----------
+  function renomear(lista, id, nome, campo) {
+    const x = lista.find(i => i.id === id);
+    if (!nome) { toast('O nome não pode ficar vazio'); renderConfig(); return; }
+    x.nome = nome;
+    salvar(); render(); toast(campo + ' renomeado');
+  }
+  function remover(chaveLista, id, emUso, rotulo) {
+    const lista = dados[chaveLista];
+    const x = lista.find(i => i.id === id);
+    if (!confirm(`Remover "${x.nome}"?` + (emUso ? '\nOs lançamentos antigos continuam no histórico.' : ''))) return;
+    // com lançamentos: só esconde; sem lançamentos: apaga
+    if (emUso) x.ativa = false; else dados[chaveLista] = lista.filter(i => i.id !== id);
+    salvar(); render(); toast(rotulo + ' removido');
+  }
+  const todosMeses = () => Object.keys(dados.meses);
+  document.getElementById('listaCats').addEventListener('change', e => {
+    if (e.target.dataset.catNome) renomear(dados.categorias, e.target.dataset.catNome, e.target.value.trim(), 'Categoria');
+  });
+  document.getElementById('listaCats').addEventListener('click', e => {
+    const id = e.target.dataset.remCat;
+    if (id) remover('categorias', id, usadaEm(todosMeses(), d => d.categoria === id), 'Categoria');
+  });
+  document.getElementById('listaItens').addEventListener('change', e => {
+    if (e.target.dataset.itemNome) renomear(dados.itensOutros, e.target.dataset.itemNome, e.target.value.trim(), 'Item');
+  });
+  document.getElementById('listaItens').addEventListener('click', e => {
+    const id = e.target.dataset.remItem;
+    if (id) remover('itensOutros', id, usadaEm(todosMeses(), d => d.categoria === 'outros' && itemDe(d) === id), 'Item');
+  });
+  // novos nomes entram antes do "coringa" (Outros / Outro item); um nome removido antes é reativado
+  function adicionarNaLista(lista, nome, prefixo, antesDe, msg) {
+    if (!nome) return false;
+    const igual = x => x.nome.toLowerCase() === nome.toLowerCase();
+    if (lista.some(x => x.ativa && igual(x))) { toast('Esse nome já existe'); return false; }
+    const antigo = lista.find(x => !x.ativa && igual(x));
+    if (antigo) antigo.ativa = true;
+    else {
+      const pos = lista.findIndex(x => x.id === antesDe);
+      lista.splice(pos < 0 ? lista.length : pos, 0, { id: novoId(prefixo), nome, ativa: true });
+    }
+    salvar(); render(); toast(msg);
+    return true;
+  }
+  document.getElementById('formNovaCat').addEventListener('submit', e => {
+    e.preventDefault();
+    if (adicionarNaLista(dados.categorias, document.getElementById('ncNome').value.trim(), 'c', 'outros', 'Categoria adicionada')) e.target.reset();
+  });
+  document.getElementById('formNovoItem').addEventListener('submit', e => {
+    e.preventDefault();
+    if (adicionarNaLista(dados.itensOutros, document.getElementById('niNome').value.trim(), 'i', 'outro', 'Item adicionado')) e.target.reset();
+  });
+
+  // ---------- personalização do balancete ----------
+  const PRESETS = {
+    completo: () => ({ ...FILTRO_PADRAO }),
+    fixas: () => ({ ...FILTRO_PADRAO, variaveis: false, compras: false, lista: false }),
+    mes: () => ({ ...FILTRO_PADRAO, fixas: false, lista: true }),
+    copa: () => {
+      const cats = {};
+      dados.categorias.forEach(c => { if (c.id !== 'outros') cats[c.id] = false; });
+      return { ...FILTRO_PADRAO, fixas: false, cats };
+    }
+  };
+  document.querySelector('.presets').addEventListener('click', e => {
+    const p = e.target.dataset.preset;
+    if (!p) return;
+    filtroBal = PRESETS[p]();
+    salvarFiltro(); renderBalancete();
+  });
+  document.getElementById('opcoesFiltro').addEventListener('change', e => {
+    const t = e.target, d = t.dataset;
+    if (d.fb) filtroBal[d.fb] = t.checked;
+    else if (d.fbFixa) filtroBal.fixasSel = { ...filtroBal.fixasSel, [d.fbFixa]: t.checked };
+    else if (d.fbCat) filtroBal.cats = { ...filtroBal.cats, [d.fbCat]: t.checked };
+    else return;
+    salvarFiltro(); renderBalancete();
+  });
 
   document.getElementById('btnImprimir').onclick = () => {
     const s = document.getElementById('aba-balancete');
@@ -1008,22 +1316,31 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   document.getElementById('btnCsv').onclick = () => {
-    const { ant, tA, tP, linhas, itens } = linhasBalancete();
+    const B = dadosBalancete();
     const n = v => v.toFixed(2).replace('.', ',');
     const q = v => String(v).replace('.', ',');
-    const rows = [['Categoria', nomeMes(ant), nomeMes(mesSel), 'Diferença', 'Qtd ' + nomeMes(ant), 'Qtd ' + nomeMes(mesSel)]];
-    linhas.forEach(l => {
-      rows.push([l.nome, n(l.ant), n(l.atu), n(l.atu - l.ant)]);
-      if (l.id === 'outros') itens.forEach(it => rows.push(['   ' + it.nome, n(it.ant), n(it.atu), n(it.atu - it.ant), q(it.qAnt), q(it.qAtu)]));
-    });
-    rows.push(['TOTAL', n(tP.total), n(tA.total), n(tA.total - tP.total)]);
-    rows.push([]);
-    rows.push(['Despesas lançadas']);
-    rows.push(['Data', 'Categoria', 'Item', 'Descrição', 'Quantidade', 'Valor']);
-    dados.meses[mesSel].despesas.slice().sort((a, b) => a.data.localeCompare(b.data)).forEach(d => {
-      const outros = d.categoria === 'outros';
-      rows.push([fmtData(d.data), nomeCat(d.categoria), outros ? nomeItem(itemDe(d)) : '', d.descricao, outros ? q(qtdDe(d)) : '', n(d.valor)]);
-    });
+    const rows = [];
+    if (!B.completo) rows.push(['Filtro: ' + B.descricao], []);
+    rows.push(['Categoria', nomeMes(B.ant), nomeMes(mesSel), 'Diferença', 'Qtd ' + nomeMes(B.ant), 'Qtd ' + nomeMes(mesSel)]);
+    const bloco = (titulo, ls, a, p) => {
+      if (!ls.length) return;
+      rows.push([titulo, n(p), n(a), n(a - p)]);
+      ls.forEach(l => {
+        rows.push(['   ' + l.nome, n(l.ant), n(l.atu), n(l.atu - l.ant)]);
+        if (l.id === 'outros') B.itens.forEach(it => rows.push(['      ' + it.nome, n(it.ant), n(it.atu), n(it.atu - it.ant), q(it.qAnt), q(it.qAtu)]));
+      });
+    };
+    bloco('Contas fixas', B.fixasL, B.fixAtu, B.fixAnt);
+    bloco('Despesas do mês', B.varsL, B.varAtu, B.varAnt);
+    rows.push([B.completo ? 'TOTAL' : 'TOTAL SELECIONADO', n(B.totAnt), n(B.totAtu), n(B.totAtu - B.totAnt)]);
+    const despesas = B.lista || dados.meses[mesSel].despesas.filter(d => B.varsL.some(l => l.id === d.categoria)).sort((a, b) => a.data.localeCompare(b.data));
+    if (despesas.length) {
+      rows.push([], ['Despesas lançadas'], ['Data', 'Categoria', 'Item', 'Descrição', 'Quantidade', 'Valor']);
+      despesas.forEach(d => {
+        const outros = d.categoria === 'outros';
+        rows.push([fmtData(d.data), nomeCat(d.categoria), outros ? nomeItem(itemDe(d)) : '', d.descricao, outros ? q(qtdDe(d)) : '', n(d.valor)]);
+      });
+    }
     const csv = '﻿' + rows.map(r => r.map(c => '"' + String(c ?? '').replace(/"/g, '""') + '"').join(';')).join('\r\n');
     baixar(`balancete-slz-${mesSel}.csv`, csv, 'text/csv;charset=utf-8');
   };
