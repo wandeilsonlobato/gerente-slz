@@ -1,6 +1,6 @@
 // Service worker: deixa o app funcionando offline e instalável no celular.
 // Ao alterar arquivos do app, aumente a versão para forçar a atualização do cache.
-const VERSAO = 'gastos-slz-v5';
+const VERSAO = 'gastos-slz-v6';
 const ARQUIVOS = [
   './',
   './index.html',
@@ -24,11 +24,11 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Rede primeiro (pega sempre a versão mais nova); sem internet, usa o cache.
+// Rede primeiro (pega sempre a versão mais nova, sem usar o cache do navegador); sem internet, usa o cache.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-cache' })
       .then(resp => {
         const copia = resp.clone();
         caches.open(VERSAO).then(c => c.put(e.request, copia));

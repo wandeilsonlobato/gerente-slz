@@ -1373,7 +1373,18 @@
   const instalado = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (instalado) statusApp.textContent = '✅ Você está usando o app instalado.';
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    // quando sai uma versão nova, ela assume o controle e a página recarrega uma vez
+    const tinhaControle = !!navigator.serviceWorker.controller;
+    let recarregou = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (tinhaControle && !recarregou) { recarregou = true; location.reload(); }
+    });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(reg => {
+        reg.update();
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update(); });
+      })
+      .catch(() => {});
   }
   let pedidoInstalacao = null;
   const btnInstalar = document.getElementById('btnInstalar');
