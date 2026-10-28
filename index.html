@@ -101,6 +101,7 @@
   .ajuda { color: var(--cinza); font-size: 13px; margin: 4px 0 14px; }
   td input.valor { width: 120px; }
   td input.dia { width: 70px; }
+  td input.venc { width: 150px; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--azul); color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s; pointer-events: none; }
   .toast.on { opacity: 1; }
   @media (max-width: 760px) {
@@ -176,7 +177,7 @@
   <section class="aba" id="aba-contas">
     <div class="card">
       <h2>Contas fixas — <span class="mesTxt"></span></h2>
-      <p class="ajuda">Energia, internet e sistema Superlógica. Ajuste o valor da fatura do mês e marque como paga quando quitar.</p>
+      <p class="ajuda">Energia, internet e sistema Superlógica. Ajuste o vencimento e o valor da fatura do mês e marque como paga quando quitar.</p>
       <div class="tabela-wrap"><table>
         <thead><tr><th>Conta</th><th>Vencimento</th><th class="num">Valor (R$)</th><th>Situação</th><th>Pago em</th><th></th></tr></thead>
         <tbody id="tabContas"></tbody>
@@ -336,9 +337,11 @@
     const d = Math.min(dia, diasNoMes(chave));
     return chave + '-' + String(d).padStart(2, '0');
   }
+  // vencimento editado no mês tem prioridade sobre o dia padrão da configuração
+  const vencConta = (chave, fixa, conta) => (conta && conta.venc) || vencimento(chave, fixa.dia);
   function situacao(chave, fixa, conta) {
     if (conta.pago) return { cls: 'paga', txt: 'Paga' };
-    const venc = vencimento(chave, fixa.dia);
+    const venc = vencConta(chave, fixa, conta);
     const hoje = hojeISO();
     if (venc < hoje) return { cls: 'atrasada', txt: 'Atrasada' };
     const dias = Math.round((new Date(venc) - new Date(hoje)) / 86400000);
@@ -392,7 +395,7 @@
         const c = m.contas[f.id];
         if (!c || c.pago) return;
         const s = situacao(chave, f, c);
-        const venc = fmtData(vencimento(chave, f.dia));
+        const venc = fmtData(vencConta(chave, f, c));
         if (s.cls === 'atrasada') itens.push(`<div class="alerta atrasada">⚠️ <span><strong>${esc(f.nome)}</strong> de ${nomeMes(chave)} está <strong>atrasada</strong> — venceu em ${venc} · ${brl(c.valor)}</span></div>`);
         else if (s.dias <= 5) itens.push(`<div class="alerta proxima">🔔 <span>Lembrete: <strong>${esc(f.nome)}</strong> ${s.txt.toLowerCase()} (${venc}) · ${brl(c.valor)}</span></div>`);
       });
@@ -423,7 +426,7 @@
 
     document.getElementById('painelContas').innerHTML = '<table><tbody>' + dados.fixas.map(f => {
       const c = m.contas[f.id], s = situacao(mesSel, f, c);
-      return `<tr><td><strong>${esc(f.nome)}</strong><br><span style="font-size:12px;color:var(--cinza)">Vence ${fmtData(vencimento(mesSel, f.dia))}</span></td><td class="num">${brl(c.valor)}</td><td class="num"><span class="tag ${s.cls}">${s.txt}</span></td></tr>`;
+      return `<tr><td><strong>${esc(f.nome)}</strong><br><span style="font-size:12px;color:var(--cinza)">Vence ${fmtData(vencConta(mesSel, f, c))}</span></td><td class="num">${brl(c.valor)}</td><td class="num"><span class="tag ${s.cls}">${s.txt}</span></td></tr>`;
     }).join('') + '</tbody></table>';
 
     const cats = todasCategorias();
@@ -452,7 +455,7 @@
       const c = m.contas[f.id], s = situacao(mesSel, f, c);
       return `<tr>
         <td><strong>${esc(f.nome)}</strong></td>
-        <td>${fmtData(vencimento(mesSel, f.dia))}</td>
+        <td><input type="date" class="venc" data-conta-venc="${f.id}" value="${vencConta(mesSel, f, c)}"></td>
         <td class="num"><input class="valor" data-conta-valor="${f.id}" value="${fmtValorInput(c.valor)}"></td>
         <td><span class="tag ${s.cls}">${s.txt}</span></td>
         <td>${c.pago ? fmtData(c.pagoEm) : '—'}</td>
@@ -550,6 +553,13 @@
   document.getElementById('mesProx').onclick = () => { mesSel = somaMes(mesSel, 1); render(); };
 
   document.getElementById('tabContas').addEventListener('change', e => {
+    const idVenc = e.target.dataset.contaVenc;
+    if (idVenc) {
+      if (!e.target.value) { toast('Data inválida'); renderContas(); return; }
+      dados.meses[mesSel].contas[idVenc].venc = e.target.value;
+      salvar(); render(); toast('Vencimento atualizado');
+      return;
+    }
     const id = e.target.dataset.contaValor;
     if (!id) return;
     const v = lerValor(e.target.value);
@@ -606,7 +616,7 @@
     }
     // aplica o novo valor padrão nas contas ainda não pagas do mês selecionado em diante
     Object.keys(dados.meses).filter(k => k >= mesSel).forEach(k => {
-      dados.fixas.forEach(f => { const c = dados.meses[k].contas[f.id]; if (c && !c.pago) c.valor = f.valor; });
+      dados.fixas.forEach(f => { const c = dados.meses[k].contas[f.id]; if (c && !c.pago) { c.valor = f.valor; delete c.venc; } });
     });
     salvar(); render(); toast('Configurações salvas');
   };
