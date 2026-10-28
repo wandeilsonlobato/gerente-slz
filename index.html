@@ -430,8 +430,8 @@
   const NOMES_MES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
   const FIXAS_PADRAO = [
-    { id: 'energia', nome: 'Energia', dia: 10, valor: 0 },
-    { id: 'internet', nome: 'Internet', dia: 10, valor: 0 },
+    { id: 'energia', nome: 'Energia', dia: 25, valor: 0 },
+    { id: 'internet', nome: 'Internet', dia: 5, valor: 0 },
     { id: 'superlogica', nome: 'Sistema Superlógica', dia: 10, valor: 0 }
   ];
   const CATEGORIAS = [
@@ -444,12 +444,20 @@
   ];
 
   // ---------- dados ----------
+  // aplica uma única vez os dias de vencimento padrão (Energia 25, Internet 5, Superlógica 10)
+  function atualizarDados(d) {
+    if (!d.diasPadraoV2) {
+      d.fixas.forEach(f => { const p = FIXAS_PADRAO.find(x => x.id === f.id); if (p) f.dia = p.dia; });
+      d.diasPadraoV2 = true;
+    }
+    return d;
+  }
   function carregar() {
     try {
       const d = JSON.parse(localStorage.getItem(CHAVE));
-      if (d && d.meses) return d;
+      if (d && d.meses) return atualizarDados(d);
     } catch (e) {}
-    return { fixas: FIXAS_PADRAO.map(f => ({ ...f })), meses: {}, ultimoBackup: null };
+    return { fixas: FIXAS_PADRAO.map(f => ({ ...f })), meses: {}, ultimoBackup: null, diasPadraoV2: true };
   }
   let dados = carregar();
 
@@ -925,7 +933,7 @@
         const d = JSON.parse(r.result);
         if (!d.meses || !d.fixas) throw new Error();
         if (!confirm('Restaurar este backup? Os dados atuais deste aparelho serão substituídos.')) return;
-        dados = d; salvar(); render(); toast('Backup restaurado');
+        dados = atualizarDados(d); salvar(); render(); toast('Backup restaurado');
       } catch (err) { alert('Arquivo de backup inválido.'); }
       finally { e.target.value = ''; }
     };
