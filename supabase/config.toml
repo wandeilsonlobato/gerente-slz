@@ -423,3 +423,7 @@ verify_jwt = false
 # Arquivos das notas (R2): a própria função confere o login e as permissões.
 [functions.documentos-arquivos]
 verify_jwt = false
+
+# Leitura do Superlógica: a própria função confere o login e as permissões.
+[functions.superlogica]
+verify_jwt = false

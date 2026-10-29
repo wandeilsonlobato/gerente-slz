@@ -88,7 +88,7 @@ Deno.serve(async req => {
         const [perfis, vinculos, condominios] = await Promise.all([
           admin.from('perfis').select('id, usuario, nome, papel, equipe_slz, ativo, trocar_senha, criado_em').order('nome'),
           admin.from('perfil_condominios').select('perfil_id, condominio_id'),
-          admin.from('condominios').select('id, nome, ativo').order('nome')
+          admin.from('condominios').select('id, nome, ativo, id_superlogica').order('nome')
         ]);
         const porPerfil: Record<string, string[]> = {};
         (vinculos.data || []).forEach(v => (porPerfil[v.perfil_id] ||= []).push(v.condominio_id));

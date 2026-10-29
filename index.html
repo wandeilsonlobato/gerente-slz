@@ -112,6 +112,14 @@
   .arq .nome { flex: 1 1 160px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .arq .btn { padding: 4px 10px; font-size: 12px; }
   .resumo-docs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sl-lista { display: grid; gap: 8px; }
+  .sl-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; border-left: 4px solid var(--vermelho); }
+  .sl-item.tem { border-left-color: var(--verde); }
+  .sl-item .quem { font-weight: 600; }
+  .sl-item .valor-sl { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .vinculo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--azul-claro); color: var(--azul); border-radius: 8px; padding: 8px 12px; font-size: 14px; margin-bottom: 10px; }
+  .tag.sl { background: var(--azul-claro); color: var(--azul); }
+  @media (max-width: 760px) { .sl-item { grid-template-columns: 1fr auto; } .sl-item .acao-sl { grid-column: 1 / -1; } .sl-item .acao-sl .btn { width: 100%; } }
   .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: #f6c445; color: #1c1f2a; font-size: 11px; font-weight: 700; margin-left: 4px; }
 
   /* ---------- usuários ---------- */
@@ -623,6 +631,7 @@
     <div class="card" id="cardEnviarDoc">
       <h2>Enviar nota fiscal ou comprovante</h2>
       <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
+      <div class="vinculo" id="vinculoSL" hidden></div>
       <form class="lancar" id="formDoc">
         <div class="f-condo"><label for="dCondo">Condomínio</label><select id="dCondo" required></select></div>
         <div><label for="dTipo">Tipo</label><select id="dTipo">
@@ -638,6 +647,18 @@
         <div class="enviar"><button class="btn" type="submit">Enviar documento</button></div>
       </form>
       <div class="progresso" id="progressoEnvio"></div>
+    </div>
+    <div class="card mt" id="cardSL" hidden>
+      <div class="card-topo">
+        <h2 id="tituloSL">Despesas no Superlógica</h2>
+        <div class="acoes"><button class="btn sec peq" id="btnAtualizarSL">Atualizar</button></div>
+      </div>
+      <p class="ajuda">Despesas pagas no mês e as que vencem no mês, como estão lançadas no Superlógica (só leitura). Anexe o comprovante direto em cada uma — fornecedor, valor, data e conta já vêm preenchidos.</p>
+      <div class="filtro">
+        <label class="check"><input type="checkbox" id="slSoFaltam"> Só as que faltam comprovante</label>
+        <span class="total" id="slResumo"></span>
+      </div>
+      <div class="sl-lista" id="listaSL"></div>
     </div>
     <div class="card mt">
       <div class="card-topo">
@@ -691,8 +712,8 @@
         </form>
       </div>
       <div class="card">
-        <h2>Condomínios</h2>
-        <p class="ajuda">Renomeie direto no campo. Um condomínio desativado some das listas, mas o histórico fica guardado.</p>
+        <div class="card-topo"><h2>Condomínios</h2><button class="btn sec peq" id="btnImportarSL" style="margin-left:auto">Importar do Superlógica</button></div>
+        <p class="ajuda">Renomeie direto no campo. Um condomínio desativado some das listas, mas o histórico fica guardado. “Importar do Superlógica” traz os condomínios da carteira e liga cada um ao cadastro de lá.</p>
         <div class="lista-edit" id="listaCondos"></div>
         <form class="add" id="formNovoCondo">
           <input id="ncondNome" placeholder="Novo condomínio (ex.: Vila do Conde)" autocomplete="off" required>
@@ -2115,6 +2136,7 @@
     document.getElementById('nuCondos').innerHTML = chkCondos('data-nu-condo', []);
     document.getElementById('listaCondos').innerHTML = condos.length ? condos.map(c => `<div class="linha">
         <input data-condo-nome="${c.id}" value="${esc(c.nome)}" aria-label="Nome do condomínio">
+        ${c.id_superlogica ? `<span class="tag sl" title="Ligado ao Superlógica">SL ${c.id_superlogica}</span>` : ''}
         <button class="btn ${c.ativo ? 'perigo' : 'sec'} peq" data-condo-ativo="${c.id}">${c.ativo ? 'Desativar' : 'Reativar'}</button>
       </div>`).join('') : '<p class="miudo">Nenhum condomínio cadastrado.</p>';
   }
@@ -2280,7 +2302,7 @@
   }
 
   async function carregarCondos() {
-    const { data } = await sb.from('condominios').select('id, nome').eq('ativo', true).order('nome');
+    const { data } = await sb.from('condominios').select('id, nome, id_superlogica').eq('ativo', true).order('nome');
     condosDocs = data || [];
     const opcoes = condosDocs.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
     document.getElementById('dCondo').innerHTML = opcoes;
@@ -2317,6 +2339,7 @@
     if (error) { lista.innerHTML = `<p class="vazio">Não foi possível carregar: ${esc(error.message)}</p>`; return; }
     docsCarregados = data;
     renderDocs();
+    carregarSL();
     contarAguardando();
   }
 
@@ -2347,7 +2370,7 @@
         d.status === 'conferido' && d.conferido_em ? 'Conferido' + (d.conferido ? ' por ' + esc(d.conferido.nome) : '') + ' em ' + new Date(d.conferido_em).toLocaleDateString('pt-BR') : ''
       ].filter(Boolean).join(' · ');
       return `<div class="doc s-${d.status}" data-doc="${d.id}">
-        <div class="doc-cab"><span class="tag ${cls}">${txt}</span><strong>${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}</strong><span class="doc-valor">${d.valor != null ? brl(Number(d.valor)) : ''}</span></div>
+        <div class="doc-cab"><span class="tag ${cls}">${txt}</span>${d.sl_id_parcela ? '<span class="tag sl" title="Ligado a uma despesa do Superlógica">🔗 Superlógica</span>' : ''}<strong>${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}</strong><span class="doc-valor">${d.valor != null ? brl(Number(d.valor)) : ''}</span></div>
         <div class="miudo">${detalhes}</div>
         ${d.descricao ? `<div>${esc(d.descricao)}</div>` : ''}
         ${d.status === 'pendencia' && d.comentario ? `<div class="pendencia"><strong>Correção pedida pelo escritório:</strong> ${esc(d.comentario)}</div>` : ''}
@@ -2387,15 +2410,107 @@
         data_pagamento: document.getElementById('dData').value || null,
         conta: document.getElementById('dConta').value.trim() || null,
         descricao: document.getElementById('dDesc').value.trim() || null,
-        enviado_por: perfil.id
+        enviado_por: perfil.id,
+        sl_id_despesa: vinculoSL && vinculoSL.condominio_id === document.getElementById('dCondo').value ? vinculoSL.id_despesa : null,
+        sl_id_parcela: vinculoSL && vinculoSL.condominio_id === document.getElementById('dCondo').value ? vinculoSL.id_parcela : null
       }).select('id').single();
       if (error) throw new Error(error.message);
       const falhas = await enviarArquivos(doc.id, files);
       if (falhas.length) alert('O documento foi registrado, mas ' + falhas.length + ' arquivo(s) não foram enviados. Use "+ Arquivo" no documento para tentar de novo.');
-      else { toast('Documento enviado para o escritório'); e.target.reset(); setTimeout(() => { document.getElementById('progressoEnvio').innerHTML = ''; }, 2500); }
+      else { toast('Documento enviado para o escritório'); e.target.reset(); vinculoSL = null; mostrarVinculo(); setTimeout(() => { document.getElementById('progressoEnvio').innerHTML = ''; }, 2500); }
     } catch (err) { alert('Não foi possível enviar: ' + err.message); }
     btn.disabled = false; btn.textContent = 'Enviar documento';
     carregarDocs();
+  });
+
+  // ---------- Superlógica (só leitura): despesas do mês para anexar o comprovante ----------
+  const cacheSL = {};          // "condominio|mes" -> despesas
+  let vinculoSL = null;        // despesa do Superlógica escolhida no formulário
+  async function slApi(corpo) {
+    const { data, error } = await sb.functions.invoke('superlogica', { body: corpo });
+    if (error) {
+      let msg = error.message;
+      try { const j = await error.context.json(); msg = j.erro || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    return data;
+  }
+  const condoDaTela = () => document.getElementById('fdCondo').value || (condosDocs.length === 1 ? condosDocs[0].id : '');
+
+  async function carregarSL(forcar) {
+    const card = document.getElementById('cardSL');
+    const condo = condoDaTela();
+    const c = condosDocs.find(x => x.id === condo);
+    // só faz sentido com um condomínio escolhido e ligado ao Superlógica, num mês específico
+    if (!c || !c.id_superlogica || document.getElementById('fdTodosMeses').checked) { card.hidden = true; return; }
+    card.hidden = false;
+    document.getElementById('tituloSL').textContent = 'Despesas no Superlógica — ' + c.nome + ' — ' + nomeMes(mesSel);
+    const chave = condo + '|' + mesSel;
+    const lista = document.getElementById('listaSL');
+    if (forcar || !cacheSL[chave]) {
+      lista.innerHTML = '<p class="vazio">Consultando o Superlógica…</p>';
+      document.getElementById('slResumo').textContent = '';
+      try { cacheSL[chave] = (await slApi({ acao: 'despesas', condominio_id: condo, competencia: mesSel })).despesas; }
+      catch (e) { lista.innerHTML = `<p class="vazio">${esc(e.message)}</p>`; return; }
+    }
+    renderSL();
+  }
+  function renderSL() {
+    const condo = condoDaTela();
+    const despesas = cacheSL[condo + '|' + mesSel];
+    if (!despesas) return;
+    const anexadas = new Set(docsCarregados.filter(d => d.condominio_id === condo && d.sl_id_parcela).map(d => d.sl_id_parcela));
+    const faltam = despesas.filter(d => !anexadas.has(d.id_parcela));
+    document.getElementById('slResumo').textContent = despesas.length
+      ? `${despesas.length} despesa${despesas.length > 1 ? 's' : ''} · ${despesas.length - faltam.length} com comprovante · faltam ${faltam.length}` : '';
+    const mostrar = document.getElementById('slSoFaltam').checked ? faltam : despesas;
+    document.getElementById('listaSL').innerHTML = mostrar.length ? mostrar.map(d => {
+      const tem = anexadas.has(d.id_parcela);
+      const quando = d.situacao === 'paga' ? 'Paga em ' + fmtData(d.liquidacao) : 'Vence em ' + fmtData(d.vencimento) + ' (a pagar)';
+      return `<div class="sl-item ${tem ? 'tem' : ''}" data-parcela="${esc(d.id_parcela)}">
+        <div><div class="quem">${esc(d.favorecido || 'Sem favorecido')}</div>
+          <div class="miudo">${[esc(d.categoria), quando, d.parcela ? esc(d.parcela) : ''].filter(Boolean).join(' · ')}</div></div>
+        <div class="valor-sl">${brl(d.valor)}</div>
+        <div class="acao-sl">${tem ? '<span class="tag paga">✓ Comprovante enviado</span>'
+          : podeEnviarDocs ? '<button class="btn peq" data-anexar>Anexar comprovante</button>' : '<span class="tag atrasada">Falta comprovante</span>'}</div>
+      </div>`;
+    }).join('') : `<p class="vazio">${despesas.length ? 'Todas as despesas já têm comprovante. 🎉' : 'Nenhuma despesa paga ou vencendo neste mês no Superlógica.'}</p>`;
+  }
+  function mostrarVinculo() {
+    const box = document.getElementById('vinculoSL');
+    box.hidden = !vinculoSL;
+    if (vinculoSL) box.innerHTML = `🔗 Comprovante da despesa do Superlógica: <strong>${esc(vinculoSL.favorecido)} · ${brl(vinculoSL.valor)}</strong> <button class="link-btn" id="desvincularSL" type="button">desvincular</button>`;
+  }
+  document.getElementById('listaSL').addEventListener('click', e => {
+    if (!e.target.hasAttribute('data-anexar')) return;
+    const id = e.target.closest('[data-parcela]').dataset.parcela;
+    const d = cacheSL[condoDaTela() + '|' + mesSel].find(x => x.id_parcela === id);
+    vinculoSL = { ...d, condominio_id: condoDaTela() };
+    // preenche o formulário com o que já está no Superlógica
+    document.getElementById('dCondo').value = vinculoSL.condominio_id;
+    document.getElementById('dTipo').value = d.situacao === 'paga' ? 'comprovante' : 'nota_fiscal';
+    document.getElementById('dFornecedor').value = d.favorecido;
+    document.getElementById('dValor').value = fmtValorInput(d.valor);
+    document.getElementById('dData').value = d.liquidacao || '';
+    document.getElementById('dConta').value = d.categoria;
+    document.getElementById('dDesc').value = [d.parcela, d.documento ? 'Doc. ' + d.documento : ''].filter(Boolean).join(' · ');
+    mostrarVinculo();
+    document.getElementById('cardEnviarDoc').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => document.getElementById('dArquivos').focus(), 400);
+  });
+  document.getElementById('vinculoSL').addEventListener('click', e => { if (e.target.id === 'desvincularSL') { vinculoSL = null; mostrarVinculo(); } });
+  document.getElementById('slSoFaltam').addEventListener('change', renderSL);
+  document.getElementById('btnAtualizarSL').addEventListener('click', () => carregarSL(true));
+
+  document.getElementById('btnImportarSL').addEventListener('click', async e => {
+    const btn = e.target; btn.disabled = true; btn.textContent = 'Importando…';
+    try {
+      const r = await slApi({ acao: 'importar_condominios' });
+      toast(`Superlógica: ${r.total} condomínios — ${r.criados} novos, ${r.ligados} ligados aos que já existiam`);
+      await carregarCondos();
+      await carregarUsuarios();
+    } catch (err) { alert(err.message); }
+    btn.disabled = false; btn.textContent = 'Importar do Superlógica';
   });
 
   const listaDocs = document.getElementById('listaDocs');
@@ -2472,7 +2587,7 @@
     const limpo = t => String(t).replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80);
     const variosCondos = new Set(docs.map(d => d.condominio_id)).size > 1;
     const zip = new JSZip();
-    const linhas = [['Nº', 'Condomínio', 'Mês', 'Tipo', 'Fornecedor', 'Conta', 'Valor', 'Data do pagamento', 'Situação', 'Arquivo', 'Íntegro', 'Enviado por', 'Enviado em']];
+    const linhas = [['Nº', 'Condomínio', 'Mês', 'Tipo', 'Fornecedor', 'Conta', 'Valor', 'Data do pagamento', 'Situação', 'Arquivo', 'Íntegro', 'Enviado por', 'Enviado em', 'Despesa no Superlógica']];
     let feitos = 0, problemas = 0;
     const totalArqs = docs.reduce((s, d) => s + d.documento_arquivos.filter(a => a.confirmado).length, 0);
     btn.disabled = true;
@@ -2487,7 +2602,7 @@
           const nome = `${String(i + 1).padStart(2, '0')} ${TIPOS_DOC[d.tipo]} - ${limpo(d.fornecedor)}${d.valor != null ? ' - R$ ' + fmtValorInput(Number(d.valor)) : ''}${arqs.length > 1 ? ' (' + (k + 1) + ')' : ''}.${extDe(a.tipo_mime)}`;
           zip.file(pasta + nome, blob);
           linhas.push([i + 1, nomeCondo(d.condominio_id), d.competencia, TIPOS_DOC[d.tipo], d.fornecedor, d.conta || '', d.valor != null ? fmtValorInput(Number(d.valor)) : '',
-            d.data_pagamento ? fmtData(d.data_pagamento) : '', SITUACAO[d.status][1], pasta + nome, integro ? 'sim' : 'NÃO', d.enviado ? d.enviado.nome : '', new Date(d.enviado_em).toLocaleString('pt-BR')]);
+            d.data_pagamento ? fmtData(d.data_pagamento) : '', SITUACAO[d.status][1], pasta + nome, integro ? 'sim' : 'NÃO', d.enviado ? d.enviado.nome : '', new Date(d.enviado_em).toLocaleString('pt-BR'), d.sl_id_despesa ? d.sl_id_despesa + '/' + d.sl_id_parcela : '']);
         }
       }
       zip.file('Resumo dos documentos.csv', paraCsv(linhas));
