@@ -142,6 +142,40 @@ Deno.serve(async req => {
         return resposta({ ok: true });
       }
 
+      // ---------- extratos OFX (só devs) ----------
+      case 'extrato_upload_url':
+      case 'extrato_confirmar':
+      case 'extrato_download_url':
+      case 'extrato_excluir': {
+        const { data: ehSuper } = await usuario.rpc('e_super');
+        if (!ehSuper) return erro('Apenas os devs mexem nos extratos.', 403);
+        const { data: ext } = await usuario.from('extratos').select('id, condominio_id, competencia, chave, tamanho, nome_arquivo').eq('id', corpo.extrato_id).maybeSingle();
+        if (!ext) return erro('Extrato não encontrado.', 404);
+
+        if (corpo.acao === 'extrato_upload_url') {
+          if (!(corpo.tamanho > 0) || corpo.tamanho > 10 * 1024 * 1024) return erro('O OFX pode ter no máximo 10 MB.');
+          const chave = `extratos/${ext.condominio_id}/${ext.competencia}/${ext.id}.ofx`;
+          await admin.from('extratos').update({ chave, tamanho: corpo.tamanho }).eq('id', ext.id);
+          return resposta({ url: await assinar('PUT', chave, 900) });
+        }
+        if (corpo.acao === 'extrato_confirmar') {
+          const cab = ext.chave ? await r2.fetch(urlObjeto(ext.chave), { method: 'HEAD' }) : null;
+          if (!cab || !cab.ok || Number(cab.headers.get('content-length')) !== Number(ext.tamanho)) return erro('O arquivo do extrato não chegou inteiro.');
+          await admin.from('extratos').update({ arquivo_confirmado: true }).eq('id', ext.id);
+          return resposta({ ok: true });
+        }
+        if (corpo.acao === 'extrato_download_url') {
+          if (!ext.chave) return erro('O arquivo original deste extrato não foi guardado.', 404);
+          return resposta({ url: await assinar('GET', ext.chave, 600, {
+            'response-content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(ext.nome_arquivo)}`
+          }) });
+        }
+        // excluir: apaga os lançamentos (cascata), o registro e o arquivo
+        if (ext.chave) await apagarObjeto(ext.chave);
+        await admin.from('extratos').delete().eq('id', ext.id);
+        return resposta({ ok: true });
+      }
+
       default:
         return erro('Ação desconhecida.');
     }

@@ -119,6 +119,24 @@
   .geral-sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: var(--acao); margin: 26px 0 12px; padding: 11px 16px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(22, 35, 122, .15); }
   .geral-sec:first-child { margin-top: 0; }
   .geral-sec .link-btn { margin-left: auto; text-transform: none; letter-spacing: 0; color: #fff; }
+  /* ---------- conciliação bancária (só devs) ---------- */
+  .conc-extrato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; margin-bottom: 8px; background: var(--cinza-claro); font-size: 14px; }
+  .conc-extrato .acoes { margin-left: auto; }
+  .conc-grupo { margin-top: 16px; }
+  .conc-grupo h3 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .conc-linha { display: grid; grid-template-columns: 90px minmax(0, 1.4fr) minmax(0, 1fr) 120px; gap: 10px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--borda); font-size: 13px; }
+  .conc-linha .v { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .conc-linha .doc-ref { color: var(--cinza); }
+  .progresso-conc { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+  .progresso-conc .trilho { flex: 1; height: 10px; }
+  .progresso-conc .barra { background: var(--verde); }
+  .progresso-conc.baixo .barra { background: var(--vermelho); }
+  .progresso-conc.medio .barra { background: var(--amarelo); }
+  @media (max-width: 760px) {
+    .conc-linha { grid-template-columns: 1fr auto; }
+    .conc-linha > :nth-child(1) { grid-column: 1 / -1; color: var(--cinza); font-size: 12px; }
+    .conc-linha .doc-ref { grid-column: 1 / -1; }
+  }
   .contagens { display: flex; gap: 6px; flex-wrap: wrap; }
   .pessoas { font-size: 13px; }
 
@@ -634,8 +652,8 @@
     <div class="grid g4" id="geralKpisCondos"></div>
     <div class="card mt">
       <table class="resp">
-        <thead><tr><th>Condomínio</th><th>Documentos no Portal</th><th>Síndicas / usuários</th><th></th></tr></thead>
-        <tbody id="tabGeralCondos"><tr><td colspan="4" class="vazio">Carregando…</td></tr></tbody>
+        <thead><tr><th>Condomínio</th><th>Documentos no Portal</th><th>Conciliação (extrato)</th><th>Síndicas / usuários</th><th></th></tr></thead>
+        <tbody id="tabGeralCondos"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
       </table>
     </div>
     <div class="geral-sec">Usuários<button class="link-btn" data-ir="usuarios">Gerenciar usuários</button></div>
@@ -779,6 +797,17 @@
 
   <!-- DOCUMENTOS (notas fiscais e comprovantes dos condomínios) -->
   <section class="aba" id="aba-documentos">
+    <div class="card so-dev" id="cardConc" hidden>
+      <div class="card-topo">
+        <h2>Conciliação bancária — <span class="mesTxt"></span></h2>
+        <span class="tag sl">só devs</span>
+        <div class="acoes"><label class="btn peq" style="cursor:pointer">+ Enviar extrato OFX<input type="file" id="concArquivo" accept=".ofx,.OFX" multiple hidden></label></div>
+      </div>
+      <p class="ajuda">As <strong>saídas</strong> do extrato (pagamentos feitos pelo condomínio) são comparadas com as notas e comprovantes enviados pela síndica: mesmo valor e até 5 dias de diferença na data. As <strong>entradas</strong> (boletos pagos pelos moradores) não têm nota e não entram na comparação.</p>
+      <div id="concExtratos"></div>
+      <div class="resumo-docs" id="concResumo"></div>
+      <div id="concResultado"></div>
+    </div>
     <div class="card" id="cardEnviarDoc">
       <h2>Enviar nota fiscal ou comprovante</h2>
       <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
@@ -2259,7 +2288,7 @@
     return base + nums[n[8] % nums.length] + nums[n[9] % nums.length];
   }
   async function carregarUsuarios() {
-    try { adminDados = await adminApi({ acao: 'listar' }); renderUsuarios(); if (document.getElementById('aba-geral').classList.contains('ativa')) { renderGeralUsuarios(); if (ultimoGeral) renderGeralCondos(ultimoGeral); } }
+    try { adminDados = await adminApi({ acao: 'listar' }); renderUsuarios(); if (document.getElementById('aba-geral').classList.contains('ativa')) { renderGeralUsuarios(); if (ultimoGeral) renderGeralCondos(...ultimoGeral); } }
     catch (e) { document.getElementById('tabUsuarios').innerHTML = `<tr><td colspan="7" class="vazio">Não foi possível carregar: ${esc(e.message)}</td></tr>`; }
   }
   function renderUsuarios() {
@@ -2500,6 +2529,7 @@
     docsCarregados = data;
     renderDocs();
     contarAguardando();
+    if (ehDev() && document.body.dataset.modo === 'condominio') carregarConc(); else document.getElementById('cardConc').hidden = true;
   }
 
   function renderDocs() {
@@ -2730,7 +2760,7 @@
     if (area === 'condominio') {
       const c = condosDocs.find(x => x.id === document.getElementById('fdCondo').value);
       nome.textContent = c ? c.nome : 'Condomínio';
-      dica.textContent = 'Documentos e despesas do Superlógica';
+      dica.textContent = 'Documentos e conciliação bancária';
     }
     document.getElementById('subTitulo').textContent = area === 'escritorio' ? 'Controle de gastos do escritório' : area === 'condominio' ? 'Condomínio' : 'Visão geral do sistema';
   }
@@ -2749,6 +2779,173 @@
   }));
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', mostrarIconeTema);
   mostrarIconeTema();
+
+  // ---------- conciliação bancária: extrato OFX × notas e comprovantes (só devs) ----------
+  const FOLGA_DIAS = 5;   // mesma tolerância do projeto "slz automatização financeira"
+  const normalTxt = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const dataOfx = t => t && t.length >= 8 ? `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}` : null;
+  const diasEntre = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
+
+  // lê o OFX (SGML ou XML) do mesmo jeito que o extrato.py do projeto de automação
+  function lerOfx(texto) {
+    const campo = (bloco, tag) => { const m = bloco.match(new RegExp(`<${tag}>([^<\\r\\n]*)`, 'i')); return m ? m[1].trim() : ''; };
+    const lancamentos = [...texto.matchAll(/<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi)].map(m => ({
+      data: dataOfx(campo(m[1], 'DTPOSTED')),
+      valor: Math.round(parseFloat(campo(m[1], 'TRNAMT').replace(',', '.')) * 100) / 100,
+      descricao: campo(m[1], 'MEMO') || campo(m[1], 'NAME'),
+      tipo: campo(m[1], 'TRNTYPE'),
+      id_banco: campo(m[1], 'FITID') || null
+    })).filter(l => l.data && !isNaN(l.valor));
+    return {
+      banco: campo(texto, 'ORG') || campo(texto, 'BANKID'), agencia: campo(texto, 'BRANCHID'), conta: campo(texto, 'ACCTID'),
+      inicio: dataOfx(campo(texto, 'DTSTART')), fim: dataOfx(campo(texto, 'DTEND')), lancamentos
+    };
+  }
+
+  // extratos (com lançamentos) de um condomínio — ou de todos, se condo for null — no mês
+  async function carregarExtratos(condo, mes) {
+    if (!ehDev()) return [];
+    let q = sb.from('extratos').select('*, extrato_lancamentos(id, data, valor, descricao, tipo, id_banco)').eq('competencia', mes).order('enviado_em');
+    if (condo) q = q.eq('condominio_id', condo);
+    const { data } = await q;
+    return data || [];
+  }
+
+  // Compara as saídas do extrato com os documentos. Documentos do mesmo fornecedor e valor
+  // (ex.: nota fiscal + comprovante enviados separados) contam como um só pagamento.
+  function conciliar(extratos, docs) {
+    const lancs = extratos.flatMap(e => e.extrato_lancamentos.map(l => ({ ...l, valor: Number(l.valor), extrato: e })));
+    const saidas = lancs.filter(l => l.valor < 0), entradas = lancs.filter(l => l.valor > 0);
+    const inicio = lancs.reduce((m, l) => !m || l.data < m ? l.data : m, null), fim = lancs.reduce((m, l) => !m || l.data > m ? l.data : m, null);
+    // documentos com valor, do mês ou com pagamento dentro do período do extrato
+    const grupos = {};
+    docs.filter(d => d.valor != null && Number(d.valor) > 0).forEach(d => {
+      const k = Number(d.valor).toFixed(2) + '|' + normalTxt(d.fornecedor);
+      (grupos[k] ||= { valor: Number(d.valor), fornecedor: d.fornecedor, data: null, docs: [] }).docs.push(d);
+      if (d.data_pagamento && (!grupos[k].data || d.data_pagamento < grupos[k].data)) grupos[k].data = d.data_pagamento;
+    });
+    const listaGrupos = Object.values(grupos);
+    const candidatos = s => listaGrupos.filter(g => g.valor.toFixed(2) === Math.abs(s.valor).toFixed(2) && (!g.data || diasEntre(g.data, s.data) <= FOLGA_DIAS));
+    const cands = new Map(saidas.map(sd => [sd, candidatos(sd)]));
+    const disputa = new Map();
+    cands.forEach(l => l.forEach(g => disputa.set(g, (disputa.get(g) || 0) + 1)));
+    const conciliados = [], ambiguos = [], semComprovante = [], usados = new Set();
+    cands.forEach((lista, sd) => {
+      if (lista.length === 1 && disputa.get(lista[0]) === 1) { conciliados.push({ saida: sd, grupo: lista[0] }); usados.add(lista[0]); }
+      else if (lista.length) ambiguos.push({ saida: sd, grupos: lista });
+      else semComprovante.push(sd);
+    });
+    ambiguos.forEach(a => a.grupos.forEach(g => usados.add(g)));
+    // comprovante sem pagamento: só os do mês (os de meses vizinhos podem ter sido pagos em outro extrato)
+    const semPagamento = listaGrupos.filter(g => !usados.has(g) && g.docs.some(d => d.competencia === mesSel || (d.data_pagamento && inicio && d.data_pagamento >= inicio && d.data_pagamento <= fim)));
+    return { saidas, entradas, conciliados, ambiguos, semComprovante, semPagamento };
+  }
+  const somaV = ls => ls.reduce((s, x) => s + Math.abs(x.valor), 0);
+
+  function colunaConc(condo, extratos, docs) {
+    const meus = extratos.filter(e => e.condominio_id === condo);
+    if (!meus.length) return '<span class="miudo">Sem extrato no mês</span>';
+    const r = conciliar(meus, docs.filter(d => d.condominio_id === condo));
+    if (!r.saidas.length) return '<span class="miudo">Extrato sem saídas</span>';
+    const pct = Math.round(r.conciliados.length / r.saidas.length * 100);
+    return `<div class="progresso-conc ${pct < 50 ? 'baixo' : pct < 100 ? 'medio' : ''}"><div class="trilho"><div class="barra" style="width:${pct}%"></div></div><strong>${pct}%</strong></div>
+      <div class="miudo">${r.conciliados.length} de ${r.saidas.length} saídas com comprovante${r.semPagamento.length ? ` · ${r.semPagamento.length} nota(s) sem pagamento` : ''}</div>`;
+  }
+
+  async function carregarConc() {
+    const card = document.getElementById('cardConc');
+    const condo = document.getElementById('fdCondo').value;
+    if (!ehDev() || !condo || document.getElementById('fdTodosMeses').checked) { card.hidden = true; return; }
+    card.hidden = false;
+    const [extratos, { data: docs }] = await Promise.all([
+      carregarExtratos(condo, mesSel),
+      sb.from('documentos').select('id, tipo, fornecedor, valor, data_pagamento, status, competencia').eq('condominio_id', condo).in('competencia', [somaMes(mesSel, -1), mesSel, somaMes(mesSel, 1)])
+    ]);
+    renderConc(extratos, docs || []);
+  }
+
+  function renderConc(extratos, docs) {
+    const fmtL = l => `<span>${fmtData(l.data)}</span><span>${esc(l.descricao || '—')}</span>`;
+    const refDoc = g => `<span class="doc-ref">${g.docs.map(d => `${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}${d.data_pagamento ? ' · pago ' + fmtData(d.data_pagamento) : ''}`).join('<br>')}</span>`;
+    document.getElementById('concExtratos').innerHTML = extratos.length ? extratos.map(e => {
+      const n = e.extrato_lancamentos.length, s = e.extrato_lancamentos.filter(l => Number(l.valor) < 0).length;
+      return `<div class="conc-extrato" data-extrato="${e.id}">📄 <strong>${esc(e.nome_arquivo)}</strong>
+        <span class="miudo">${[e.banco, e.agencia && 'ag. ' + e.agencia, e.conta && 'conta ' + e.conta].filter(Boolean).map(esc).join(' · ')}${e.periodo_inicio ? ' · ' + fmtData(e.periodo_inicio) + ' a ' + fmtData(e.periodo_fim) : ''} · ${n} lançamentos (${s} saídas)</span>
+        <div class="acoes">${e.arquivo_confirmado ? '<button class="btn sec peq" data-ext-acao="baixar">Baixar OFX</button>' : '<span class="tag pendente">arquivo original não guardado</span>'}<button class="btn perigo peq" data-ext-acao="excluir">Excluir</button></div></div>`;
+    }).join('') : '<p class="vazio">Nenhum extrato enviado para este condomínio neste mês.</p>';
+    if (!extratos.length) { document.getElementById('concResumo').innerHTML = ''; document.getElementById('concResultado').innerHTML = ''; return; }
+
+    const r = conciliar(extratos, docs);
+    const pct = r.saidas.length ? Math.round(r.conciliados.length / r.saidas.length * 100) : 0;
+    document.getElementById('concResumo').innerHTML = `
+      <span class="tag paga">✓ Conciliados: ${r.conciliados.length} de ${r.saidas.length} saídas (${pct}%)</span>
+      <span class="tag atrasada">Pagamentos sem comprovante: ${r.semComprovante.length} · ${brl(somaV(r.semComprovante))}</span>
+      <span class="tag pendente">Comprovantes sem pagamento: ${r.semPagamento.length}</span>
+      ${r.ambiguos.length ? `<span class="tag trocar">Para conferir à mão: ${r.ambiguos.length}</span>` : ''}
+      <span class="tag sl">Entradas (fora da comparação): ${r.entradas.length} · ${brl(somaV(r.entradas))}</span>`;
+    const grupo = (titulo, itens, linha, vazio) => `<div class="conc-grupo"><h3>${titulo}</h3>${itens.length ? itens.map(linha).join('') : `<p class="miudo">${vazio}</p>`}</div>`;
+    document.getElementById('concResultado').innerHTML =
+      grupo('⚠ Pagamentos sem comprovante', r.semComprovante, l => `<div class="conc-linha">${fmtL(l)}<span class="doc-ref">ninguém enviou a nota</span><span class="v mais">${brl(Math.abs(l.valor))}</span></div>`, 'Todas as saídas têm comprovante. 🎉') +
+      grupo('⚠ Comprovantes sem pagamento no extrato', r.semPagamento, g => `<div class="conc-linha"><span>${g.data ? fmtData(g.data) : 'sem data'}</span><span>${esc(g.fornecedor)}</span>${refDoc(g)}<span class="v">${brl(g.valor)}</span></div>`, 'Todos os comprovantes do mês aparecem no extrato.') +
+      (r.ambiguos.length ? grupo('? Para conferir à mão (mais de um comprovante com o mesmo valor)', r.ambiguos, a => `<div class="conc-linha">${fmtL(a.saida)}<span class="doc-ref">${a.grupos.map(g => esc(g.fornecedor)).join(' ou ')}</span><span class="v">${brl(Math.abs(a.saida.valor))}</span></div>`, '') : '') +
+      grupo('✓ Conciliados', r.conciliados, c => `<div class="conc-linha">${fmtL(c.saida)}${refDoc(c.grupo)}<span class="v menos">${brl(Math.abs(c.saida.valor))}</span></div>`, 'Nenhuma saída conciliada ainda.');
+  }
+
+  // envio do OFX: lê no navegador, grava os lançamentos e guarda o arquivo original no R2
+  async function enviarExtrato(file, condo) {
+    const bytes = await file.arrayBuffer();
+    const texto = new TextDecoder('windows-1252').decode(bytes);
+    const ofx = lerOfx(texto);
+    if (!ofx.lancamentos.length) throw new Error(`"${file.name}" não parece um extrato OFX (nenhum lançamento encontrado).`);
+    // mês do extrato = mês com mais lançamentos
+    const porMes = {};
+    ofx.lancamentos.forEach(l => { porMes[l.data.slice(0, 7)] = (porMes[l.data.slice(0, 7)] || 0) + 1; });
+    const competencia = Object.entries(porMes).sort((a, b) => b[1] - a[1])[0][0];
+    const sha256 = await hashSha256(new Blob([bytes]));
+    const { data: ext, error } = await sb.from('extratos').insert({
+      condominio_id: condo, competencia, nome_arquivo: file.name, sha256, tamanho: file.size,
+      banco: ofx.banco || null, agencia: ofx.agencia || null, conta: ofx.conta || null,
+      periodo_inicio: ofx.inicio, periodo_fim: ofx.fim, enviado_por: perfil.id
+    }).select('id').single();
+    if (error) throw new Error(/duplicate|unique/i.test(error.message) ? `"${file.name}" já foi enviado para este condomínio.` : error.message);
+    // lançamentos repetidos no mesmo arquivo (mesmo FITID) entram uma vez só
+    const vistos = new Set();
+    const linhas = ofx.lancamentos.filter(l => !l.id_banco || (!vistos.has(l.id_banco) && vistos.add(l.id_banco))).map(l => ({ ...l, extrato_id: ext.id }));
+    for (let i = 0; i < linhas.length; i += 500) {
+      const { error: e2 } = await sb.from('extrato_lancamentos').insert(linhas.slice(i, i + 500));
+      if (e2) { await docsApi({ acao: 'extrato_excluir', extrato_id: ext.id }); throw new Error('Não foi possível gravar os lançamentos: ' + e2.message); }
+    }
+    let guardado = true;
+    try {
+      const { url } = await docsApi({ acao: 'extrato_upload_url', extrato_id: ext.id, tamanho: file.size });
+      await putArquivo(url, file, 'application/x-ofx', () => {});
+      await docsApi({ acao: 'extrato_confirmar', extrato_id: ext.id });
+    } catch (e) { guardado = false; }
+    return { competencia, n: linhas.length, guardado };
+  }
+  document.getElementById('concArquivo').addEventListener('change', async e => {
+    const files = [...e.target.files]; e.target.value = '';
+    const condo = document.getElementById('fdCondo').value;
+    for (const f of files) {
+      try {
+        const r = await enviarExtrato(f, condo);
+        toast(`Extrato lido: ${r.n} lançamentos de ${nomeMes(r.competencia)}${r.guardado ? '' : ' (o arquivo original não foi guardado)'}`);
+        if (r.competencia !== mesSel) { mesSel = r.competencia; render(); continue; }
+      } catch (err) { alert(err.message); }
+    }
+    carregarConc();
+  });
+  document.getElementById('concExtratos').addEventListener('click', async e => {
+    const acao = e.target.dataset.extAcao; if (!acao) return;
+    const id = e.target.closest('[data-extrato]').dataset.extrato;
+    try {
+      if (acao === 'baixar') { const { url } = await docsApi({ acao: 'extrato_download_url', extrato_id: id }); location.href = url; }
+      if (acao === 'excluir') {
+        if (!confirm('Excluir este extrato e todos os lançamentos dele da conciliação?')) return;
+        await docsApi({ acao: 'extrato_excluir', extrato_id: id }); toast('Extrato excluído'); carregarConc();
+      }
+    } catch (err) { alert(err.message); }
+  });
 
   // ---------- visão geral (Super Master): escritório + todos os condomínios ----------
   let geralCarregando = false;
@@ -2776,13 +2973,16 @@
     geralCarregando = true;
     try {
       await carregarCondos();
-      const { data: docs } = await sb.from('documentos').select('condominio_id, status').eq('competencia', mesSel);
-      renderGeralCondos(docs || []);
+      const [{ data: docs }, conc] = await Promise.all([
+        sb.from('documentos').select('id, condominio_id, status, valor, fornecedor, data_pagamento, competencia, tipo').in('competencia', [somaMes(mesSel, -1), mesSel, somaMes(mesSel, 1)]),
+        carregarExtratos(null, mesSel)
+      ]);
+      renderGeralCondos((docs || []).filter(d => d.competencia === mesSel), conc, docs || []);
     } finally { geralCarregando = false; }
   }
-  let ultimoGeral = null;    // últimos documentos da tabela, para redesenhar quando a lista de usuários chegar
-  function renderGeralCondos(docs) {
-    ultimoGeral = docs;
+  let ultimoGeral = null;    // últimos dados da tabela, para redesenhar quando a lista de usuários chegar
+  function renderGeralCondos(docs, extratos = [], docsVizinhos = docs) {
+    ultimoGeral = [docs, extratos, docsVizinhos];
     const n = (cid, st) => docs.filter(d => d.condominio_id === cid && (!st || d.status === st)).length;
     const linhas = condosDocs.map(c => {
       const pessoas = (adminDados.usuarios || []).filter(u => u.condominios.includes(c.id));
@@ -2791,12 +2991,13 @@
       return `<tr class="clicavel" data-geral-docs="${c.id}" title="Abrir ${esc(c.nome)}">
         <td class="titulo-linha"><strong>${esc(c.nome)}</strong>${c.id_superlogica ? ` <span class="tag sl">SL ${c.id_superlogica}</span>` : ''}</td>
         <td data-label="Documentos"><div class="contagens">${cont || '<span class="miudo">Nenhum documento enviado</span>'}</div></td>
+        <td data-label="Conciliação">${colunaConc(c.id, extratos, docsVizinhos)}</td>
         <td data-label="Usuários" class="pessoas">${pessoas.length ? pessoas.map(u => esc(u.nome) + (u.trocar_senha ? ' <span class="tag trocar">1º acesso</span>' : '')).join('<br>') : '<span class="tag atrasada">Sem síndica cadastrada</span>'}</td>
         <td class="num"><button class="btn sec peq" data-geral-docs="${c.id}">Abrir condomínio</button></td>
       </tr>`;
     });
     document.getElementById('tabGeralCondos').innerHTML = linhas.join('') ||
-      '<tr><td colspan="4" class="vazio">Nenhum condomínio no Portal. Em Acessos → Condomínios, clique em “Importar do Superlógica”.</td></tr>';
+      '<tr><td colspan="5" class="vazio">Nenhum condomínio no Portal. Em Acessos → Condomínios, clique em “Importar do Superlógica”.</td></tr>';
     const aguardando = docs.filter(d => d.status === 'enviado').length;
     const pendencia = docs.filter(d => d.status === 'pendencia').length, conferidos = docs.filter(d => d.status === 'conferido').length;
     document.getElementById('geralKpisCondos').innerHTML =
