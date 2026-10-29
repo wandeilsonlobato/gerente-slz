@@ -76,6 +76,18 @@
   .so-leitura .editar { display: none !important; }
   .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
 
+  /* ---------- visão geral (só Super Master) ---------- */
+  .geral-sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--cinza); margin: 22px 0 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .geral-sec:first-child { margin-top: 0; }
+  .geral-sec .link-btn { margin-left: auto; text-transform: none; letter-spacing: 0; }
+  .progresso-sl { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+  .progresso-sl .trilho { flex: 1; height: 10px; }
+  .progresso-sl .barra { background: var(--verde); }
+  .progresso-sl.baixo .barra { background: var(--vermelho); }
+  .progresso-sl.medio .barra { background: var(--amarelo); }
+  .contagens { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pessoas { font-size: 13px; }
+
   /* ---------- botão vermelho "+" e janelas de cadastro rápido ---------- */
   .btn-mais { width: 40px; height: 40px; border-radius: 50%; background: var(--vermelho); color: #fff; border: 0; font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(192, 57, 43, .35); flex-shrink: 0; padding: 0 0 3px; }
   .btn-mais:hover { background: #a93226; }
@@ -478,6 +490,7 @@
 </header>
 
 <nav class="abas">
+  <button data-aba="geral" id="abaGeral" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg><span>Visão<span class="rot-longo"> geral</span></span></button>
   <button data-aba="painel" class="ativa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Painel</button>
   <button data-aba="contas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Contas<span class="rot-longo"> fixas</span></span></button>
   <button data-aba="despesas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 .7V2l-1 .7L16 1l-3 2-3-2-3 2z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Despesas</button>
@@ -491,6 +504,22 @@
   <div class="alertas" id="alertas"></div>
 
   <!-- PAINEL -->
+  <!-- VISÃO GERAL (só Super Master): escritório + todos os condomínios -->
+  <section class="aba" id="aba-geral">
+    <div class="geral-sec">Escritório — <span class="mesTxt"></span><button class="link-btn" data-ir="painel">Abrir o escritório</button></div>
+    <div class="grid g4" id="geralEscritorio"></div>
+    <div class="geral-sec">Condomínios — <span class="mesTxt"></span><button class="link-btn" id="geralAtualizar">Atualizar</button></div>
+    <div class="grid g4" id="geralKpisCondos"></div>
+    <div class="card mt">
+      <table class="resp">
+        <thead><tr><th>Condomínio</th><th>Documentos no Portal</th><th>Comprovantes × Superlógica</th><th>Síndicas / usuários</th><th></th></tr></thead>
+        <tbody id="tabGeralCondos"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="geral-sec">Usuários<button class="link-btn" data-ir="usuarios">Gerenciar usuários</button></div>
+    <div class="grid g4" id="geralUsuarios"></div>
+  </section>
+
   <section class="aba ativa" id="aba-painel">
     <div class="grid g4" id="kpis"></div>
     <div class="grid g2 mt">
@@ -1155,6 +1184,7 @@
     renderConfig();
     aplicarPermissoes();
     if (perfil && document.getElementById('aba-documentos').classList.contains('ativa')) carregarDocs();
+    if (perfil && document.getElementById('aba-geral').classList.contains('ativa')) carregarGeral();
   }
 
   // quem só visualiza: esconde botões de edição e trava os campos (o servidor também recusa gravar)
@@ -1528,6 +1558,7 @@
     document.querySelectorAll('.aba').forEach(s => s.classList.toggle('ativa', s.id === 'aba-' + nome));
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
     if (nome === 'documentos' && perfil) carregarDocs();
+    if (nome === 'geral' && perfil) carregarGeral();
   }
   document.querySelectorAll('nav.abas button').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.aba); window.scrollTo(0, 0); }));
   document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.ir); window.scrollTo(0, 0); }));
@@ -2025,7 +2056,13 @@
       toast('Sem conexão: mostrando a última cópia deste aparelho, só para consulta.');
     }
     mostrarTela('app');
-    try { const a = sessionStorage.getItem('slz-aba'); if (a === 'usuarios' && p.papel !== 'super_master') irParaAba('painel'); } catch (e) {}
+    document.getElementById('abaGeral').hidden = p.papel !== 'super_master';
+    try {
+      const a = sessionStorage.getItem('slz-aba');
+      if ((a === 'usuarios' || a === 'geral') && p.papel !== 'super_master') irParaAba('painel');
+      // o dev entra direto na visão geral
+      if (!a && p.papel === 'super_master') irParaAba('geral');
+    } catch (e) {}
     render();
     if (!pendente() && podeEditar) statusSync('salvo');
     if (p.papel === 'super_master') carregarUsuarios();
@@ -2106,7 +2143,7 @@
     return base + nums[n[8] % nums.length] + nums[n[9] % nums.length];
   }
   async function carregarUsuarios() {
-    try { adminDados = await adminApi({ acao: 'listar' }); renderUsuarios(); }
+    try { adminDados = await adminApi({ acao: 'listar' }); renderUsuarios(); if (document.getElementById('aba-geral').classList.contains('ativa')) { renderGeralUsuarios(); if (ultimoGeral) renderGeralCondos(...ultimoGeral); } }
     catch (e) { document.getElementById('tabUsuarios').innerHTML = `<tr><td colspan="7" class="vazio">Não foi possível carregar: ${esc(e.message)}</td></tr>`; }
   }
   function renderUsuarios() {
@@ -2613,6 +2650,111 @@
       toast(problemas ? `⚠ ${problemas} arquivo(s) não conferem com o enviado` : `✓ ZIP pronto: ${totalArqs} arquivo(s) conferidos`);
     } catch (err) { alert('Não foi possível montar o ZIP: ' + err.message); }
     btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
+  });
+
+  // ---------- visão geral (Super Master): escritório + todos os condomínios ----------
+  let geralCarregando = false;
+  function kpiCard(rot, val, det, cls) {
+    return `<div class="card kpi ${cls || ''}"><div class="rot">${rot}</div><div class="val">${val}</div><div class="det">${det || ''}</div></div>`;
+  }
+  function renderGeralEscritorio() {
+    const ant = somaMes(mesSel, -1);
+    const tA = totais(mesSel), tP = totais(ant);
+    const m = dados.meses[mesSel];
+    const fixas = fixasDoMes(mesSel);
+    const pend = m ? fixas.filter(f => !m.contas[f.id].pago) : [];
+    document.getElementById('geralEscritorio').innerHTML =
+      kpiCard('Total gasto no mês', brl(tA.total), variacaoTxt(tA.total, tP.total, tP.existe), 't-' + tendencia(tA.total, tP.total, tP.existe)) +
+      kpiCard('Contas fixas', brl(tA.fixas), variacaoTxt(tA.fixas, tP.fixas, tP.existe), 't-' + tendencia(tA.fixas, tP.fixas, tP.existe)) +
+      kpiCard('Despesas variáveis', brl(tA.variaveis), variacaoTxt(tA.variaveis, tP.variaveis, tP.existe), 't-' + tendencia(tA.variaveis, tP.variaveis, tP.existe)) +
+      kpiCard('Contas a pagar', pend.length ? brl(pend.reduce((s, f) => s + m.contas[f.id].valor, 0)) : 'Tudo pago',
+        `<span class="neutro">${pend.length ? pend.map(f => esc(f.nome)).join(', ') : 'Nenhuma conta pendente'}</span>`, pend.length ? 't-alerta' : 't-ok');
+  }
+  async function carregarGeral(forcarSL) {
+    if (!perfil || perfil.papel !== 'super_master') return;
+    renderGeralEscritorio();
+    renderGeralUsuarios();
+    if (geralCarregando) return;
+    geralCarregando = true;
+    try {
+      await carregarCondos();
+      const { data: docs } = await sb.from('documentos').select('condominio_id, status, valor, sl_id_parcela').eq('competencia', mesSel);
+      renderGeralCondos(docs || [], {});
+      // despesas do Superlógica de cada condomínio ligado, em paralelo (só leitura)
+      const sl = {};
+      await Promise.all(condosDocs.filter(c => c.id_superlogica).map(async c => {
+        const chave = c.id + '|' + mesSel;
+        try {
+          if (forcarSL || !cacheSL[chave]) cacheSL[chave] = (await slApi({ acao: 'despesas', condominio_id: c.id, competencia: mesSel })).despesas;
+          sl[c.id] = cacheSL[chave];
+        } catch (e) { sl[c.id] = { erro: e.message }; }
+      }));
+      renderGeralCondos(docs || [], sl, true);
+    } finally { geralCarregando = false; }
+  }
+  let ultimoGeral = null;    // últimos dados da tabela, para redesenhar quando a lista de usuários chegar
+  function renderGeralCondos(docs, sl, slPronto) {
+    ultimoGeral = [docs, sl, slPronto];
+    const n = (cid, st) => docs.filter(d => d.condominio_id === cid && (!st || d.status === st)).length;
+    let totDesp = 0, totCom = 0;
+    const linhas = condosDocs.map(c => {
+      const pessoas = (adminDados.usuarios || []).filter(u => u.condominios.includes(c.id));
+      const ds = sl[c.id];
+      let colSL;
+      if (!c.id_superlogica) colSL = '<span class="miudo">Não ligado ao Superlógica</span>';
+      else if (!slPronto) colSL = '<span class="miudo">Consultando…</span>';
+      else if (!ds || ds.erro) colSL = `<span class="miudo">⚠ ${esc((ds && ds.erro) || 'sem resposta')}</span>`;
+      else if (!ds.length) colSL = '<span class="miudo">Nenhuma despesa no mês</span>';
+      else {
+        const anexadas = new Set(docs.filter(d => d.condominio_id === c.id && d.sl_id_parcela).map(d => d.sl_id_parcela));
+        const com = ds.filter(d => anexadas.has(d.id_parcela)).length;
+        totDesp += ds.length; totCom += com;
+        const pct = Math.round(com / ds.length * 100);
+        colSL = `<div class="progresso-sl ${pct < 50 ? 'baixo' : pct < 100 ? 'medio' : ''}"><div class="trilho"><div class="barra" style="width:${pct}%"></div></div><strong>${pct}%</strong></div>
+          <div class="miudo">${com} de ${ds.length} com comprovante · faltam ${ds.length - com}</div>`;
+      }
+      const cont = [['enviado', 'pendente', 'aguardando'], ['pendencia', 'atrasada', 'pendência'], ['conferido', 'paga', 'conferidos']]
+        .map(([st, cls, rot]) => n(c.id, st) ? `<span class="tag ${cls}">${n(c.id, st)} ${rot}</span>` : '').join('');
+      return `<tr>
+        <td class="titulo-linha"><strong>${esc(c.nome)}</strong>${c.id_superlogica ? ` <span class="tag sl">SL ${c.id_superlogica}</span>` : ''}</td>
+        <td data-label="Documentos"><div class="contagens">${cont || '<span class="miudo">Nenhum documento</span>'}</div></td>
+        <td data-label="Superlógica">${colSL}</td>
+        <td data-label="Usuários" class="pessoas">${pessoas.length ? pessoas.map(u => esc(u.nome) + (u.trocar_senha ? ' <span class="tag trocar">1º acesso</span>' : '')).join('<br>') : '<span class="tag atrasada">Sem síndica cadastrada</span>'}</td>
+        <td class="num"><button class="btn sec peq" data-geral-docs="${c.id}">Ver documentos</button></td>
+      </tr>`;
+    });
+    document.getElementById('tabGeralCondos').innerHTML = linhas.join('') ||
+      '<tr><td colspan="5" class="vazio">Nenhum condomínio no Portal. Em Usuários → Condomínios, clique em “Importar do Superlógica”.</td></tr>';
+    const aguardando = docs.filter(d => d.status === 'enviado').length, pendencia = docs.filter(d => d.status === 'pendencia').length;
+    document.getElementById('geralKpisCondos').innerHTML =
+      kpiCard('Condomínios', condosDocs.length, `<span class="neutro">${condosDocs.filter(c => c.id_superlogica).length} ligados ao Superlógica</span>`) +
+      kpiCard('Aguardando conferência', aguardando, '<span class="neutro">documentos enviados pelas síndicas</span>', aguardando ? 't-alerta' : 't-ok') +
+      kpiCard('Com pendência', pendencia, '<span class="neutro">correções pedidas às síndicas</span>', pendencia ? 't-mais' : 't-ok') +
+      kpiCard('Comprovantes × Superlógica', slPronto && totDesp ? Math.round(totCom / totDesp * 100) + '%' : slPronto ? '—' : '…',
+        `<span class="neutro">${slPronto ? (totDesp ? `${totCom} de ${totDesp} despesas comprovadas` : 'nenhuma despesa no mês') : 'consultando o Superlógica'}</span>`,
+        slPronto && totDesp ? (totCom === totDesp ? 't-ok' : 't-alerta') : '');
+  }
+  function renderGeralUsuarios() {
+    const us = adminDados.usuarios || [];
+    const por = p => us.filter(u => u.papel === p && u.ativo).length;
+    const semVinculo = us.filter(u => u.ativo && !u.equipe_slz && u.papel !== 'super_master' && !u.condominios.length);
+    const primeiro = us.filter(u => u.ativo && u.trocar_senha);
+    const bloqueados = us.filter(u => !u.ativo);
+    document.getElementById('geralUsuarios').innerHTML =
+      kpiCard('Usuários ativos', us.filter(u => u.ativo).length, `<span class="neutro">${por('super_master')} Super Master · ${por('master')} Master · ${por('padrao')} Padrão</span>`) +
+      kpiCard('Equipe SLZ × condomínios', us.filter(u => u.ativo && (u.equipe_slz || u.papel === 'super_master')).length + ' · ' + us.filter(u => u.ativo && !u.equipe_slz && u.papel !== 'super_master').length,
+        '<span class="neutro">equipe do escritório · síndicas e usuários de condomínio</span>') +
+      kpiCard('Ainda no 1º acesso', primeiro.length, `<span class="neutro">${primeiro.length ? primeiro.map(u => esc(u.nome)).join(', ') : 'todos já criaram a senha'}</span>`, primeiro.length ? 't-alerta' : 't-ok') +
+      kpiCard('Sem condomínio / bloqueados', semVinculo.length + ' · ' + bloqueados.length,
+        `<span class="neutro">${semVinculo.length ? 'sem condomínio: ' + semVinculo.map(u => esc(u.nome)).join(', ') : 'todos com acesso definido'}</span>`, semVinculo.length ? 't-mais' : '');
+  }
+  document.getElementById('geralAtualizar').addEventListener('click', async () => { await carregarUsuarios(); carregarGeral(true); });
+  document.getElementById('tabGeralCondos').addEventListener('click', e => {
+    const id = e.target.dataset.geralDocs; if (!id) return;
+    document.getElementById('fdTodosMeses').checked = false;
+    document.getElementById('fdCondo').value = id;
+    irParaAba('documentos');
+    window.scrollTo(0, 0);
   });
 
   // ---------- início ----------
