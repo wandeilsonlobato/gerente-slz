@@ -445,6 +445,14 @@
   .btn.grande { height: 44px; padding: 0 20px; font-size: 14.5px; border-radius: 10px; }
   .btn.grande .ic { width: 18px; height: 18px; }
   #sindKpis { margin-bottom: 16px; }
+  .sind-barras .barra-linha > div:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sind-hist { margin-bottom: 16px; }
+  .forn-linha { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--borda); font-size: 14px; }
+  .forn-linha:last-child { border-bottom: 0; }
+  .forn-linha .pos { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--cinza-claro); color: var(--cinza); font-size: 12px; font-weight: 600; }
+  .forn-linha .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .forn-linha .v { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+  .forn-linha .v small { display: block; font-weight: 400; font-size: 12px; color: var(--cinza); }
   .sind-pend { margin-bottom: 16px; border-color: var(--borda-verm); }
   .sind-pend h2 { display: flex; align-items: center; gap: 8px; color: var(--vermelho); }
   .pend-item { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid var(--borda); }
@@ -1048,6 +1056,31 @@
       <div class="card sind-pend" id="sindPend" hidden>
         <div class="card-topo"><h2><svg class="ic" aria-hidden="true"><use href="#i-alerta"/></svg>Precisam de correção</h2><span class="miudo">O escritório pediu para você ajustar estes documentos.</span></div>
         <div id="sindPendLista"></div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h2>Gastos por conta</h2>
+          <div class="legenda">
+            <span><i style="background:var(--neutro)"></i>Mês anterior</span>
+            <span><i style="background:var(--vermelho)"></i>Gastou mais</span>
+            <span><i style="background:var(--verde)"></i>Gastou menos</span>
+            <span><i style="background:var(--azul)"></i>Igual / sem comparação</span>
+          </div>
+          <div class="barras sind-barras" id="sindBarras"></div>
+        </div>
+        <div class="card">
+          <h2>Maiores fornecedores do mês</h2>
+          <div id="sindForn"></div>
+        </div>
+      </div>
+      <div class="card mt sind-hist">
+        <h2>Histórico de gastos do condomínio</h2>
+        <div class="legenda">
+          <span><i style="background:var(--vermelho)"></i>Mais que o mês anterior</span>
+          <span><i style="background:var(--verde)"></i>Menos que o mês anterior</span>
+        </div>
+        <div class="colunas" id="sindHist"></div>
+        <div class="rotulos" id="sindHistRot"></div>
       </div>
     </div>
     <div class="card" id="cardEnviarDoc">
@@ -2781,6 +2814,8 @@
   let formDocAberto = false;   // na área da síndica, o formulário só abre pelo botão "Enviar"
   let pendTodas = [];          // pendências da síndica em qualquer mês
   let focoDoc = null;          // documento para destacar depois de carregar a lista
+  let histSind = [];           // documentos dos últimos 6 meses (só valores) para a visão geral da síndica
+  const mesesHist = () => { const r = []; for (let i = 5; i >= 0; i--) { const k = somaMes(mesSel, -i); if (k >= MES_INICIAL) r.push(k); } return r; };
   async function carregarDocs() {
     const externo = document.body.classList.contains('externo');
     document.getElementById('cardEnviarDoc').hidden = !podeEnviarDocs || !condosDocs.length || (externo && !formDocAberto);
@@ -2806,10 +2841,13 @@
     if (!todosMeses) q = q.eq('competencia', mesSel);
     if (condo) q = q.eq('condominio_id', condo);
     // a situação é filtrada na tela (as abas mostram a contagem de cada uma)
-    const [{ data, error }, pend] = await Promise.all([q, externo
+    let qh = sb.from('documentos').select('competencia, valor, conta, fornecedor').in('competencia', mesesHist());
+    if (condo) qh = qh.eq('condominio_id', condo);
+    const [{ data, error }, pend, hist] = await Promise.all([q, externo
       ? sb.from('documentos').select('id, competencia, tipo, fornecedor, valor, comentario').eq('status', 'pendencia').order('enviado_em')
-      : Promise.resolve({ data: [] })]);
+      : Promise.resolve({ data: [] }), externo ? qh : Promise.resolve({ data: [] })]);
     pendTodas = pend.data || [];
+    histSind = hist.data || [];
     if (error) { lista.innerHTML = `<p class="vazio">Não foi possível carregar: ${esc(error.message)}</p>`; return; }
     docsCarregados = data;
     renderDocs();
@@ -2883,12 +2921,55 @@
     document.getElementById('sindOla').textContent = 'Olá, ' + perfil.nome.split(/\s+/)[0] + '!';
     document.getElementById('sindCondo').textContent = condosDocs.map(c => c.nome).join(' · ') || 'Seu condomínio';
     const docs = docsCarregados, n = st => docs.filter(d => d.status === st).length;
-    const total = docs.reduce((s, d) => s + (Number(d.valor) || 0), 0);
+    const ant = somaMes(mesSel, -1);
+    const doMes = k => histSind.filter(d => d.competencia === k);
+    const soma = l => l.reduce((s, d) => s + (Number(d.valor) || 0), 0);
+    const total = soma(doMes(mesSel)), totAnt = soma(doMes(ant)), temAnt = doMes(ant).length > 0;
     document.getElementById('sindKpis').innerHTML =
-      kpiCard('Enviados no mês', docs.length, `<span class="neutro">${brl(total)} em documentos</span>`) +
+      kpiCard('Gastos do mês', brl(total), variacaoTxt(total, totAnt, temAnt), 't-' + tendencia(total, totAnt, temAnt)) +
+      kpiCard('Documentos enviados', docs.length, `<span class="neutro">${n('conferido')} conferido${n('conferido') === 1 ? '' : 's'} pelo escritório</span>`, docs.length && n('conferido') === docs.length ? 't-ok' : '') +
       kpiCard('Aguardando conferência', n('enviado'), '<span class="neutro">o escritório ainda vai conferir</span>', n('enviado') ? 't-alerta' : '') +
-      kpiCard('Precisam de correção', pendTodas.length, `<span class="neutro">${pendTodas.length ? 'veja os detalhes abaixo' : 'nenhuma correção pedida'}</span>`, pendTodas.length ? 't-mais' : 't-ok') +
-      kpiCard('Conferidos', n('conferido'), '<span class="neutro">aprovados pelo escritório</span>', n('conferido') ? 't-ok' : '');
+      kpiCard('Precisam de correção', pendTodas.length, `<span class="neutro">${pendTodas.length ? 'veja os detalhes abaixo' : 'nenhuma correção pedida'}</span>`, pendTodas.length ? 't-mais' : 't-ok');
+
+    // gastos por conta: mês aberto × mês anterior (junta contas escritas igual, sem ligar para maiúsculas)
+    const contas = new Map();
+    for (const d of histSind) {
+      if (d.competencia !== mesSel && d.competencia !== ant) continue;
+      const k = (d.conta || '').trim().toLowerCase() || '~';
+      if (!contas.has(k)) contas.set(k, { nome: (d.conta || '').trim() || 'Sem conta informada', a: 0, p: 0 });
+      contas.get(k)[d.competencia === mesSel ? 'a' : 'p'] += Number(d.valor) || 0;
+    }
+    let lin = [...contas.values()].sort((x, y) => y.a - x.a || y.p - x.p);
+    if (lin.length > 8) lin = lin.slice(0, 7).concat([lin.slice(7).reduce((o, c) => (o.a += c.a, o.p += c.p, o), { nome: 'Outras contas', a: 0, p: 0 })]);
+    const max = Math.max(1, ...lin.map(c => Math.max(c.a, c.p)));
+    const w = v => (v ? Math.max(v / max * 100, 1.5) : 0) + '%';
+    document.getElementById('sindBarras').innerHTML = lin.length ? lin.map(c => {
+      const t = tendencia(c.a, c.p, temAnt);
+      return `<div class="barra-linha"><div title="${esc(c.nome)}">${esc(c.nome)}</div><div class="barra-par">
+        <div class="b"><div class="trilho"><div class="barra" style="width:${w(c.p)}"></div></div><span>${temAnt ? brl(c.p) : '—'}</span></div>
+        <div class="b atu"><div class="trilho"><div class="barra atu ${t}" style="width:${w(c.a)}"></div></div><span class="${t === 'mais' || t === 'menos' ? t : ''}">${brl(c.a)}</span></div>
+      </div></div>`;
+    }).join('') : '<p class="vazio">Nenhum gasto enviado neste mês nem no anterior.</p>';
+
+    // maiores fornecedores do mês aberto
+    const forn = new Map();
+    for (const d of doMes(mesSel)) {
+      const k = (d.fornecedor || '').trim().toLowerCase();
+      if (!forn.has(k)) forn.set(k, { nome: (d.fornecedor || '').trim() || '—', v: 0, q: 0 });
+      const f = forn.get(k); f.v += Number(d.valor) || 0; f.q++;
+    }
+    const fl = [...forn.values()].sort((x, y) => y.v - x.v).slice(0, 6);
+    document.getElementById('sindForn').innerHTML = fl.length ? fl.map((f, i) => `<div class="forn-linha"><span class="pos">${i + 1}</span><span class="nome" title="${esc(f.nome)}">${esc(f.nome)}</span><span class="v">${brl(f.v)}<small>${f.q} documento${f.q > 1 ? 's' : ''}</small></span></div>`).join('')
+      : `<p class="vazio">Nenhum documento enviado em ${nomeMes(mesSel)}.</p>`;
+
+    // histórico: até 6 meses terminando no mês aberto
+    const meses = mesesHist(), tots = meses.map(k => soma(doMes(k))), tem = meses.map(k => doMes(k).length > 0);
+    const mx = Math.max(1, ...tots);
+    document.getElementById('sindHist').innerHTML = meses.map((k, i) => {
+      const t = i ? tendencia(tots[i], tots[i - 1], tem[i - 1]) : 'sem';
+      return `<div class="coluna ${t} ${k === mesSel ? 'sel' : ''}" title="${nomeMes(k)}: ${brl(tots[i])}"><div class="v">${brlCurto(tots[i])}</div><div class="c" style="height:${tots[i] / mx * 82}%"></div></div>`;
+    }).join('');
+    document.getElementById('sindHistRot').innerHTML = meses.map(k => `<div class="${k === mesSel ? 'sel' : ''}">${nomeMesCurto(k)}</div>`).join('');
     document.getElementById('sindPend').hidden = !pendTodas.length;
     document.getElementById('sindPendLista').innerHTML = pendTodas.map(d => `<div class="pend-item">
         <div><strong>${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}</strong>${d.valor != null ? ' <span class="miudo">· ' + brl(Number(d.valor)) + '</span>' : ''} <span class="miudo">· ${nomeMes(d.competencia)}</span>
