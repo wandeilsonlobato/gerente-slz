@@ -427,3 +427,7 @@ verify_jwt = false
 # Leitura do Superlógica: a própria função confere o login e as permissões.
 [functions.superlogica]
 verify_jwt = false
+
+# Aviso no celular dos devs: quem chama é o gatilho do banco (sem login); a função só avisa uma vez por documento.
+[functions.avisos]
+verify_jwt = false

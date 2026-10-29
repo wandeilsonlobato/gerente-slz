@@ -141,6 +141,8 @@
   #btnInstalar { display: none; }
   .btn-tema { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--borda-forte); background: var(--card); color: var(--texto); display: inline-flex; align-items: center; justify-content: center; padding: 0; box-shadow: var(--sombra-1); }
   .btn-tema:hover { background: var(--cinza-claro); }
+  #btnAvisos.ligado { color: var(--azul); background: var(--azul-claro); border-color: var(--azul); }
+  #btnAvisos[hidden] { display: none; }
 
   main { margin-left: var(--lateral); max-width: calc(1280px + var(--lateral)); padding: 28px 32px 72px; }
   @media (min-width: 1600px) { main { padding-left: 48px; padding-right: 48px; } }
@@ -862,6 +864,7 @@
       <div class="mes" id="mesLabel"></div>
       <button id="mesProx" title="Próximo mês" aria-label="Próximo mês"><svg class="ic" aria-hidden="true"><use href="#i-dir"/></svg></button>
     </div>
+    <button class="btn-tema" id="btnAvisos" hidden title="Ativar avisos de documentos novos" aria-label="Avisos de documentos novos" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-sino"/></svg></button>
     <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro"><svg class="ic" aria-hidden="true"><use href="#i-lua"/></svg></button>
     <div class="usuario-box">
       <span id="quemSou"></span>
@@ -1611,12 +1614,15 @@
   const marcado = (mapa, id) => mapa[id] !== false;
 
   // ---------- render ----------
-  function render() {
-    mesDados(mesSel, true);
-    salvar();
+  function rotularMes() {
     document.getElementById('mesLabel').textContent = window.innerWidth <= 760 ? nomeMesCurto(mesSel) : nomeMes(mesSel);
     document.getElementById('mesAnt').disabled = mesSel <= MES_INICIAL;
     document.querySelectorAll('.mesTxt').forEach(e => e.textContent = nomeMes(mesSel));
+  }
+  function render() {
+    mesDados(mesSel, true);
+    salvar();
+    rotularMes();
     renderAlertas();
     renderPainel();
     renderContas();
@@ -2521,7 +2527,15 @@
     } catch (e) {}
     render();
     if (!pendente() && podeEditar) statusSync('salvo');
-    if (p.papel === 'super_master') carregarUsuarios();
+    if (p.papel === 'super_master') {
+      carregarUsuarios();
+      prepararAvisos();
+      const pa = new URLSearchParams(location.search);
+      if (pa.get('doc')) {
+        history.replaceState(null, '', location.pathname);
+        abrirDocDoAviso({ documento_id: pa.get('doc'), condominio_id: pa.get('condo'), competencia: pa.get('mes') });
+      }
+    }
     contarAguardando();
   }
 
@@ -2569,12 +2583,91 @@
 
   async function sair() {
     if (pendente() && !confirm('Ainda há alterações sendo salvas. Sair mesmo assim?')) return;
+    if (btnAvisos.classList.contains('ligado')) {
+      try { const sub = await inscricaoAtual(); if (sub) await sb.rpc('remover_push', { p_endpoint: sub.endpoint }); } catch (e) {}
+    }
     await sb.auth.signOut();
     // não deixa dados do escritório no aparelho depois de sair
     try { localStorage.removeItem(CHAVE); sessionStorage.clear(); } catch (e) {}
     location.reload();
   }
   document.getElementById('btnSair').onclick = sair;
+
+  // ---------- avisos no celular (Web Push): os devs recebem quando uma síndica envia documento ----------
+  const VAPID_PUBLICA = 'BIWXnHIgPj50Pazqya2963gob2urX24xhsKbKdPxJggxRdPf233UtRJijO3D8mCkJG6vUA9_ipYKPLOgkiaqR80';
+  const btnAvisos = document.getElementById('btnAvisos');
+  const temPush = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const chaveBytes = b64 => Uint8Array.from(atob(b64.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+  async function inscricaoAtual() {
+    if (!temPush()) return null;
+    const reg = await navigator.serviceWorker.ready;
+    return reg.pushManager.getSubscription();
+  }
+  function nomeAparelho() {
+    const u = navigator.userAgent;
+    return (/iPhone|iPad/.test(u) ? 'iPhone' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac/.test(u) ? 'Mac' : 'Aparelho') +
+      (/Edg\//.test(u) ? ' · Edge' : /Chrome\//.test(u) ? ' · Chrome' : /Firefox\//.test(u) ? ' · Firefox' : /Safari\//.test(u) ? ' · Safari' : '');
+  }
+  async function registrarNoServidor(sub) {
+    const j = sub.toJSON();
+    const { error } = await sb.rpc('registrar_push', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_aparelho: nomeAparelho() });
+    if (error) throw error;
+  }
+  function sino(ligado) {
+    btnAvisos.classList.toggle('ligado', ligado);
+    btnAvisos.setAttribute('aria-pressed', ligado);
+    btnAvisos.title = ligado ? 'Avisos ligados neste aparelho (toque para desligar)' : 'Ativar avisos de documentos novos';
+  }
+  // no login do dev: mostra o sino e, se este aparelho já tinha ligado os avisos, liga de novo para quem entrou
+  async function prepararAvisos() {
+    btnAvisos.hidden = false;
+    try {
+      const sub = temPush() && Notification.permission === 'granted' ? await inscricaoAtual() : null;
+      if (sub) await registrarNoServidor(sub);
+      sino(!!sub);
+    } catch (e) { sino(false); }
+  }
+  btnAvisos.addEventListener('click', async () => {
+    if (!temPush()) {
+      alert(/iPhone|iPad/.test(navigator.userAgent)
+        ? 'No iPhone, os avisos só funcionam com o Portal instalado na tela inicial.\n\nNo Safari, toque em Compartilhar → "Adicionar à Tela de Início", abra o Portal pelo ícone e toque no sino de novo.'
+        : 'Este navegador não recebe avisos. Use o Chrome ou o Edge.');
+      return;
+    }
+    const sub = await inscricaoAtual().catch(() => null);
+    if (sub && btnAvisos.classList.contains('ligado')) {
+      if (!confirm('Desligar os avisos de documentos novos neste aparelho?')) return;
+      await sb.rpc('remover_push', { p_endpoint: sub.endpoint });
+      await sub.unsubscribe().catch(() => {});
+      sino(false);
+      toast('Avisos desligados neste aparelho.');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      alert('As notificações do Portal estão bloqueadas neste navegador.\n\nPara liberar: toque no cadeado ao lado do endereço do site → Notificações → Permitir. Depois toque no sino de novo.');
+      return;
+    }
+    if (await Notification.requestPermission() !== 'granted') { toast('Sem a permissão, os avisos não podem ser ligados.'); return; }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const nova = sub || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveBytes(VAPID_PUBLICA) });
+      await registrarNoServidor(nova);
+      sino(true);
+      toast('Pronto! Você vai receber um aviso a cada documento enviado pelas síndicas.');
+    } catch (e) { sino(false); alert('Não foi possível ligar os avisos: ' + (e.message || e)); }
+  });
+  // tocar no aviso abre o documento, no mês e no condomínio dele
+  function abrirDocDoAviso(a) {
+    if (!a || !a.documento_id || !a.condominio_id || !ehDev()) return;
+    if (/^\d{4}-\d{2}$/.test(a.competencia || '') && a.competencia >= MES_INICIAL) mesSel = a.competencia;
+    rotularMes();
+    focoDoc = a.documento_id;
+    document.getElementById('fdStatus').value = '';
+    abrirCondominio(a.condominio_id);
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.tipo === 'abrir-doc') abrirDocDoAviso(e.data);
+  });
 
   window.addEventListener('beforeunload', e => { if (pendente()) { e.preventDefault(); e.returnValue = ''; } });
   window.addEventListener('online', () => { if (pendente()) enviar(); });
