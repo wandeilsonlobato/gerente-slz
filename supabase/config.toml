@@ -419,3 +419,7 @@ enabled = true
 # GestÃ£o de usuÃ¡rios: a prÃ³pria funÃ§Ã£o confere quem estÃ¡ chamando (Super Master logado ou cÃ³digo de primeiro acesso).
 [functions.admin-usuarios]
 verify_jwt = false
+
+# Arquivos das notas (R2): a própria função confere o login e as permissões.
+[functions.documentos-arquivos]
+verify_jwt = false

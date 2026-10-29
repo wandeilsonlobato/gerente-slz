@@ -1,11 +1,12 @@
 // Service worker: deixa o app funcionando offline e instalável no celular.
 // Ao alterar arquivos do app, aumente a versão para forçar a atualização do cache.
-const VERSAO = 'portal-slz-v8';
+const VERSAO = 'portal-slz-v9';
 const ARQUIVOS = [
   './',
   './index.html',
   './logo-slz.png',
   './vendor/supabase.min.js',
+  './vendor/jszip.min.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

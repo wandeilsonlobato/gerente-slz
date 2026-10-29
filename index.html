@@ -76,6 +76,33 @@
   .so-leitura .editar { display: none !important; }
   .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
 
+  /* ---------- documentos (notas e comprovantes) ---------- */
+  .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
+  #formDoc .f-condo { flex-basis: 220px; }
+  #formDoc .arquivos { flex: 1 1 100%; }
+  #formDoc input[type="file"] { padding: 8px; background: var(--cinza-claro); cursor: pointer; }
+  .progresso { margin-top: 12px; display: grid; gap: 6px; }
+  .progresso .item { font-size: 13px; display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 10px; align-items: center; }
+  .progresso .item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .progresso .barrinha { height: 8px; background: var(--cinza-claro); border-radius: 4px; overflow: hidden; }
+  .progresso .barrinha i { display: block; height: 100%; width: 0; background: var(--azul); transition: width .2s; }
+  .progresso .item.ok .barrinha i { background: var(--verde); }
+  .progresso .item.falha { color: var(--vermelho); }
+  .docs { display: grid; gap: 12px; }
+  .doc { border: 1px solid var(--borda); border-left: 5px solid var(--amarelo); border-radius: 10px; padding: 14px; background: var(--card); display: grid; gap: 8px; }
+  .doc.s-pendencia { border-left-color: var(--vermelho); }
+  .doc.s-conferido { border-left-color: var(--verde); }
+  .doc-cab { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .doc-cab strong { font-size: 15px; }
+  .doc-valor { margin-left: auto; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .doc .pendencia { background: var(--vermelho-claro); color: var(--vermelho); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .doc-arqs { display: grid; gap: 6px; }
+  .arq { display: flex; align-items: center; gap: 8px; background: var(--cinza-claro); border-radius: 8px; padding: 6px 10px; font-size: 13px; flex-wrap: wrap; }
+  .arq .nome { flex: 1 1 160px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .arq .btn { padding: 4px 10px; font-size: 12px; }
+  .resumo-docs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: #f6c445; color: #1c1f2a; font-size: 11px; font-weight: 700; margin-left: 4px; }
+
   /* ---------- usuários ---------- */
   .form-usuario label { margin-top: 10px; }
   .form-usuario .linha-senha { display: flex; gap: 8px; }
@@ -410,21 +437,11 @@
   </div>
 </div>
 
-<div class="tela-cheia" id="telaCondominio" hidden>
-  <div class="card largo-tela">
-    <img class="logo" src="logo-slz.png" alt="SLZ">
-    <h1 id="condOla"></h1>
-    <p class="sub" id="condLista"></p>
-    <p class="ajuda" style="text-align:center">Em breve você vai poder enviar por aqui as notas fiscais e os comprovantes do condomínio, direto para o escritório — sem WhatsApp.</p>
-    <button class="btn sec" id="btnSairCond" style="width:100%;margin-top:10px">Sair</button>
-  </div>
-</div>
-
 <header>
   <img src="logo-slz.png" alt="SLZ Administradora de Condomínios">
   <div class="titulo">
     <h1>Portal SLZ</h1>
-    <div class="sub">Controle de gastos do escritório</div>
+    <div class="sub" id="subTitulo">Controle de gastos do escritório</div>
   </div>
   <div class="topo-dir">
     <div class="usuario-box">
@@ -447,6 +464,7 @@
   <button data-aba="despesas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 .7V2l-1 .7L16 1l-3 2-3-2-3 2z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Despesas</button>
   <button data-aba="balancete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/></svg>Balancete</button>
   <button data-aba="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+  <button data-aba="documentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>Documentos<span id="badgeDocs"></span></span></button>
   <button data-aba="usuarios" id="abaUsuarios" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.7"/></svg>Usuários</button>
 </nav>
 
@@ -585,6 +603,45 @@
     <table><thead><tr><th style="width:110px">Código</th><th>Conta</th></tr></thead><tbody id="tabPlanoImpressao"></tbody></table>
   </section>
 
+  <!-- DOCUMENTOS (notas fiscais e comprovantes dos condomínios) -->
+  <section class="aba" id="aba-documentos">
+    <div class="card" id="cardEnviarDoc">
+      <h2>Enviar nota fiscal ou comprovante</h2>
+      <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
+      <form class="lancar" id="formDoc">
+        <div class="f-condo"><label for="dCondo">Condomínio</label><select id="dCondo" required></select></div>
+        <div><label for="dTipo">Tipo</label><select id="dTipo">
+          <option value="nota_fiscal">Nota fiscal</option><option value="comprovante">Comprovante de pagamento</option>
+          <option value="recibo">Recibo</option><option value="boleto">Boleto</option><option value="outro">Outro</option></select></div>
+        <div class="desc"><label for="dFornecedor">Fornecedor / quem recebeu</label><input id="dFornecedor" placeholder="ex.: Atlas Elevadores" autocomplete="off" required></div>
+        <div class="f-valor"><label for="dValor">Valor (R$)</label><input id="dValor" class="valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+        <div><label for="dData">Data do pagamento</label><input type="date" id="dData"></div>
+        <div class="desc"><label for="dConta">Conta (o que foi pago)</label><input id="dConta" list="dContas" placeholder="ex.: Manutenção do elevador" autocomplete="off"><datalist id="dContas"></datalist></div>
+        <div class="desc"><label for="dDesc">Observação</label><input id="dDesc" placeholder="opcional" autocomplete="off"></div>
+        <div class="arquivos"><label for="dArquivos">Arquivos (PDF ou foto)</label><input type="file" id="dArquivos" multiple accept="application/pdf,image/*" required>
+          <p class="miudo" style="margin:4px 0 0">Até 10 arquivos de até 25 MB cada. No celular, dá para tirar a foto na hora.</p></div>
+        <div class="enviar"><button class="btn" type="submit">Enviar documento</button></div>
+      </form>
+      <div class="progresso" id="progressoEnvio"></div>
+    </div>
+    <div class="card mt">
+      <div class="card-topo">
+        <h2 id="tituloDocs">Documentos</h2>
+        <div class="acoes"><button class="btn sec peq" id="btnZip">Baixar tudo (ZIP)</button></div>
+      </div>
+      <div class="filtro">
+        <select id="fdCondo" aria-label="Condomínio"></select>
+        <select id="fdStatus" aria-label="Situação">
+          <option value="">Todas as situações</option><option value="enviado">Aguardando conferência</option>
+          <option value="pendencia">Com pendência</option><option value="conferido">Conferidos</option></select>
+        <label class="check so-equipe"><input type="checkbox" id="fdTodosMeses"> Todos os meses</label>
+        <span class="total" id="fdTotal"></span>
+      </div>
+      <div class="resumo-docs" id="resumoDocs"></div>
+      <div class="docs" id="listaDocs"><p class="vazio">Carregando…</p></div>
+    </div>
+  </section>
+
   <!-- USUÁRIOS (só Super Master) -->
   <section class="aba" id="aba-usuarios">
     <div class="grid g2">
@@ -692,6 +749,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="vendor/supabase.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
 <script>
 (function () {
   // servidor do Portal SLZ (a chave pública pode ficar na página; quem protege os dados são as regras do banco)
@@ -784,6 +842,10 @@
   // ---------- gravação no servidor ----------
   let perfil = null;          // usuário logado
   let podeEditar = false;     // Super Master ou Master da equipe
+  let ehEquipe = false;       // equipe SLZ (vê o escritório e todos os condomínios)
+  let podeEnviarDocs = false; // Master e Super Master enviam notas; Padrão só vê e baixa
+  let podeConferir = false;   // equipe que confere os documentos
+  let condosDocs = [];        // condomínios que a pessoa enxerga
   let versaoServidor = 0;     // versão que temos; o servidor recusa gravar por cima de versão mais nova
   let ultimoEnviado = '';     // o que já está no servidor
   let enviando = false, timerEnvio = null;
@@ -1030,6 +1092,7 @@
     renderBalancete();
     renderConfig();
     aplicarPermissoes();
+    if (perfil && document.getElementById('aba-documentos').classList.contains('ativa')) carregarDocs();
   }
 
   // quem só visualiza: esconde botões de edição e trava os campos (o servidor também recusa gravar)
@@ -1038,7 +1101,7 @@
     if (!podeEditar) {
       document.querySelectorAll('#tabContas input, #tabDespesas input, #tabDespesas select, #tabConfig input, #planoEditor input, #planoEditor select')
         .forEach(el => { el.disabled = true; });
-      statusSync('leitura');
+      if (ehEquipe) statusSync('leitura');
     }
   }
 
@@ -1402,6 +1465,7 @@
     document.querySelectorAll('nav.abas button').forEach(x => x.classList.toggle('ativa', x.dataset.aba === nome));
     document.querySelectorAll('.aba').forEach(s => s.classList.toggle('ativa', s.id === 'aba-' + nome));
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
+    if (nome === 'documentos' && perfil) carregarDocs();
   }
   document.querySelectorAll('nav.abas button').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.aba); window.scrollTo(0, 0); }));
   document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => { irParaAba(b.dataset.ir); window.scrollTo(0, 0); }));
@@ -1803,7 +1867,7 @@
   window.addEventListener('appinstalled', () => { btnInstalar.style.display = 'none'; toast('App instalado!'); });
 
   // ---------- login ----------
-  const TELAS = ['telaCarregando', 'telaLogin', 'telaSenha', 'telaCondominio'];
+  const TELAS = ['telaCarregando', 'telaLogin', 'telaSenha'];
   function mostrarTela(nome) {
     TELAS.forEach(t => { document.getElementById(t).hidden = t !== nome; });
     document.body.classList.toggle('tela-app', nome === 'app');
@@ -1825,19 +1889,23 @@
     if (p.trocar_senha) { mostrarTela('telaSenha'); return; }
 
     const equipe = p.papel === 'super_master' || p.equipe_slz;
+    ehEquipe = equipe;
+    podeEnviarDocs = p.papel !== 'padrao';
+    podeConferir = equipe && p.papel !== 'padrao';
+    document.body.classList.toggle('externo', !equipe);
+    document.getElementById('quemSou').innerHTML = '<strong>' + esc(p.nome) + '</strong> · ' + NOMES_PAPEL[p.papel];
+    await carregarCondos();
     if (!equipe) {
-      // síndicas e usuários de condomínio: área própria (envio de documentos virá aqui)
-      const { data: condos } = await sb.from('condominios').select('nome').eq('ativo', true).order('nome');
-      document.getElementById('condOla').textContent = 'Olá, ' + p.nome.split(' ')[0] + '!';
-      document.getElementById('condLista').textContent = condos && condos.length
-        ? 'Condomínio' + (condos.length > 1 ? 's' : '') + ': ' + condos.map(c => c.nome).join(', ')
-        : 'Nenhum condomínio vinculado ao seu usuário ainda.';
-      mostrarTela('telaCondominio');
+      // síndicas e usuários de condomínio: só a aba Documentos, do(s) condomínio(s) dela(s)
+      podeEditar = false;
+      document.getElementById('subTitulo').textContent = condosDocs.length === 1 ? condosDocs[0].nome : 'Documentos do condomínio';
+      mostrarTela('app');
+      irParaAba('documentos');
+      render();
       return;
     }
 
     podeEditar = p.papel === 'super_master' || p.papel === 'master';
-    document.getElementById('quemSou').innerHTML = '<strong>' + esc(p.nome) + '</strong> · ' + NOMES_PAPEL[p.papel];
     document.getElementById('abaUsuarios').hidden = p.papel !== 'super_master';
     try {
       const temNoServidor = await carregarDoServidor();
@@ -1858,6 +1926,7 @@
     render();
     if (!pendente() && podeEditar) statusSync('salvo');
     if (p.papel === 'super_master') carregarUsuarios();
+    contarAguardando();
   }
 
   document.getElementById('formLogin').addEventListener('submit', async e => {
@@ -1910,7 +1979,6 @@
     location.reload();
   }
   document.getElementById('btnSair').onclick = sair;
-  document.getElementById('btnSairCond').onclick = sair;
 
   window.addEventListener('beforeunload', e => { if (pendente()) { e.preventDefault(); e.returnValue = ''; } });
   window.addEventListener('online', () => { if (pendente()) enviar(); });
@@ -2057,6 +2125,297 @@
     if (error) { alert(/duplicate|unique/i.test(error.message) ? 'Esse condomínio já existe.' : error.message); return; }
     e.target.reset(); toast('Condomínio adicionado');
     carregarUsuarios();
+  });
+
+  // ---------- documentos: notas fiscais e comprovantes (arquivos no Cloudflare R2) ----------
+  const TIPOS_DOC = { nota_fiscal: 'Nota fiscal', comprovante: 'Comprovante', recibo: 'Recibo', boleto: 'Boleto', outro: 'Outro' };
+  const SITUACAO = { enviado: ['pendente', 'Aguardando conferência'], pendencia: ['atrasada', 'Pendência'], conferido: ['paga', 'Conferido'] };
+  const MIME_POR_EXT = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' };
+  const TAMANHO_MAX = 25 * 1024 * 1024;
+  let docsCarregados = [];
+
+  async function docsApi(corpo) {
+    const { data, error } = await sb.functions.invoke('documentos-arquivos', { body: corpo });
+    if (error) {
+      let msg = error.message;
+      try { const j = await error.context.json(); msg = j.erro || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    return data;
+  }
+  // alguns celulares/Windows não informam o tipo do arquivo (ex.: .heic): usa a extensão
+  function tipoArquivo(f) {
+    if (Object.values(MIME_POR_EXT).includes(f.type)) return f.type;
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    return !f.type || f.type === 'application/octet-stream' ? MIME_POR_EXT[ext] || null : null;
+  }
+  const extDe = mime => Object.keys(MIME_POR_EXT).find(k => MIME_POR_EXT[k] === mime && k !== 'jpeg') || 'bin';
+  const fmtTamanho = b => b >= 1048576 ? (b / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+  async function hashSha256(blob) {
+    const h = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+    return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function validarArquivos(files) {
+    if (!files.length) return 'Escolha pelo menos um arquivo.';
+    if (files.length > 10) return 'Envie no máximo 10 arquivos por documento.';
+    for (const f of files) {
+      if (!tipoArquivo(f)) return `"${f.name}" não é PDF nem foto. Envie PDF, JPG, PNG, WEBP ou HEIC.`;
+      if (f.size > TAMANHO_MAX) return `"${f.name}" tem ${fmtTamanho(f.size)}. O limite é 25 MB por arquivo.`;
+    }
+    return '';
+  }
+  // upload com barra de progresso (fetch não mostra o progresso de envio)
+  function putArquivo(url, file, tipo, aoProgredir) {
+    return new Promise((ok, falha) => {
+      const x = new XMLHttpRequest();
+      x.open('PUT', url);
+      x.setRequestHeader('Content-Type', tipo);
+      x.upload.onprogress = e => { if (e.lengthComputable) aoProgredir(e.loaded / e.total); };
+      x.onload = () => x.status >= 200 && x.status < 300 ? ok() : falha(new Error('O envio falhou (' + x.status + ').'));
+      x.onerror = () => falha(new Error('Sem conexão durante o envio.'));
+      x.send(file);
+    });
+  }
+  async function enviarArquivos(docId, files) {
+    const caixa = document.getElementById('progressoEnvio');
+    caixa.innerHTML = files.map((f, i) => `<div class="item" id="prog${i}"><span>${esc(f.name)} · ${fmtTamanho(f.size)}</span><div class="barrinha"><i></i></div></div>`).join('');
+    const falhas = [];
+    for (const [i, f] of files.entries()) {
+      const linha = document.getElementById('prog' + i), barra = linha.querySelector('i');
+      try {
+        const tipo = tipoArquivo(f);
+        const sha256 = await hashSha256(f);
+        const { arquivo_id, url } = await docsApi({ acao: 'upload_url', documento_id: docId, nome: f.name, tipo, tamanho: f.size, sha256 });
+        await putArquivo(url, f, tipo, p => { barra.style.width = Math.round(p * 95) + '%'; });
+        await docsApi({ acao: 'confirmar', arquivo_id });
+        barra.style.width = '100%'; linha.classList.add('ok');
+      } catch (e) {
+        linha.classList.add('falha'); linha.querySelector('span').textContent = '⚠ ' + f.name + ': ' + e.message;
+        falhas.push(f.name);
+      }
+    }
+    return falhas;
+  }
+
+  async function carregarCondos() {
+    const { data } = await sb.from('condominios').select('id, nome').eq('ativo', true).order('nome');
+    condosDocs = data || [];
+    const opcoes = condosDocs.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+    document.getElementById('dCondo').innerHTML = opcoes;
+    const fd = document.getElementById('fdCondo');
+    fd.innerHTML = (condosDocs.length > 1 ? '<option value="">Todos os condomínios</option>' : '') + opcoes;
+    fd.hidden = condosDocs.length < 2;
+  }
+
+  async function contarAguardando() {
+    if (!podeConferir) return;
+    const { count } = await sb.from('documentos').select('id', { count: 'exact', head: true }).eq('status', 'enviado');
+    document.getElementById('badgeDocs').innerHTML = count ? `<span class="badge" title="Aguardando conferência">${count}</span>` : '';
+  }
+
+  async function carregarDocs() {
+    document.getElementById('cardEnviarDoc').hidden = !podeEnviarDocs || !condosDocs.length;
+    const lista = document.getElementById('listaDocs');
+    if (!condosDocs.length) {
+      lista.innerHTML = `<p class="vazio">${ehEquipe ? 'Nenhum condomínio cadastrado ainda. O Super Master cadastra na aba Usuários.' : 'Seu usuário ainda não está ligado a nenhum condomínio. Fale com o escritório.'}</p>`;
+      document.getElementById('btnZip').hidden = true;
+      return;
+    }
+    const todosMeses = ehEquipe && document.getElementById('fdTodosMeses').checked;
+    const condo = document.getElementById('fdCondo').value || (condosDocs.length === 1 ? condosDocs[0].id : '');
+    const situacao = document.getElementById('fdStatus').value;
+    document.getElementById('tituloDocs').textContent = todosMeses ? 'Documentos de todos os meses' : 'Documentos de ' + nomeMes(mesSel);
+    let q = sb.from('documentos')
+      .select('*, documento_arquivos(id, nome_original, tipo_mime, tamanho, sha256, confirmado, criado_em), enviado:perfis!enviado_por(nome), conferido:perfis!conferido_por(nome)')
+      .order('enviado_em', { ascending: false });
+    if (!todosMeses) q = q.eq('competencia', mesSel);
+    if (condo) q = q.eq('condominio_id', condo);
+    if (situacao) q = q.eq('status', situacao);
+    const { data, error } = await q;
+    if (error) { lista.innerHTML = `<p class="vazio">Não foi possível carregar: ${esc(error.message)}</p>`; return; }
+    docsCarregados = data;
+    renderDocs();
+    contarAguardando();
+  }
+
+  function renderDocs() {
+    const docs = docsCarregados;
+    const nomeCondo = id => (condosDocs.find(c => c.id === id) || { nome: '' }).nome;
+    const variosCondos = new Set(docs.map(d => d.condominio_id)).size > 1;
+    const total = docs.reduce((s, d) => s + (Number(d.valor) || 0), 0);
+    document.getElementById('fdTotal').textContent = docs.length ? docs.length + ' documento' + (docs.length > 1 ? 's' : '') + ' · ' + brl(total) : '';
+    const n = st => docs.filter(d => d.status === st).length;
+    document.getElementById('resumoDocs').innerHTML = docs.length ? Object.entries(SITUACAO)
+      .map(([k, [cls, txt]]) => n(k) ? `<span class="tag ${cls}">${txt}: ${n(k)}</span>` : '').join('') : '';
+    document.getElementById('btnZip').hidden = !docs.some(d => d.documento_arquivos.some(a => a.confirmado));
+    const contas = [...new Set(docs.map(d => d.conta).filter(Boolean))];
+    document.getElementById('dContas').innerHTML = contas.map(c => `<option value="${esc(c)}">`).join('');
+
+    document.getElementById('listaDocs').innerHTML = docs.length ? docs.map(d => {
+      const [cls, txt] = SITUACAO[d.status];
+      const meu = d.enviado_por === perfil.id;
+      const editavel = podeConferir || (podeEnviarDocs && d.status !== 'conferido');
+      const arqs = d.documento_arquivos.filter(a => a.confirmado).sort((a, b) => a.criado_em.localeCompare(b.criado_em));
+      const detalhes = [
+        variosCondos || (ehEquipe && condosDocs.length > 1) ? '<strong>' + esc(nomeCondo(d.condominio_id)) + '</strong>' : '',
+        d.conta ? esc(d.conta) : '',
+        d.data_pagamento ? 'Pago em ' + fmtData(d.data_pagamento) : '',
+        document.getElementById('fdTodosMeses').checked ? 'Ref. ' + nomeMesCurto(d.competencia) : '',
+        'Enviado' + (d.enviado ? ' por ' + esc(d.enviado.nome) : meu ? ' por você' : '') + ' em ' + new Date(d.enviado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+        d.status === 'conferido' && d.conferido_em ? 'Conferido' + (d.conferido ? ' por ' + esc(d.conferido.nome) : '') + ' em ' + new Date(d.conferido_em).toLocaleDateString('pt-BR') : ''
+      ].filter(Boolean).join(' · ');
+      return `<div class="doc s-${d.status}" data-doc="${d.id}">
+        <div class="doc-cab"><span class="tag ${cls}">${txt}</span><strong>${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}</strong><span class="doc-valor">${d.valor != null ? brl(Number(d.valor)) : ''}</span></div>
+        <div class="miudo">${detalhes}</div>
+        ${d.descricao ? `<div>${esc(d.descricao)}</div>` : ''}
+        ${d.status === 'pendencia' && d.comentario ? `<div class="pendencia"><strong>Correção pedida pelo escritório:</strong> ${esc(d.comentario)}</div>` : ''}
+        <div class="doc-arqs">${arqs.length ? arqs.map(a => `<div class="arq" data-arq="${a.id}">
+            <span>${a.tipo_mime === 'application/pdf' ? '📄' : '🖼️'}</span><span class="nome" title="${esc(a.nome_original)}">${esc(a.nome_original)}</span><span class="miudo">${fmtTamanho(a.tamanho)}</span>
+            <button class="btn sec" data-arq-acao="abrir">Abrir</button><button class="btn sec" data-arq-acao="baixar">Baixar</button>
+            ${editavel ? '<button class="btn perigo" data-arq-acao="excluir" title="Remover arquivo">✕</button>' : ''}</div>`).join('')
+          : '<span class="miudo">⚠ Nenhum arquivo enviado.</span>'}</div>
+        <div class="acoes">
+          ${podeConferir && d.status !== 'conferido' ? '<button class="btn peq" data-doc-acao="conferir">✓ Conferido</button>' : ''}
+          ${podeConferir && d.status !== 'pendencia' ? '<button class="btn sec peq" data-doc-acao="pendencia">Pedir correção</button>' : ''}
+          ${podeConferir && d.status === 'conferido' ? '<button class="btn sec peq" data-doc-acao="reabrir">Voltar para conferência</button>' : ''}
+          ${!podeConferir && podeEnviarDocs && d.status === 'pendencia' ? '<button class="btn peq" data-doc-acao="corrigido">Já corrigi — enviar de novo</button>' : ''}
+          ${editavel ? `<label class="btn sec peq" style="cursor:pointer">+ Arquivo<input type="file" multiple accept="application/pdf,image/*" data-doc-mais hidden></label>` : ''}
+          ${editavel ? '<button class="btn perigo peq" data-doc-acao="excluir">Excluir</button>' : ''}
+        </div>
+      </div>`;
+    }).join('') : `<p class="vazio">Nenhum documento ${document.getElementById('fdStatus').value ? 'nessa situação' : 'enviado'}${document.getElementById('fdTodosMeses').checked ? '' : ' em ' + nomeMes(mesSel)}.</p>`;
+  }
+
+  document.getElementById('formDoc').addEventListener('submit', async e => {
+    e.preventDefault();
+    const files = [...document.getElementById('dArquivos').files];
+    const msg = validarArquivos(files);
+    if (msg) { alert(msg); return; }
+    const valorTxt = document.getElementById('dValor').value.trim();
+    const valor = valorTxt ? lerValor(valorTxt) : null;
+    if (valorTxt && (isNaN(valor) || valor < 0)) { alert('Valor inválido.'); return; }
+    const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true; btn.textContent = 'Enviando…';
+    try {
+      const { data: doc, error } = await sb.from('documentos').insert({
+        condominio_id: document.getElementById('dCondo').value,
+        competencia: mesSel,
+        tipo: document.getElementById('dTipo').value,
+        fornecedor: document.getElementById('dFornecedor').value.trim(),
+        valor,
+        data_pagamento: document.getElementById('dData').value || null,
+        conta: document.getElementById('dConta').value.trim() || null,
+        descricao: document.getElementById('dDesc').value.trim() || null,
+        enviado_por: perfil.id
+      }).select('id').single();
+      if (error) throw new Error(error.message);
+      const falhas = await enviarArquivos(doc.id, files);
+      if (falhas.length) alert('O documento foi registrado, mas ' + falhas.length + ' arquivo(s) não foram enviados. Use "+ Arquivo" no documento para tentar de novo.');
+      else { toast('Documento enviado para o escritório'); e.target.reset(); setTimeout(() => { document.getElementById('progressoEnvio').innerHTML = ''; }, 2500); }
+    } catch (err) { alert('Não foi possível enviar: ' + err.message); }
+    btn.disabled = false; btn.textContent = 'Enviar documento';
+    carregarDocs();
+  });
+
+  const listaDocs = document.getElementById('listaDocs');
+  // baixa o arquivo e confere a "impressão digital": prova que é idêntico ao que foi enviado
+  async function baixarConferido(arq) {
+    const { url } = await docsApi({ acao: 'download_url', arquivo_id: arq.id });
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Não foi possível baixar o arquivo.');
+    const blob = await resp.blob();
+    const integro = (await hashSha256(blob)) === arq.sha256;
+    return { blob, integro };
+  }
+  listaDocs.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const card = b.closest('[data-doc]'); if (!card) return;
+    const doc = docsCarregados.find(d => d.id === card.dataset.doc);
+    const arqId = b.closest('[data-arq]') && b.closest('[data-arq]').dataset.arq;
+    const arq = arqId && doc.documento_arquivos.find(a => a.id === arqId);
+    try {
+      if (b.dataset.arqAcao === 'abrir') {
+        const janela = window.open('', '_blank');
+        const { url } = await docsApi({ acao: 'download_url', arquivo_id: arq.id, abrir: true });
+        if (janela) janela.location = url; else location.href = url;
+      } else if (b.dataset.arqAcao === 'baixar') {
+        b.disabled = true;
+        const { blob, integro } = await baixarConferido(arq);
+        baixar(arq.nome_original, blob, arq.tipo_mime);
+        toast(integro ? '✓ Arquivo íntegro — idêntico ao enviado' : '⚠ O arquivo baixado não confere com o enviado. Tente de novo.');
+        b.disabled = false;
+      } else if (b.dataset.arqAcao === 'excluir') {
+        if (!confirm(`Remover o arquivo "${arq.nome_original}"?`)) return;
+        await docsApi({ acao: 'excluir_arquivo', arquivo_id: arq.id }); toast('Arquivo removido'); carregarDocs();
+      } else if (b.dataset.docAcao === 'excluir') {
+        if (!confirm(`Excluir o documento "${TIPOS_DOC[doc.tipo]} · ${doc.fornecedor}" e todos os arquivos dele?`)) return;
+        await docsApi({ acao: 'excluir_documento', documento_id: doc.id }); toast('Documento excluído'); carregarDocs();
+      } else if (b.dataset.docAcao) {
+        const mudancas = {
+          conferir: { status: 'conferido', comentario: null },
+          reabrir: { status: 'enviado' },
+          corrigido: { descricao: doc.descricao }   // qualquer alteração da síndica devolve para "aguardando"
+        }[b.dataset.docAcao];
+        let alteracao = mudancas;
+        if (b.dataset.docAcao === 'pendencia') {
+          const comentario = prompt('O que precisa ser corrigido? A síndica vai ver esta mensagem.', doc.comentario || '');
+          if (comentario === null) return;
+          if (!comentario.trim()) { alert('Escreva o que precisa ser corrigido.'); return; }
+          alteracao = { status: 'pendencia', comentario: comentario.trim() };
+        }
+        const { error } = await sb.from('documentos').update(alteracao).eq('id', doc.id);
+        if (error) throw new Error(error.message);
+        toast({ conferir: 'Documento conferido', pendencia: 'Correção pedida', reabrir: 'Voltou para conferência', corrigido: 'Enviado de novo para o escritório' }[b.dataset.docAcao]);
+        carregarDocs();
+      }
+    } catch (err) { b.disabled = false; alert(err.message); }
+  });
+  listaDocs.addEventListener('change', async e => {
+    if (!e.target.hasAttribute('data-doc-mais')) return;
+    const files = [...e.target.files];
+    const id = e.target.closest('[data-doc]').dataset.doc;
+    const msg = validarArquivos(files);
+    if (msg) { alert(msg); return; }
+    document.getElementById('cardEnviarDoc').hidden = false;
+    const falhas = await enviarArquivos(id, files);
+    toast(falhas.length ? 'Alguns arquivos não foram enviados' : 'Arquivo adicionado');
+    carregarDocs();
+  });
+  ['fdCondo', 'fdStatus', 'fdTodosMeses'].forEach(id => document.getElementById(id).addEventListener('change', carregarDocs));
+
+  // ZIP com tudo o que está na lista, já organizado e com resumo, para a prestação de contas
+  document.getElementById('btnZip').addEventListener('click', async e => {
+    const btn = e.target;
+    const docs = docsCarregados.filter(d => d.documento_arquivos.some(a => a.confirmado));
+    const nomeCondo = id => (condosDocs.find(c => c.id === id) || { nome: 'Condomínio' }).nome;
+    const limpo = t => String(t).replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80);
+    const variosCondos = new Set(docs.map(d => d.condominio_id)).size > 1;
+    const zip = new JSZip();
+    const linhas = [['Nº', 'Condomínio', 'Mês', 'Tipo', 'Fornecedor', 'Conta', 'Valor', 'Data do pagamento', 'Situação', 'Arquivo', 'Íntegro', 'Enviado por', 'Enviado em']];
+    let feitos = 0, problemas = 0;
+    const totalArqs = docs.reduce((s, d) => s + d.documento_arquivos.filter(a => a.confirmado).length, 0);
+    btn.disabled = true;
+    try {
+      for (const [i, d] of docs.entries()) {
+        const pasta = variosCondos ? limpo(nomeCondo(d.condominio_id)) + '/' : '';
+        const arqs = d.documento_arquivos.filter(a => a.confirmado).sort((a, b) => a.criado_em.localeCompare(b.criado_em));
+        for (const [k, a] of arqs.entries()) {
+          btn.textContent = `Baixando ${++feitos} de ${totalArqs}…`;
+          const { blob, integro } = await baixarConferido(a);
+          if (!integro) problemas++;
+          const nome = `${String(i + 1).padStart(2, '0')} ${TIPOS_DOC[d.tipo]} - ${limpo(d.fornecedor)}${d.valor != null ? ' - R$ ' + fmtValorInput(Number(d.valor)) : ''}${arqs.length > 1 ? ' (' + (k + 1) + ')' : ''}.${extDe(a.tipo_mime)}`;
+          zip.file(pasta + nome, blob);
+          linhas.push([i + 1, nomeCondo(d.condominio_id), d.competencia, TIPOS_DOC[d.tipo], d.fornecedor, d.conta || '', d.valor != null ? fmtValorInput(Number(d.valor)) : '',
+            d.data_pagamento ? fmtData(d.data_pagamento) : '', SITUACAO[d.status][1], pasta + nome, integro ? 'sim' : 'NÃO', d.enviado ? d.enviado.nome : '', new Date(d.enviado_em).toLocaleString('pt-BR')]);
+        }
+      }
+      zip.file('Resumo dos documentos.csv', paraCsv(linhas));
+      btn.textContent = 'Montando o ZIP…';
+      const conteudo = await zip.generateAsync({ type: 'blob' });
+      const titulo = (variosCondos ? 'Condomínios' : limpo(nomeCondo(docs[0].condominio_id))) + (document.getElementById('fdTodosMeses').checked ? ' - todos os meses' : ' - ' + mesSel);
+      baixar(titulo + '.zip', conteudo, 'application/zip');
+      toast(problemas ? `⚠ ${problemas} arquivo(s) não conferem com o enviado` : `✓ ZIP pronto: ${totalArqs} arquivo(s) conferidos`);
+    } catch (err) { alert('Não foi possível montar o ZIP: ' + err.message); }
+    btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
   });
 
   // ---------- início ----------
