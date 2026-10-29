@@ -127,6 +127,8 @@
   .conc-linha { display: grid; grid-template-columns: 90px minmax(0, 1.4fr) minmax(0, 1fr) 120px; gap: 10px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--borda); font-size: 13px; }
   .conc-linha .v { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
   .conc-linha .doc-ref { color: var(--cinza); }
+  .sl-desc { display: block; font-size: 12px; color: var(--azul); margin-top: 2px; }
+  .sl-desc .tag { font-size: 11px; padding: 1px 8px; }
   .progresso-conc { display: flex; align-items: center; gap: 8px; min-width: 150px; }
   .progresso-conc .trilho { flex: 1; height: 10px; }
   .progresso-conc .barra { background: var(--verde); }
@@ -801,9 +803,9 @@
       <div class="card-topo">
         <h2>Conciliação bancária — <span class="mesTxt"></span></h2>
         <span class="tag sl">só devs</span>
-        <div class="acoes"><label class="btn peq" style="cursor:pointer">+ Enviar extrato OFX<input type="file" id="concArquivo" accept=".ofx,.OFX" multiple hidden></label></div>
+        <div class="acoes"><button class="btn sec peq" id="concPlanilha" hidden>Baixar planilha</button><label class="btn peq" style="cursor:pointer">+ Enviar extrato OFX<input type="file" id="concArquivo" accept=".ofx,.OFX" multiple hidden></label></div>
       </div>
-      <p class="ajuda">As <strong>saídas</strong> do extrato (pagamentos feitos pelo condomínio) são comparadas com as notas e comprovantes enviados pela síndica: mesmo valor e até 5 dias de diferença na data. As <strong>entradas</strong> (boletos pagos pelos moradores) não têm nota e não entram na comparação.</p>
+      <p class="ajuda">As <strong>saídas</strong> do extrato (pagamentos feitos pelo condomínio) são comparadas com as notas e comprovantes enviados pela síndica: mesmo valor e até 5 dias de diferença na data. As <strong>entradas</strong> (boletos pagos pelos moradores) não têm nota e não entram na comparação. Embaixo de cada saída aparece o que ela é no Superlógica (só leitura), para ajudar na conciliação manual de lá.</p>
       <div id="concExtratos"></div>
       <div class="resumo-docs" id="concResumo"></div>
       <div id="concResultado"></div>
@@ -2861,11 +2863,54 @@
       carregarExtratos(condo, mesSel),
       sb.from('documentos').select('id, tipo, fornecedor, valor, data_pagamento, status, competencia').eq('condominio_id', condo).in('competencia', [somaMes(mesSel, -1), mesSel, somaMes(mesSel, 1)])
     ]);
-    renderConc(extratos, docs || []);
+    renderConc(extratos, docs || [], null);
+    if (!extratos.length) return;
+    // o que cada saída é no Superlógica, no período do extrato (só leitura)
+    const datas = extratos.flatMap(e => e.extrato_lancamentos.map(l => l.data)).sort();
+    const chave = condo + '|' + datas[0] + '|' + datas[datas.length - 1];
+    try {
+      if (!cacheConcSL[chave]) cacheConcSL[chave] = await slApi({ acao: 'conciliacao', condominio_id: condo, inicio: datas[0], fim: datas[datas.length - 1] });
+      if (document.getElementById('fdCondo').value === condo) renderConc(extratos, docs || [], cacheConcSL[chave]);
+    } catch (e) { renderConc(extratos, docs || [], { erro: e.message }); }
   }
+  const cacheConcSL = {};
 
-  function renderConc(extratos, docs) {
-    const fmtL = l => `<span>${fmtData(l.data)}</span><span>${esc(l.descricao || '—')}</span>`;
+  // cada saída do extrato × despesas do Superlógica: paga com o mesmo valor e até 5 dias (par único),
+  // senão em aberto com o mesmo valor (falta dar baixa), senão não lançada
+  function casarSL(saidas, sl) {
+    const mapa = new Map();
+    if (!sl || sl.erro || sl.sem_ligacao) return mapa;
+    const igual = (d, s) => Number(d.valor).toFixed(2) === Math.abs(s.valor).toFixed(2);
+    const cands = new Map(saidas.map(sd => [sd, sl.pagas.filter(d => d.liquidacao && igual(d, sd) && diasEntre(d.liquidacao, sd.data) <= FOLGA_DIAS)]));
+    const disputa = new Map();
+    cands.forEach(l => l.forEach(d => disputa.set(d, (disputa.get(d) || 0) + 1)));
+    cands.forEach((lista, sd) => {
+      if (lista.length === 1 && disputa.get(lista[0]) === 1) mapa.set(sd.id, { tipo: 'paga', ds: lista });
+      else if (lista.length) mapa.set(sd.id, { tipo: 'varias', ds: lista });
+      else {
+        const abertas = sl.em_aberto.filter(d => igual(d, sd));
+        mapa.set(sd.id, abertas.length ? { tipo: 'aberto', ds: abertas } : { tipo: 'nada', ds: [] });
+      }
+    });
+    return mapa;
+  }
+  const descSL = d => [d.favorecido, d.categoria, d.conta_bancaria].filter(Boolean).join(' · ');
+  function linhaSL(info, sl) {
+    if (!sl) return '<span class="sl-desc miudo">Consultando o Superlógica…</span>';
+    if (sl.erro) return `<span class="sl-desc miudo">⚠ Superlógica: ${esc(sl.erro)}</span>`;
+    if (sl.sem_ligacao || !info) return '';
+    // várias despesas com o mesmo valor, mas todas do mesmo favorecido e conta (ex.: contas de luz): a descrição é a mesma
+    const mesmaDescricao = info.ds.length && info.ds.every(d => descSL(d) === descSL(info.ds[0]));
+    if (info.tipo === 'paga' || (info.tipo === 'varias' && mesmaDescricao)) return `<span class="sl-desc">Superlógica: <strong>${esc(info.ds[0].favorecido || 'sem favorecido')}</strong>${info.ds[0].categoria ? ' · ' + esc(info.ds[0].categoria) : ''}${info.ds[0].conta_bancaria ? ' · ' + esc(info.ds[0].conta_bancaria) : ''}</span>`;
+    if (info.tipo === 'varias') return `<span class="sl-desc">Superlógica (mais de uma com esse valor): ${info.ds.slice(0, 3).map(d => esc(d.favorecido)).join(' ou ')}</span>`;
+    if (info.tipo === 'aberto') return `<span class="sl-desc"><span class="tag pendente">⏳ em aberto no Superlógica — falta dar baixa</span> ${esc(info.ds[0].favorecido)}${info.ds[0].vencimento ? ' · vence ' + fmtData(info.ds[0].vencimento) : ''}</span>`;
+    return '<span class="sl-desc"><span class="tag atrasada">não lançado no Superlógica</span></span>';
+  }
+  let ultimaConc = null;   // para a planilha
+
+  function renderConc(extratos, docs, sl) {
+    let mapaSL = new Map();
+    const fmtL = l => `<span>${fmtData(l.data)}</span><span>${esc(l.descricao || '—')}${linhaSL(mapaSL.get(l.id), sl)}</span>`;
     const refDoc = g => `<span class="doc-ref">${g.docs.map(d => `${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}${d.data_pagamento ? ' · pago ' + fmtData(d.data_pagamento) : ''}`).join('<br>')}</span>`;
     document.getElementById('concExtratos').innerHTML = extratos.length ? extratos.map(e => {
       const n = e.extrato_lancamentos.length, s = e.extrato_lancamentos.filter(l => Number(l.valor) < 0).length;
@@ -2873,16 +2918,21 @@
         <span class="miudo">${[e.banco, e.agencia && 'ag. ' + e.agencia, e.conta && 'conta ' + e.conta].filter(Boolean).map(esc).join(' · ')}${e.periodo_inicio ? ' · ' + fmtData(e.periodo_inicio) + ' a ' + fmtData(e.periodo_fim) : ''} · ${n} lançamentos (${s} saídas)</span>
         <div class="acoes">${e.arquivo_confirmado ? '<button class="btn sec peq" data-ext-acao="baixar">Baixar OFX</button>' : '<span class="tag pendente">arquivo original não guardado</span>'}<button class="btn perigo peq" data-ext-acao="excluir">Excluir</button></div></div>`;
     }).join('') : '<p class="vazio">Nenhum extrato enviado para este condomínio neste mês.</p>';
-    if (!extratos.length) { document.getElementById('concResumo').innerHTML = ''; document.getElementById('concResultado').innerHTML = ''; return; }
+    document.getElementById('concPlanilha').hidden = !extratos.length;
+    if (!extratos.length) { document.getElementById('concResumo').innerHTML = ''; document.getElementById('concResultado').innerHTML = ''; ultimaConc = null; return; }
 
     const r = conciliar(extratos, docs);
+    mapaSL = casarSL(r.saidas, sl);
+    ultimaConc = { r, mapaSL, sl, docs };
+    const contaSL = t => r.saidas.filter(x => (mapaSL.get(x.id) || {}).tipo === t).length;
     const pct = r.saidas.length ? Math.round(r.conciliados.length / r.saidas.length * 100) : 0;
     document.getElementById('concResumo').innerHTML = `
       <span class="tag paga">✓ Conciliados: ${r.conciliados.length} de ${r.saidas.length} saídas (${pct}%)</span>
       <span class="tag atrasada">Pagamentos sem comprovante: ${r.semComprovante.length} · ${brl(somaV(r.semComprovante))}</span>
       <span class="tag pendente">Comprovantes sem pagamento: ${r.semPagamento.length}</span>
       ${r.ambiguos.length ? `<span class="tag trocar">Para conferir à mão: ${r.ambiguos.length}</span>` : ''}
-      <span class="tag sl">Entradas (fora da comparação): ${r.entradas.length} · ${brl(somaV(r.entradas))}</span>`;
+      <span class="tag sl">Entradas (fora da comparação): ${r.entradas.length} · ${brl(somaV(r.entradas))}</span>
+      ${sl && !sl.erro && !sl.sem_ligacao ? `<span class="tag sl">Superlógica: ${contaSL('paga') + contaSL('varias')} lançadas e pagas · ${contaSL('aberto')} falta dar baixa · ${contaSL('nada')} não lançadas</span>` : ''}`;
     const grupo = (titulo, itens, linha, vazio) => `<div class="conc-grupo"><h3>${titulo}</h3>${itens.length ? itens.map(linha).join('') : `<p class="miudo">${vazio}</p>`}</div>`;
     document.getElementById('concResultado').innerHTML =
       grupo('⚠ Pagamentos sem comprovante', r.semComprovante, l => `<div class="conc-linha">${fmtL(l)}<span class="doc-ref">ninguém enviou a nota</span><span class="v mais">${brl(Math.abs(l.valor))}</span></div>`, 'Todas as saídas têm comprovante. 🎉') +
@@ -2934,6 +2984,24 @@
       } catch (err) { alert(err.message); }
     }
     carregarConc();
+  });
+  document.getElementById('concPlanilha').addEventListener('click', () => {
+    if (!ultimaConc) return;
+    const { r, mapaSL } = ultimaConc;
+    const comprovante = new Map();
+    r.conciliados.forEach(c => comprovante.set(c.saida.id, c.grupo.docs.map(d => `${TIPOS_DOC[d.tipo]} · ${d.fornecedor}`).join(' / ')));
+    r.ambiguos.forEach(a => comprovante.set(a.saida.id, 'conferir: ' + a.grupos.map(g => g.fornecedor).join(' ou ')));
+    const situacaoSL = { paga: 'lançada e paga', varias: 'mais de uma com esse valor', aberto: 'em aberto (falta dar baixa)', nada: 'não lançada' };
+    const linhas = [['Data', 'Descrição no banco', 'Valor', 'Tipo', 'Superlógica', 'Situação no Superlógica', 'Comprovante no Portal', 'Banco / conta']];
+    [...r.saidas, ...r.entradas].sort((a, b) => a.data.localeCompare(b.data)).forEach(l => {
+      const info = mapaSL.get(l.id);
+      linhas.push([fmtData(l.data), l.descricao || '', fmtValorInput(l.valor), l.valor < 0 ? 'saída' : 'entrada',
+        info ? info.ds.map(descSL).join(' | ') : '', l.valor < 0 && info ? situacaoSL[info.tipo] : '',
+        l.valor < 0 ? (comprovante.get(l.id) || 'sem comprovante') : '',
+        [l.extrato.banco, l.extrato.conta].filter(Boolean).join(' · ')]);
+    });
+    const condo = condosDocs.find(c => c.id === document.getElementById('fdCondo').value);
+    baixar(`conciliacao - ${condo ? condo.nome : 'condominio'} - ${mesSel}.csv`, paraCsv(linhas), 'text/csv;charset=utf-8');
   });
   document.getElementById('concExtratos').addEventListener('click', async e => {
     const acao = e.target.dataset.extAcao; if (!acao) return;

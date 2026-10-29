@@ -79,6 +79,7 @@ function despesa(r: any) {
     liquidacao: dataISO(r.dt_liquidacao_pdes),
     valor: Math.round(numero(r.vl_valor_pdes) * 100) / 100,
     documento: r.st_documento_des || '',
+    conta_bancaria: (r.st_descricao_cb || '').trim(),
     observacao: r.st_observacao_des || '',
     anexos_superlogica: (r.arquivos || []).length
   };
@@ -146,6 +147,26 @@ Deno.serve(async req => {
           .filter(d => d.id_parcela && !vistas.has(d.id_parcela) && vistas.add(d.id_parcela))
           .sort((x, y) => (x.liquidacao || x.vencimento || '').localeCompare(y.liquidacao || y.vencimento || ''));
         return resposta({ despesas });
+      }
+
+      // para a conciliação bancária (só devs): despesas pagas no período do extrato (com folga de 5 dias)
+      // e as que ainda estão em aberto, para mostrar o que cada saída do extrato é no Superlógica
+      case 'conciliacao': {
+        const { data: ehSuper } = await usuario.rpc('e_super');
+        if (!ehSuper) return erro('Apenas os devs.', 403);
+        const { condominio_id, inicio, fim } = corpo;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '')) return erro('Período inválido.');
+        const { data: condo } = await usuario.from('condominios').select('id_superlogica').eq('id', condominio_id).maybeSingle();
+        if (!condo) return erro('Condomínio não encontrado.', 404);
+        if (!condo.id_superlogica) return resposta({ pagas: [], em_aberto: [], sem_ligacao: true });
+        const dia = 86400000, d0 = new Date(inicio + 'T00:00:00Z'), d1 = new Date(fim + 'T00:00:00Z');
+        const [pagas, emAberto] = await Promise.all([
+          slPaginado('despesas/index', { idCondominio: condo.id_superlogica, comStatus: 'liquidadas', filtrarpor: 'liquidacao',
+            dtInicio: dataSL(new Date(d0.getTime() - 5 * dia)), dtFim: dataSL(new Date(d1.getTime() + 5 * dia)) }),
+          slPaginado('despesas/index', { idCondominio: condo.id_superlogica, comStatus: 'pendentes',
+            dtInicio: dataSL(new Date(d0.getTime() - 60 * dia)), dtFim: dataSL(new Date(d1.getTime() + 5 * dia)) })
+        ]);
+        return resposta({ pagas: pagas.map(despesa), em_aberto: emAberto.map(despesa) });
       }
 
       default:
