@@ -431,6 +431,92 @@
   .arq .btn { height: 26px; padding: 0 9px; font-size: 12px; }
   .resumo-docs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 
+  /* ---------- área da síndica ---------- */
+  body:not(.externo) .so-sindica { display: none !important; }
+  .sind-hero { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 26px 28px; margin-bottom: 16px; border-radius: 16px; background: #16237a; color: #fff; position: relative; overflow: hidden; box-shadow: 0 10px 28px -14px rgba(22, 35, 122, .8); }
+  .sind-hero::after { content: ''; position: absolute; right: -90px; top: -90px; width: 260px; height: 260px; border-radius: 50%; border: 46px solid rgba(255, 255, 255, .05); pointer-events: none; }
+  .sind-hero > div { flex: 1 1 320px; min-width: 0; position: relative; z-index: 1; }
+  .sind-ola { font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, .7); }
+  .sind-hero h2 { margin: 2px 0 8px; font-size: 22px; font-weight: 600; letter-spacing: -.015em; color: #fff; }
+  .sind-hero p { margin: 0; color: rgba(255, 255, 255, .8); font-size: 14px; max-width: 560px; }
+  .sind-hero p strong { color: #fff; font-weight: 600; }
+  .sind-hero .btn { position: relative; z-index: 1; background: #fff; color: #16237a; border-color: #fff; }
+  .sind-hero .btn:hover { background: #eef1fb; }
+  .btn.grande { height: 44px; padding: 0 20px; font-size: 14.5px; border-radius: 10px; }
+  .btn.grande .ic { width: 18px; height: 18px; }
+  #sindKpis { margin-bottom: 16px; }
+  .sind-pend { margin-bottom: 16px; border-color: var(--borda-verm); }
+  .sind-pend h2 { display: flex; align-items: center; gap: 8px; color: var(--vermelho); }
+  .pend-item { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid var(--borda); }
+  .pend-item:first-child { border-top: 0; padding-top: 0; }
+  .pend-item > div { flex: 1 1 260px; min-width: 0; }
+  .pend-item strong { font-size: 14px; }
+  .pend-item .msg { margin-top: 4px; font-size: 13px; color: var(--vermelho); }
+  .doc.destaque { animation: destacar 1.6s ease-out; }
+  @keyframes destacar { 0%, 40% { box-shadow: 0 0 0 3px var(--vermelho); } 100% { box-shadow: var(--sombra-1); } }
+
+  /* ---------- envio de documento ---------- */
+  .form-doc { display: grid; gap: 18px; }
+  .form-doc .rotulo { display: block; margin-bottom: 8px; font-size: 12.5px; font-weight: 500; }
+  .form-doc .campos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .form-doc .f-forn, .form-doc .f-conta, .form-doc .f-obs { grid-column: span 2; }
+  .form-doc .enviar { display: flex; justify-content: flex-end; }
+  .dropzone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 28px 20px; border: 2px dashed var(--borda-forte); border-radius: 14px; background: color-mix(in srgb, var(--cinza-claro) 60%, var(--card)); text-align: center; cursor: pointer; transition: border-color .15s, background .15s; margin: 0; font-weight: 400; }
+  .dropzone:hover, .dropzone.arrastando { border-color: var(--azul-2); background: var(--azul-claro); }
+  .dropzone > .ic { width: 30px; height: 30px; color: var(--azul); padding: 10px; box-sizing: content-box; border-radius: 12px; background: var(--card); box-shadow: var(--sombra-1); }
+  .dropzone strong { font-size: 14.5px; font-weight: 600; color: var(--texto); }
+  .dropzone span { font-size: 12.5px; color: var(--cinza); }
+  .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; min-height: 0; }
+  .dropzone.tem { padding: 16px; flex-direction: row; gap: 12px; }
+  .dropzone.tem > .ic { width: 20px; height: 20px; padding: 6px; }
+  .dropzone.tem span { display: none; }
+  .previas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 10px; }
+  .previas:empty { display: none; }
+  .previa { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--borda); border-radius: 10px; background: var(--card); box-shadow: var(--sombra-1); }
+  .previa .mini { width: 44px; height: 44px; flex-shrink: 0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--cinza-claro); color: var(--cinza); }
+  .previa .mini img { width: 100%; height: 100%; object-fit: cover; }
+  .previa .info { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+  .previa .info strong { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .previa .info span { font-size: 12px; color: var(--cinza); }
+  .btn-x { width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 8px; background: none; color: var(--cinza); display: inline-flex; align-items: center; justify-content: center; }
+  .btn-x:hover { background: var(--vermelho-claro); color: var(--vermelho); }
+  .segmentos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .segmentos button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid var(--borda-forte); border-radius: 10px; background: var(--card); color: var(--texto); font-weight: 500; font-size: 13.5px; box-shadow: var(--sombra-1); transition: border-color .12s, background .12s, box-shadow .12s; }
+  .segmentos button .ic { color: var(--cinza); }
+  .segmentos button:hover { background: var(--cinza-claro); }
+  .segmentos button.sel { border-color: var(--azul-2); background: var(--azul-claro); color: var(--azul); box-shadow: var(--foco); }
+  .segmentos button.sel .ic { color: var(--azul); }
+  /* abas de situação na lista de documentos */
+  .abas-status { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; margin-bottom: 14px; border-radius: 10px; background: var(--cinza-claro); }
+  .abas-status button { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border: 0; border-radius: 7px; background: none; color: var(--cinza); font-weight: 500; font-size: 13px; }
+  .abas-status button span { min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--card); color: var(--cinza); font-size: 11.5px; font-weight: 600; line-height: 18px; text-align: center; }
+  .abas-status button.sel { background: var(--card); color: var(--texto); box-shadow: var(--sombra-2); }
+  .abas-status button.sel span { background: var(--azul-claro); color: var(--azul); }
+  .abas-status button[data-status="pendencia"] span.tem { background: var(--vermelho-claro); color: var(--vermelho); }
+  .vazio-doc { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 16px; text-align: center; color: var(--cinza); }
+  .vazio-doc > .ic { width: 28px; height: 28px; padding: 12px; box-sizing: content-box; border-radius: 14px; background: var(--cinza-claro); color: var(--cinza); }
+  .vazio-doc strong { color: var(--texto); font-size: 14.5px; font-weight: 600; }
+  .lateral .rodape strong { display: block; color: var(--texto); font-size: 12.5px; margin-bottom: 2px; }
+  @media (max-width: 1100px) { .form-doc .campos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* síndica no celular/tablet: só tem uma área, então não precisa da barra de abas embaixo */
+  @media (max-width: 1023px) {
+    body.externo nav.abas { display: none !important; }
+    body.externo main { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+    body.externo .toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  }
+  @media (max-width: 760px) {
+    .sind-hero { padding: 20px; gap: 16px; }
+    .sind-hero h2 { font-size: 19px; }
+    .sind-hero .btn { width: 100%; }
+    .form-doc .campos { grid-template-columns: 1fr; }
+    .form-doc .f-forn, .form-doc .f-conta, .form-doc .f-obs { grid-column: auto; }
+    .form-doc .enviar .btn { width: 100%; }
+    .segmentos button { flex: 1 1 calc(50% - 4px); justify-content: center; }
+    .abas-status { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .abas-status button { justify-content: space-between; padding: 0 10px; }
+    .dropzone { padding: 22px 16px; }
+  }
+
   /* ---------- conciliação bancária (só devs) ---------- */
   .conc-extrato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; background: color-mix(in srgb, var(--cinza-claro) 60%, var(--card)); font-size: 13.5px; }
   .conc-extrato > .ic { color: var(--cinza); }
@@ -675,6 +761,11 @@
   <symbol id="i-duvida" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
   <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></symbol>
   <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-nuvem" viewBox="0 0 24 24"><path d="M16 16l-4-4-4 4M12 12v9"/><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/></symbol>
+  <symbol id="i-recibo" viewBox="0 0 24 24"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 .7V2l-1 .7L16 1l-3 2-3-2-3 2z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-boleto" viewBox="0 0 24 24"><path d="M3 5v14M7 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-esq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
   <symbol id="i-dir" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
 </svg>
@@ -944,22 +1035,60 @@
       <div class="resumo-docs" id="concResumo"></div>
       <div id="concResultado"></div>
     </div>
+    <div class="so-sindica" id="sindHome">
+      <div class="sind-hero">
+        <div>
+          <span class="sind-ola" id="sindOla">Olá!</span>
+          <h2 id="sindCondo"></h2>
+          <p>Envie as notas fiscais e os comprovantes de <strong class="mesTxt"></strong>. O escritório confere e avisa aqui se precisar corrigir alguma coisa.</p>
+        </div>
+        <button class="btn grande" type="button" id="sindEnviar"><svg class="ic" aria-hidden="true"><use href="#i-mais"/></svg>Enviar nota ou comprovante</button>
+      </div>
+      <div class="grid g4" id="sindKpis"></div>
+      <div class="card sind-pend" id="sindPend" hidden>
+        <div class="card-topo"><h2><svg class="ic" aria-hidden="true"><use href="#i-alerta"/></svg>Precisam de correção</h2><span class="miudo">O escritório pediu para você ajustar estes documentos.</span></div>
+        <div id="sindPendLista"></div>
+      </div>
+    </div>
     <div class="card" id="cardEnviarDoc">
-      <h2>Enviar nota fiscal ou comprovante</h2>
-      <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
-      <form class="lancar" id="formDoc">
+      <div class="card-topo">
+        <h2>Enviar nota fiscal ou comprovante</h2>
+        <button class="btn sec peq so-sindica" type="button" id="dFechar" style="margin-left:auto">Cancelar</button>
+      </div>
+      <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. Mês de referência: <strong class="mesTxt"></strong> (o que está aberto no topo).</p>
+      <form class="form-doc" id="formDoc">
         <div class="f-condo"><label for="dCondo">Condomínio</label><select id="dCondo" required></select></div>
-        <div><label for="dTipo">Tipo</label><select id="dTipo">
-          <option value="nota_fiscal">Nota fiscal</option><option value="comprovante">Comprovante de pagamento</option>
-          <option value="recibo">Recibo</option><option value="boleto">Boleto</option><option value="outro">Outro</option></select></div>
-        <div class="desc"><label for="dFornecedor">Fornecedor / quem recebeu</label><input id="dFornecedor" placeholder="ex.: Atlas Elevadores" autocomplete="off" required></div>
-        <div class="f-valor"><label for="dValor">Valor (R$)</label><input id="dValor" class="valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
-        <div><label for="dData">Data do pagamento</label><input type="date" id="dData"></div>
-        <div class="desc"><label for="dConta">Conta (o que foi pago)</label><input id="dConta" list="dContas" placeholder="ex.: Manutenção do elevador" autocomplete="off"><datalist id="dContas"></datalist></div>
-        <div class="desc"><label for="dDesc">Observação</label><input id="dDesc" placeholder="opcional" autocomplete="off"></div>
-        <div class="arquivos"><label for="dArquivos">Arquivos (PDF ou foto)</label><input type="file" id="dArquivos" multiple accept="application/pdf,image/*" required>
-          <p class="miudo" style="margin:4px 0 0">Até 10 arquivos de até 25 MB cada. No celular, dá para tirar a foto na hora.</p></div>
-        <div class="enviar"><button class="btn" type="submit">Enviar documento</button></div>
+        <div class="arquivos">
+          <span class="rotulo">Arquivos</span>
+          <label class="dropzone" id="dZona">
+            <svg class="ic" aria-hidden="true"><use href="#i-nuvem"/></svg>
+            <strong>Arraste os arquivos aqui ou clique para escolher</strong>
+            <span>PDF ou foto · até 10 arquivos de 25 MB · no celular dá para tirar a foto na hora</span>
+            <input type="file" id="dArquivos" multiple accept="application/pdf,image/*" aria-label="Escolher arquivos">
+          </label>
+          <div class="previas" id="dPrevias"></div>
+        </div>
+        <div class="f-tipo">
+          <span class="rotulo">Tipo de documento</span>
+          <div class="segmentos" id="dTipoSeg" role="radiogroup" aria-label="Tipo de documento">
+            <button type="button" data-tipo="nota_fiscal" role="radio" class="sel" aria-checked="true"><svg class="ic" aria-hidden="true"><use href="#i-arquivo"/></svg>Nota fiscal</button>
+            <button type="button" data-tipo="comprovante" role="radio" aria-checked="false"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Comprovante</button>
+            <button type="button" data-tipo="recibo" role="radio" aria-checked="false"><svg class="ic" aria-hidden="true"><use href="#i-recibo"/></svg>Recibo</button>
+            <button type="button" data-tipo="boleto" role="radio" aria-checked="false"><svg class="ic" aria-hidden="true"><use href="#i-boleto"/></svg>Boleto</button>
+            <button type="button" data-tipo="outro" role="radio" aria-checked="false"><svg class="ic" aria-hidden="true"><use href="#i-mais"/></svg>Outro</button>
+          </div>
+          <select id="dTipo" hidden aria-hidden="true" tabindex="-1">
+            <option value="nota_fiscal">Nota fiscal</option><option value="comprovante">Comprovante de pagamento</option>
+            <option value="recibo">Recibo</option><option value="boleto">Boleto</option><option value="outro">Outro</option></select>
+        </div>
+        <div class="campos">
+          <div class="f-forn"><label for="dFornecedor">Fornecedor / quem recebeu</label><input id="dFornecedor" placeholder="ex.: Atlas Elevadores" autocomplete="off" required></div>
+          <div class="f-valor"><label for="dValor">Valor (R$)</label><input id="dValor" class="valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+          <div class="f-data"><label for="dData">Data do pagamento</label><input type="date" id="dData"></div>
+          <div class="f-conta"><label for="dConta">Conta (o que foi pago)</label><input id="dConta" list="dContas" placeholder="ex.: Manutenção do elevador" autocomplete="off"><datalist id="dContas"></datalist></div>
+          <div class="f-obs"><label for="dDesc">Observação</label><input id="dDesc" placeholder="opcional" autocomplete="off"></div>
+        </div>
+        <div class="enviar"><button class="btn grande" type="submit"><svg class="ic" aria-hidden="true"><use href="#i-nuvem"/></svg>Enviar documento</button></div>
       </form>
       <div class="progresso" id="progressoEnvio"></div>
     </div>
@@ -968,15 +1097,16 @@
         <h2 id="tituloDocs">Documentos</h2>
         <div class="acoes"><button class="btn sec peq" id="btnZip">Baixar tudo (ZIP)</button></div>
       </div>
+      <div class="abas-status" id="fdStatusTabs" role="tablist" aria-label="Situação dos documentos"></div>
       <div class="filtro">
         <select id="fdCondo" aria-label="Condomínio"></select>
-        <select id="fdStatus" aria-label="Situação">
+        <select id="fdStatus" aria-label="Situação" hidden>
           <option value="">Todas as situações</option><option value="enviado">Aguardando conferência</option>
           <option value="pendencia">Com pendência</option><option value="conferido">Conferidos</option></select>
         <label class="check so-equipe"><input type="checkbox" id="fdTodosMeses"> Todos os meses</label>
         <span class="total" id="fdTotal"></span>
       </div>
-      <div class="resumo-docs" id="resumoDocs"></div>
+      <div class="resumo-docs" id="resumoDocs" hidden></div>
       <div class="docs" id="listaDocs"><p class="vazio">Carregando…</p></div>
     </div>
   </section>
@@ -2324,6 +2454,7 @@
       // síndicas e usuários de condomínio: só a aba Documentos, do(s) condomínio(s) dela(s)
       podeEditar = false;
       document.getElementById('subTitulo').textContent = condosDocs.length === 1 ? condosDocs[0].nome : 'Documentos do condomínio';
+      document.querySelector('.lateral .rodape').innerHTML = `<strong>${esc(condosDocs.map(c => c.nome).join(' · ') || 'Seu condomínio')}</strong>Dúvidas? Fale com o escritório da SLZ.`;
       mostrarTela('app');
       irParaAba('documentos');
       render();
@@ -2635,6 +2766,7 @@
     condosDocs = data || [];
     const opcoes = condosDocs.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
     document.getElementById('dCondo').innerHTML = opcoes;
+    document.querySelector('#formDoc .f-condo').hidden = condosDocs.length < 2;
     const fd = document.getElementById('fdCondo');
     fd.innerHTML = (condosDocs.length > 1 ? '<option value="">Todos os condomínios</option>' : '') + opcoes;
     fd.hidden = condosDocs.length < 2;
@@ -2646,8 +2778,12 @@
     document.getElementById('badgeDocs').innerHTML = count ? `<span class="badge" title="Aguardando conferência">${count}</span>` : '';
   }
 
+  let formDocAberto = false;   // na área da síndica, o formulário só abre pelo botão "Enviar"
+  let pendTodas = [];          // pendências da síndica em qualquer mês
+  let focoDoc = null;          // documento para destacar depois de carregar a lista
   async function carregarDocs() {
-    document.getElementById('cardEnviarDoc').hidden = !podeEnviarDocs || !condosDocs.length;
+    const externo = document.body.classList.contains('externo');
+    document.getElementById('cardEnviarDoc').hidden = !podeEnviarDocs || !condosDocs.length || (externo && !formDocAberto);
     const lista = document.getElementById('listaDocs');
     if (!condosDocs.length) {
       lista.innerHTML = `<p class="vazio">${ehEquipe ? 'Nenhum condomínio cadastrado ainda. O Super Master cadastra na aba Usuários.' : 'Seu usuário ainda não está ligado a nenhum condomínio. Fale com o escritório.'}</p>`;
@@ -2663,15 +2799,17 @@
     }
     const todosMeses = ehEquipe && document.getElementById('fdTodosMeses').checked;
     const condo = document.getElementById('fdCondo').value || (condosDocs.length === 1 ? condosDocs[0].id : '');
-    const situacao = document.getElementById('fdStatus').value;
     document.getElementById('tituloDocs').textContent = todosMeses ? 'Documentos de todos os meses' : 'Documentos de ' + nomeMes(mesSel);
     let q = sb.from('documentos')
       .select('*, documento_arquivos(id, nome_original, tipo_mime, tamanho, sha256, confirmado, criado_em), enviado:perfis!enviado_por(nome), conferido:perfis!conferido_por(nome)')
       .order('enviado_em', { ascending: false });
     if (!todosMeses) q = q.eq('competencia', mesSel);
     if (condo) q = q.eq('condominio_id', condo);
-    if (situacao) q = q.eq('status', situacao);
-    const { data, error } = await q;
+    // a situação é filtrada na tela (as abas mostram a contagem de cada uma)
+    const [{ data, error }, pend] = await Promise.all([q, externo
+      ? sb.from('documentos').select('id, competencia, tipo, fornecedor, valor, comentario').eq('status', 'pendencia').order('enviado_em')
+      : Promise.resolve({ data: [] })]);
+    pendTodas = pend.data || [];
     if (error) { lista.innerHTML = `<p class="vazio">Não foi possível carregar: ${esc(error.message)}</p>`; return; }
     docsCarregados = data;
     renderDocs();
@@ -2679,8 +2817,13 @@
     if (ehDev() && document.body.dataset.modo === 'condominio') carregarConc(); else document.getElementById('cardConc').hidden = true;
   }
 
+  const docsVisiveis = () => { const st = document.getElementById('fdStatus').value; return st ? docsCarregados.filter(d => d.status === st) : docsCarregados; };
   function renderDocs() {
-    const docs = docsCarregados;
+    const docs = docsVisiveis();
+    const st = document.getElementById('fdStatus').value;
+    const conta = v => docsCarregados.filter(d => !v || d.status === v).length;
+    document.getElementById('fdStatusTabs').innerHTML = [['', 'Todos'], ['enviado', 'Aguardando'], ['pendencia', 'Correção'], ['conferido', 'Conferidos']]
+      .map(([v, t]) => `<button type="button" role="tab" data-status="${v}" class="${st === v ? 'sel' : ''}" aria-selected="${st === v}">${t}<span class="${conta(v) ? 'tem' : ''}">${conta(v)}</span></button>`).join('');
     const nomeCondo = id => (condosDocs.find(c => c.id === id) || { nome: '' }).nome;
     const variosCondos = new Set(docs.map(d => d.condominio_id)).size > 1;
     const total = docs.reduce((s, d) => s + (Number(d.valor) || 0), 0);
@@ -2689,6 +2832,7 @@
     document.getElementById('resumoDocs').innerHTML = docs.length ? Object.entries(SITUACAO)
       .map(([k, [cls, txt]]) => n(k) ? `<span class="tag ${cls}">${txt}: ${n(k)}</span>` : '').join('') : '';
     document.getElementById('btnZip').hidden = !docs.some(d => d.documento_arquivos.some(a => a.confirmado));
+    document.getElementById('btnZip').innerHTML = st ? 'Baixar estes (ZIP)' : 'Baixar tudo (ZIP)';
     const contas = [...new Set(docs.map(d => d.conta).filter(Boolean))];
     document.getElementById('dContas').innerHTML = contas.map(c => `<option value="${esc(c)}">`).join('');
 
@@ -2724,8 +2868,95 @@
           ${editavel ? '<button class="btn perigo peq" data-doc-acao="excluir">Excluir</button>' : ''}
         </div>
       </div>`;
-    }).join('') : `<p class="vazio">Nenhum documento ${document.getElementById('fdStatus').value ? 'nessa situação' : 'enviado'}${document.getElementById('fdTodosMeses').checked ? '' : ' em ' + nomeMes(mesSel)}.</p>`;
+    }).join('') : `<div class="vazio-doc">${ic('arquivo')}<strong>Nenhum documento ${st ? 'nessa situação' : 'enviado'}${document.getElementById('fdTodosMeses').checked ? '' : ' em ' + nomeMes(mesSel)}</strong>${!st && podeEnviarDocs ? '<span>Quando uma nota ou comprovante for enviado, ele aparece aqui com a situação da conferência.</span>' : ''}</div>`;
+    renderSindica();
+    if (focoDoc) {
+      const el = document.querySelector(`#listaDocs [data-doc="${focoDoc}"]`);
+      focoDoc = null;
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.remove('destaque'); void el.offsetWidth; el.classList.add('destaque'); }
+    }
   }
+
+  // ---------- área da síndica: boas-vindas, resumo do mês e correções pedidas ----------
+  function renderSindica() {
+    if (!document.body.classList.contains('externo')) return;
+    document.getElementById('sindOla').textContent = 'Olá, ' + perfil.nome.split(/\s+/)[0] + '!';
+    document.getElementById('sindCondo').textContent = condosDocs.map(c => c.nome).join(' · ') || 'Seu condomínio';
+    const docs = docsCarregados, n = st => docs.filter(d => d.status === st).length;
+    const total = docs.reduce((s, d) => s + (Number(d.valor) || 0), 0);
+    document.getElementById('sindKpis').innerHTML =
+      kpiCard('Enviados no mês', docs.length, `<span class="neutro">${brl(total)} em documentos</span>`) +
+      kpiCard('Aguardando conferência', n('enviado'), '<span class="neutro">o escritório ainda vai conferir</span>', n('enviado') ? 't-alerta' : '') +
+      kpiCard('Precisam de correção', pendTodas.length, `<span class="neutro">${pendTodas.length ? 'veja os detalhes abaixo' : 'nenhuma correção pedida'}</span>`, pendTodas.length ? 't-mais' : 't-ok') +
+      kpiCard('Conferidos', n('conferido'), '<span class="neutro">aprovados pelo escritório</span>', n('conferido') ? 't-ok' : '');
+    document.getElementById('sindPend').hidden = !pendTodas.length;
+    document.getElementById('sindPendLista').innerHTML = pendTodas.map(d => `<div class="pend-item">
+        <div><strong>${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}</strong>${d.valor != null ? ' <span class="miudo">· ' + brl(Number(d.valor)) + '</span>' : ''} <span class="miudo">· ${nomeMes(d.competencia)}</span>
+          ${d.comentario ? `<div class="msg">${esc(d.comentario)}</div>` : ''}</div>
+        <button class="btn peq" type="button" data-corrigir="${d.id}" data-mes="${d.competencia}">Corrigir</button>
+      </div>`).join('');
+  }
+  function abrirFormDoc(abrir) {
+    formDocAberto = abrir;
+    const card = document.getElementById('cardEnviarDoc');
+    card.hidden = !abrir;
+    if (abrir) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => document.getElementById('dZona').focus(), 350); }
+  }
+  document.getElementById('sindEnviar').addEventListener('click', () => abrirFormDoc(true));
+  document.getElementById('dFechar').addEventListener('click', () => { limparArquivos(); abrirFormDoc(false); });
+  document.getElementById('sindPendLista').addEventListener('click', e => {
+    const b = e.target.closest('[data-corrigir]'); if (!b) return;
+    focoDoc = b.dataset.corrigir;
+    document.getElementById('fdStatus').value = '';
+    if (b.dataset.mes !== mesSel) { mesSel = b.dataset.mes; render(); } else renderDocs();
+  });
+  document.getElementById('fdStatusTabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-status]'); if (!b) return;
+    document.getElementById('fdStatus').value = b.dataset.status;
+    renderDocs();
+  });
+
+  // ---------- arquivos escolhidos: arrastar e soltar, prévia e remover ----------
+  let arquivosSel = [], urlsPrevia = [];
+  const inputArq = document.getElementById('dArquivos');
+  function sincronizarArquivos() {
+    const dt = new DataTransfer();
+    arquivosSel.forEach(f => dt.items.add(f));
+    inputArq.files = dt.files;
+    urlsPrevia.forEach(u => URL.revokeObjectURL(u)); urlsPrevia = [];
+    document.getElementById('dPrevias').innerHTML = arquivosSel.map((f, i) => {
+      let mini;
+      if (/^image\/(jpeg|png|webp|gif)$/.test(f.type)) { const u = URL.createObjectURL(f); urlsPrevia.push(u); mini = `<img src="${u}" alt="">`; }
+      else mini = ic(f.type === 'application/pdf' || /\.pdf$/i.test(f.name) ? 'arquivo' : 'imagem', 'g');
+      return `<div class="previa"><div class="mini">${mini}</div><div class="info"><strong title="${esc(f.name)}">${esc(f.name)}</strong><span>${fmtTamanho(f.size)}</span></div>
+        <button type="button" class="btn-x" data-remover="${i}" aria-label="Remover ${esc(f.name)}">${ic('x')}</button></div>`;
+    }).join('');
+    const zona = document.getElementById('dZona');
+    zona.classList.toggle('tem', arquivosSel.length > 0);
+    zona.querySelector('strong').textContent = arquivosSel.length ? `${arquivosSel.length} arquivo${arquivosSel.length > 1 ? 's' : ''} — clique para adicionar mais` : 'Arraste os arquivos aqui ou clique para escolher';
+  }
+  function adicionarArquivos(lista) {
+    for (const f of lista) if (!arquivosSel.some(x => x.name === f.name && x.size === f.size && x.lastModified === f.lastModified)) arquivosSel.push(f);
+    sincronizarArquivos();
+  }
+  function limparArquivos() { arquivosSel = []; sincronizarArquivos(); }
+  inputArq.addEventListener('change', () => adicionarArquivos([...inputArq.files]));
+  document.getElementById('dPrevias').addEventListener('click', e => {
+    const b = e.target.closest('[data-remover]'); if (!b) return;
+    arquivosSel.splice(Number(b.dataset.remover), 1);
+    sincronizarArquivos();
+  });
+  const zonaArq = document.getElementById('dZona');
+  ['dragenter', 'dragover'].forEach(ev => zonaArq.addEventListener(ev, e => { e.preventDefault(); zonaArq.classList.add('arrastando'); }));
+  ['dragleave', 'drop'].forEach(ev => zonaArq.addEventListener(ev, () => zonaArq.classList.remove('arrastando')));
+  zonaArq.addEventListener('drop', e => { e.preventDefault(); adicionarArquivos([...e.dataTransfer.files]); });
+
+  // tipo de documento em botões grandes (o select escondido guarda o valor)
+  function selecionarTipo(t) {
+    document.getElementById('dTipo').value = t;
+    document.querySelectorAll('#dTipoSeg button').forEach(b => { const sel = b.dataset.tipo === t; b.classList.toggle('sel', sel); b.setAttribute('aria-checked', sel); });
+  }
+  document.getElementById('dTipoSeg').addEventListener('click', e => { const b = e.target.closest('[data-tipo]'); if (b) selecionarTipo(b.dataset.tipo); });
 
   document.getElementById('formDoc').addEventListener('submit', async e => {
     e.preventDefault();
@@ -2735,7 +2966,7 @@
     const valorTxt = document.getElementById('dValor').value.trim();
     const valor = valorTxt ? lerValor(valorTxt) : null;
     if (valorTxt && (isNaN(valor) || valor < 0)) { alert('Valor inválido.'); return; }
-    const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true; btn.textContent = 'Enviando…';
+    const btn = e.target.querySelector('button[type="submit"]'); const rotuloBtn = btn.innerHTML; btn.disabled = true; btn.textContent = 'Enviando…';
     try {
       const { data: doc, error } = await sb.from('documentos').insert({
         condominio_id: document.getElementById('dCondo').value,
@@ -2751,9 +2982,14 @@
       if (error) throw new Error(error.message);
       const falhas = await enviarArquivos(doc.id, files);
       if (falhas.length) alert('O documento foi registrado, mas ' + falhas.length + ' arquivo(s) não foram enviados. Use "+ Arquivo" no documento para tentar de novo.');
-      else { toast('Documento enviado para o escritório'); e.target.reset(); setTimeout(() => { document.getElementById('progressoEnvio').innerHTML = ''; }, 2500); }
+      else {
+        toast('Documento enviado para o escritório');
+        e.target.reset(); limparArquivos(); selecionarTipo('nota_fiscal');
+        setTimeout(() => { document.getElementById('progressoEnvio').innerHTML = ''; }, 2500);
+        if (document.body.classList.contains('externo')) abrirFormDoc(false);
+      }
     } catch (err) { alert('Não foi possível enviar: ' + err.message); }
-    btn.disabled = false; btn.textContent = 'Enviar documento';
+    btn.disabled = false; btn.innerHTML = rotuloBtn;
     carregarDocs();
   });
 
@@ -2850,7 +3086,7 @@
   // ZIP com tudo o que está na lista, já organizado e com resumo, para a prestação de contas
   document.getElementById('btnZip').addEventListener('click', async e => {
     const btn = e.target;
-    const docs = docsCarregados.filter(d => d.documento_arquivos.some(a => a.confirmado));
+    const docs = docsVisiveis().filter(d => d.documento_arquivos.some(a => a.confirmado));
     const nomeCondo = id => (condosDocs.find(c => c.id === id) || { nome: 'Condomínio' }).nome;
     const limpo = t => String(t).replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80);
     const variosCondos = new Set(docs.map(d => d.condominio_id)).size > 1;
@@ -2880,7 +3116,7 @@
       baixar(titulo + '.zip', conteudo, 'application/zip');
       toast(problemas ? `Atenção: ${problemas} arquivo(s) não conferem com o enviado` : `ZIP pronto: ${totalArqs} arquivo(s) conferidos`);
     } catch (err) { alert('Não foi possível montar o ZIP: ' + err.message); }
-    btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
+    btn.disabled = false; renderDocs();
   });
 
   // ---------- dev: três áreas — Visão geral, Escritório e Condomínio ----------
