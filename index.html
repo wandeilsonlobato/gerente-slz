@@ -7,6 +7,7 @@
 <meta name="description" content="Portal SLZ — controle de gastos e prestação de contas da SLZ Administradora de Condomínios">
 <meta name="theme-color" content="#16237a">
 <link rel="manifest" href="manifest.webmanifest">
+<script>try { var t = localStorage.getItem('portal-slz-tema'); if (t) document.documentElement.dataset.tema = t; } catch (e) {}</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,7 +33,44 @@
     --amarelo: #b7791f;
     --amarelo-claro: #fdf3dc;
     --raio: 12px;
+    /* papéis extras da paleta (para o modo escuro funcionar em tudo) */
+    --acao: #16237a;        /* fundo de botões, com letra branca */
+    --acao-2: #2a3aa8;
+    --barra: #16237a;       /* barra das abas */
+    --campo: #ffffff;       /* fundo dos campos */
+    --borda-verm: #f0c2bc;
+    --borda-verde: #bfe3cd;
+    --borda-amar: #f1dca8;
+    --borda-azul: #c8cef3;
+    color-scheme: light;
   }
+  /* modo escuro: segue o aparelho, ou a escolha feita no botão 🌙/☀️ do topo */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) {
+      color-scheme: dark;
+      --azul: #9aa8ff; --azul-2: #b3beff; --azul-claro: #232a4a;
+      --acao: #4a5fd6; --acao-2: #5d71e6; --barra: #151b45;
+      --cinza: #a0a6ba; --cinza-claro: #21263a; --borda: #343b52;
+      --texto: #e8eaf3; --fundo: #0e1120; --card: #171b2c; --campo: #10142a;
+      --neutro: #4b5274;
+      --verde: #52c78a; --verde-claro: #163428; --borda-verde: #2b5c45;
+      --vermelho: #f2807a; --vermelho-claro: #3b1f23; --borda-verm: #6b3236;
+      --amarelo: #e8b75c; --amarelo-claro: #382d16; --borda-amar: #5e4a22;
+      --borda-azul: #3a4478;
+    }
+  }
+  :root[data-tema="escuro"] {
+      color-scheme: dark;
+      --azul: #9aa8ff; --azul-2: #b3beff; --azul-claro: #232a4a;
+      --acao: #4a5fd6; --acao-2: #5d71e6; --barra: #151b45;
+      --cinza: #a0a6ba; --cinza-claro: #21263a; --borda: #343b52;
+      --texto: #e8eaf3; --fundo: #0e1120; --card: #171b2c; --campo: #10142a;
+      --neutro: #4b5274;
+      --verde: #52c78a; --verde-claro: #163428; --borda-verde: #2b5c45;
+      --vermelho: #f2807a; --vermelho-claro: #3b1f23; --borda-verm: #6b3236;
+      --amarelo: #e8b75c; --amarelo-claro: #382d16; --borda-amar: #5e4a22;
+      --borda-azul: #3a4478;
+    }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--fundo); color: var(--texto); font-size: 15px; line-height: 1.4; }
@@ -46,7 +84,7 @@
   header .sub { color: var(--cinza); font-size: 13px; }
   .topo-dir { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   .mes-nav { display: flex; align-items: center; gap: 6px; background: var(--azul-claro); border-radius: 10px; padding: 4px; }
-  .mes-nav button { background: var(--azul); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 8px; font-size: 18px; line-height: 1; }
+  .mes-nav button { background: var(--acao); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 8px; font-size: 18px; line-height: 1; }
   .mes-nav button:disabled { background: var(--borda); cursor: not-allowed; }
   .mes-nav .mes { min-width: 160px; text-align: center; font-weight: 700; font-size: 16px; color: var(--azul); }
   #btnInstalar { display: none; }
@@ -77,9 +115,10 @@
   .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
 
   /* ---------- visão geral (só Super Master) ---------- */
-  .geral-sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--cinza); margin: 22px 0 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  /* faixa azul que separa Escritório, Condomínios e Usuários */
+  .geral-sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: var(--acao); margin: 26px 0 12px; padding: 11px 16px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(22, 35, 122, .15); }
   .geral-sec:first-child { margin-top: 0; }
-  .geral-sec .link-btn { margin-left: auto; text-transform: none; letter-spacing: 0; }
+  .geral-sec .link-btn { margin-left: auto; text-transform: none; letter-spacing: 0; color: #fff; }
   .progresso-sl { display: flex; align-items: center; gap: 8px; min-width: 160px; }
   .progresso-sl .trilho { flex: 1; height: 10px; }
   .progresso-sl .barra { background: var(--verde); }
@@ -87,6 +126,17 @@
   .progresso-sl.medio .barra { background: var(--amarelo); }
   .contagens { display: flex; gap: 6px; flex-wrap: wrap; }
   .pessoas { font-size: 13px; }
+
+  /* ---------- modo escuro: detalhes ---------- */
+  body { transition: background-color .2s, color .2s; }
+  .btn-tema { background: none; border: 1px solid var(--borda); color: var(--texto); width: 34px; height: 34px; border-radius: 8px; font-size: 16px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+  .btn-tema:hover { background: var(--cinza-claro); }
+  .tela-cheia .btn-tema { position: fixed; top: 14px; right: 14px; background: var(--card); }
+  :root[data-tema="escuro"] header img, :root[data-tema="escuro"] .tela-cheia img.logo,
+  :root[data-tema="escuro"] .print-head img { background: #fff; border-radius: 8px; padding: 4px 8px; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) header img, :root:not([data-tema="claro"]) .tela-cheia img.logo { background: #fff; border-radius: 8px; padding: 4px 8px; }
+  }
 
   /* ---------- botão vermelho "+" e janelas de cadastro rápido ---------- */
   .btn-mais { width: 40px; height: 40px; border-radius: 50%; background: var(--vermelho); color: #fff; border: 0; font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(192, 57, 43, .35); flex-shrink: 0; padding: 0 0 3px; }
@@ -100,6 +150,7 @@
   dialog.modal .acoes { justify-content: flex-end; margin-top: 18px; }
 
   /* ---------- documentos (notas e comprovantes) ---------- */
+  body:not(.dev) .so-dev { display: none !important; }
   .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
   #formDoc .f-condo { flex-basis: 220px; }
   #formDoc .arquivos { flex: 1 1 100%; }
@@ -108,7 +159,7 @@
   .progresso .item { font-size: 13px; display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 10px; align-items: center; }
   .progresso .item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .progresso .barrinha { height: 8px; background: var(--cinza-claro); border-radius: 4px; overflow: hidden; }
-  .progresso .barrinha i { display: block; height: 100%; width: 0; background: var(--azul); transition: width .2s; }
+  .progresso .barrinha i { display: block; height: 100%; width: 0; background: var(--acao); transition: width .2s; }
   .progresso .item.ok .barrinha i { background: var(--verde); }
   .progresso .item.falha { color: var(--vermelho); }
   .docs { display: grid; gap: 12px; }
@@ -148,7 +199,7 @@
   .tag.trocar { background: var(--amarelo-claro); color: var(--amarelo); }
 
   /* ---------- abas ---------- */
-  nav.abas { display: flex; gap: 4px; padding: 0 24px; background: var(--azul); overflow-x: auto; }
+  nav.abas { display: flex; gap: 4px; padding: 0 24px; background: var(--barra); overflow-x: auto; }
   nav.abas button { background: none; border: 0; color: #c9cef0; padding: 12px 16px; font-weight: 600; white-space: nowrap; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px; }
   nav.abas button svg { width: 18px; height: 18px; }
   nav.abas button.ativa { color: #fff; border-bottom-color: #fff; }
@@ -196,8 +247,8 @@
   /* ---------- alertas ---------- */
   .alertas { margin-bottom: 16px; display: grid; gap: 8px; }
   .alerta { padding: 10px 14px; border-radius: 10px; display: flex; gap: 10px; align-items: center; font-size: 14px; }
-  .alerta.atrasada { background: var(--vermelho-claro); color: var(--vermelho); border: 1px solid #f0c2bc; }
-  .alerta.proxima { background: var(--amarelo-claro); color: var(--amarelo); border: 1px solid #f1dca8; }
+  .alerta.atrasada { background: var(--vermelho-claro); color: var(--vermelho); border: 1px solid var(--borda-verm); }
+  .alerta.proxima { background: var(--amarelo-claro); color: var(--amarelo); border: 1px solid var(--borda-amar); }
 
   /* ---------- tabelas ---------- */
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -216,8 +267,8 @@
   tr.grupo .cod, tr.total .cod { color: inherit; font-size: inherit; }
 
   /* ---------- botões e campos ---------- */
-  .btn { background: var(--azul); color: #fff; border: 0; padding: 9px 16px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
-  .btn:hover { background: var(--azul-2); }
+  .btn { background: var(--acao); color: #fff; border: 0; padding: 9px 16px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+  .btn:hover { background: var(--acao-2); }
   .btn.sec { background: var(--card); color: var(--azul); border: 1px solid var(--azul); }
   .btn.sec:hover { background: var(--azul-claro); }
   .btn.peq { padding: 6px 11px; font-size: 13px; }
@@ -226,7 +277,7 @@
   .link-btn { background: none; border: 0; color: var(--azul); font-weight: 600; padding: 0; text-decoration: underline; font-size: 13px; }
   .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
   label { font-size: 12px; color: var(--cinza); display: block; margin-bottom: 4px; font-weight: 600; }
-  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--borda); border-radius: 8px; background: #fff; min-height: 40px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--borda); border-radius: 8px; background: var(--campo); min-height: 40px; }
   input:focus, select:focus { outline: 2px solid var(--azul-2); outline-offset: -1px; border-color: transparent; }
   input.valor { text-align: right; font-variant-numeric: tabular-nums; }
   input[type="date"] { cursor: pointer; }
@@ -234,8 +285,8 @@
   input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; accent-color: var(--azul); flex-shrink: 0; }
   /* campos editáveis dentro das tabelas: discretos até passar o mouse ou focar */
   .inline { border-color: transparent; background: transparent; padding: 6px 8px; min-height: 34px; }
-  .inline:hover { border-color: var(--borda); background: #fff; }
-  .inline:focus { background: #fff; }
+  .inline:hover { border-color: var(--borda); background: var(--campo); }
+  .inline:focus { background: var(--campo); }
   td input.valor { width: 130px; }
   td input.dia { width: 76px; }
   td input[type="date"] { width: 150px; }
@@ -285,7 +336,7 @@
   .check-grupo { margin-bottom: 14px; }
   .check-grupo h3 { font-size: 12px; margin: 0 0 8px; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; }
   .opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
-  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 18px; font-size: 13px; line-height: 1.3; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: #fff; user-select: none; max-width: 100%; }
+  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 18px; font-size: 13px; line-height: 1.3; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: var(--campo); user-select: none; max-width: 100%; }
   label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); font-weight: 600; }
   label.check.forte { font-weight: 700; }
   label.check.desab { opacity: .45; pointer-events: none; }
@@ -330,8 +381,8 @@
 
   .vazio { color: var(--cinza); text-align: center; padding: 22px; font-size: 14px; }
   .resumo { padding: 14px 16px; border-radius: 10px; font-size: 15px; margin-bottom: 16px; border: 1px solid transparent; }
-  .resumo.mais { background: var(--vermelho-claro); border-color: #f0c2bc; }
-  .resumo.menos { background: var(--verde-claro); border-color: #bfe3cd; }
+  .resumo.mais { background: var(--vermelho-claro); border-color: var(--borda-verm); }
+  .resumo.menos { background: var(--verde-claro); border-color: var(--borda-verde); }
   .resumo.igual { background: var(--cinza-claro); color: var(--texto); }
   .filtro { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
   .filtro select { width: auto; max-width: 100%; min-width: 0; }
@@ -342,7 +393,7 @@
   .passos li { margin-bottom: 6px; }
   .link-app { word-break: break-all; font-weight: 600; color: var(--azul); }
 
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--azul); color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--acao); color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
   .toast.on { opacity: 1; transform: translateX(-50%); }
   .fab { display: none; }
 
@@ -377,11 +428,11 @@
     table.resp td.titulo-linha { justify-content: flex-start; font-size: 15px; padding-top: 8px; }
     table.resp td.sub { padding-left: 0; }
     table.resp td input, table.resp td select, table.resp td input[type="date"], table.resp td input.valor, table.resp td select.inline { width: auto; min-width: 0; max-width: 62%; flex: 1; }
-    table.resp td input.inline, table.resp td select.inline { border-color: var(--borda); background: #fff; text-align: right; }
+    table.resp td input.inline, table.resp td select.inline { border-color: var(--borda); background: var(--campo); text-align: right; }
     table.resp td .nome-cod { flex: 1; }
     table.resp td .nome-cod input { max-width: none; }
     table.resp tr.grupo { background: var(--cinza-claro); }
-    table.resp tr.total { background: var(--azul-claro); border-color: #c8cef3; color: var(--azul); }
+    table.resp tr.total { background: var(--azul-claro); border-color: var(--borda-azul); color: var(--azul); }
     table.resp td.vazio { justify-content: center; }
     table.resp td.so-desk { display: none; }
     table.resp tr.item { margin-left: 14px; width: calc(100% - 14px); border-style: dashed; }
@@ -418,6 +469,13 @@
     #btnInstalar { padding: 7px 10px; font-size: 13px; }
     #quemSou { display: none; }
     .usuario-box { gap: 6px; }
+    /* topo numa linha só: o aviso de salvamento vira só o símbolo (✓, ⚠ ou 👁) */
+    header { flex-wrap: nowrap; }
+    header > img { flex-shrink: 1; min-width: 0; object-fit: contain; object-position: left; }
+    #statusSync { display: inline-block; max-width: 1.2em; overflow: hidden; white-space: nowrap; vertical-align: middle; }
+    .btn-tema { width: 32px; height: 32px; font-size: 15px; }
+    #btnSair { padding: 6px 9px; }
+    .topo-dir { gap: 6px; flex-shrink: 0; }
 
     /* abas viram barra inferior */
     /* muitas abas (Super Master): a barra rola para o lado em vez de espremer os nomes */
@@ -454,7 +512,7 @@
     .lista-edit .linha .cod { min-width: 44px; }
     .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
 
-    .fab { display: flex; position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 31; width: 56px; height: 56px; border-radius: 50%; background: var(--azul); color: #fff; border: 0; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 18px rgba(22,35,122,.35); }
+    .fab { display: flex; position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 31; width: 56px; height: 56px; border-radius: 50%; background: var(--acao); color: #fff; border: 0; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 18px rgba(22,35,122,.35); }
     .toast { bottom: calc(150px + env(safe-area-inset-bottom)); }
     .kpi .val { overflow-wrap: anywhere; }
     .doc-cab .doc-valor { margin-left: 0; width: 100%; }
@@ -471,7 +529,12 @@
   body:not([data-aba="painel"]):not([data-aba="despesas"]) .fab { display: none !important; }
 
   @media print {
-    header, nav.abas, .nao-imprimir, .alertas, .fab { display: none !important; }
+    :root, :root[data-tema="escuro"], :root:not([data-tema="claro"]) {
+      color-scheme: light; --azul: #16237a; --azul-claro: #e8ebfa; --cinza: #6b6f7a; --cinza-claro: #f3f4f7; --borda: #dde0e8;
+      --texto: #1c1f2a; --fundo: #ffffff; --card: #ffffff; --campo: #ffffff; --neutro: #b9bfd9;
+      --verde: #1f8a4c; --verde-claro: #e3f4ea; --vermelho: #c0392b; --vermelho-claro: #fbe7e5; --amarelo: #b7791f; --amarelo-claro: #fdf3dc;
+    }
+    header, nav.abas, .nao-imprimir, .alertas, .fab, .btn-tema { display: none !important; }
     body { background: #fff; }
     main { padding: 0; max-width: none; }
     .aba { display: none !important; }
@@ -491,6 +554,7 @@
 </div>
 
 <div class="tela-cheia" id="telaLogin" hidden>
+  <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro">🌙</button>
   <div class="card">
     <img class="logo" src="logo-slz.png" alt="SLZ Administradora de Condomínios">
     <h1>Portal SLZ</h1>
@@ -534,6 +598,7 @@
     <div class="usuario-box">
       <span id="statusSync" aria-live="polite"></span>
       <span id="quemSou"></span>
+      <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro">🌙</button>
       <button class="btn sec peq" id="btnSair" title="Sair do Portal SLZ">Sair</button>
     </div>
     <button class="btn sec peq" id="btnInstalar">Instalar app</button>
@@ -713,6 +778,7 @@
 
   <!-- DOCUMENTOS (notas fiscais e comprovantes dos condomínios) -->
   <section class="aba" id="aba-documentos">
+    <p class="so-dev" style="margin:0 0 12px"><button class="link-btn" data-ir="geral">← Voltar para a Visão geral</button></p>
     <div class="card" id="cardEnviarDoc">
       <h2>Enviar nota fiscal ou comprovante</h2>
       <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
@@ -2083,7 +2149,8 @@
 
     const equipe = p.papel === 'super_master' || p.equipe_slz;
     ehEquipe = equipe;
-    podeEnviarDocs = p.papel !== 'padrao';
+    // o dev só consulta os documentos (pela Visão geral); quem envia são síndicas e equipe
+    podeEnviarDocs = p.papel === 'master';
     podeConferir = equipe && p.papel !== 'padrao';
     document.body.classList.toggle('externo', !equipe);
     document.getElementById('quemSou').innerHTML = '<strong>' + esc(p.nome) + '</strong> · ' + NOMES_PAPEL[p.papel];
@@ -2116,6 +2183,7 @@
     }
     mostrarTela('app');
     document.getElementById('abaGeral').hidden = p.papel !== 'super_master';
+    if (p.papel === 'super_master') nomesDev();
     try {
       const a = sessionStorage.getItem('slz-aba');
       if ((a === 'usuarios' || a === 'geral') && p.papel !== 'super_master') irParaAba('painel');
@@ -2710,6 +2778,36 @@
     } catch (err) { alert('Não foi possível montar o ZIP: ' + err.message); }
     btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
   });
+
+  // abas do dev: nomes por área do sistema e sem a aba Documentos no menu
+  function nomesDev() {
+    document.body.classList.add('dev');
+    const rotulo = (aba, html) => {
+      const b = document.querySelector(`nav.abas [data-aba="${aba}"]`);
+      const icone = b.querySelector('svg');
+      b.replaceChildren(icone);
+      b.insertAdjacentHTML('beforeend', `<span>${html}</span>`);
+    };
+    rotulo('painel', 'Escritório');
+    rotulo('config', 'Plano<span class="rot-longo"> de contas</span>');
+    rotulo('usuarios', 'Acessos');
+    document.querySelector('nav.abas [data-aba="documentos"]').hidden = true;
+  }
+
+  // ---------- modo claro / escuro ----------
+  const temaEscuro = () => (document.documentElement.dataset.tema || (matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro')) === 'escuro';
+  function mostrarIconeTema() {
+    document.querySelectorAll('[data-tema-alternar]').forEach(b => { b.textContent = temaEscuro() ? '☀️' : '🌙'; b.title = temaEscuro() ? 'Mudar para o modo claro' : 'Mudar para o modo escuro'; });
+    document.querySelector('meta[name="theme-color"]').content = temaEscuro() ? '#151b45' : '#16237a';
+  }
+  document.querySelectorAll('[data-tema-alternar]').forEach(b => b.addEventListener('click', () => {
+    const novo = temaEscuro() ? 'claro' : 'escuro';
+    document.documentElement.dataset.tema = novo;
+    try { localStorage.setItem('portal-slz-tema', novo); } catch (e) {}
+    mostrarIconeTema();
+  }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', mostrarIconeTema);
+  mostrarIconeTema();
 
   // ---------- visão geral (Super Master): escritório + todos os condomínios ----------
   let geralCarregando = false;
