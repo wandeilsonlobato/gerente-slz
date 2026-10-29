@@ -151,6 +151,17 @@
 
   /* ---------- documentos (notas e comprovantes) ---------- */
   body:not(.dev) .so-dev { display: none !important; }
+  /* dev: barra que mostra onde ele está (escritório ou condomínio) e volta para a Visão geral */
+  .contexto { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--acao); color: #fff; border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(22, 35, 122, .15); }
+  .contexto .link-btn { color: #fff; font-size: 14px; }
+  .contexto strong { font-size: 15px; letter-spacing: .02em; }
+  .contexto .miudo { color: rgba(255, 255, 255, .8); margin-left: auto; }
+  body.dev[data-modo="geral"] .contexto { display: none; }
+  /* no dev, os lembretes de contas do escritório só aparecem dentro do escritório */
+  body.dev:not([data-modo="escritorio"]) .alertas { display: none; }
+  .clicavel { cursor: pointer; transition: transform .12s, box-shadow .12s; }
+  .clicavel:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(22, 35, 122, .12); }
+  #tabGeralCondos tr.clicavel:hover td { background: var(--azul-claro); }
   .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
   #formDoc .f-condo { flex-basis: 220px; }
   #formDoc .arquivos { flex: 1 1 100%; }
@@ -611,6 +622,7 @@
 </header>
 
 <nav class="abas">
+  <button data-ir="geral" id="abaVoltar" hidden title="Voltar para a Visão geral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Visão<span class="rot-longo"> geral</span></span></button>
   <button data-aba="geral" id="abaGeral" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg><span>Visão<span class="rot-longo"> geral</span></span></button>
   <button data-aba="painel" class="ativa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Painel</button>
   <button data-aba="contas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Contas<span class="rot-longo"> fixas</span></span></button>
@@ -622,13 +634,18 @@
 </nav>
 
 <main>
+  <div class="contexto so-dev" id="barraContexto">
+    <button class="link-btn" data-ir="geral">← Visão geral</button>
+    <strong id="contextoNome"></strong>
+    <span class="miudo" id="contextoDica"></span>
+  </div>
   <div class="alertas" id="alertas"></div>
 
   <!-- PAINEL -->
   <!-- VISÃO GERAL (só Super Master): escritório + todos os condomínios -->
   <section class="aba" id="aba-geral">
     <div class="geral-sec">Escritório — <span class="mesTxt"></span><button class="link-btn" data-ir="painel">Abrir o escritório</button></div>
-    <div class="grid g4" id="geralEscritorio"></div>
+    <div class="grid g4" id="geralEscritorio" title="Abrir o escritório"></div>
     <div class="geral-sec">Condomínios — <span class="mesTxt"></span><button class="link-btn" id="geralAtualizar">Atualizar</button></div>
     <div class="grid g4" id="geralKpisCondos"></div>
     <div class="card mt">
@@ -778,7 +795,6 @@
 
   <!-- DOCUMENTOS (notas fiscais e comprovantes dos condomínios) -->
   <section class="aba" id="aba-documentos">
-    <p class="so-dev" style="margin:0 0 12px"><button class="link-btn" data-ir="geral">← Voltar para a Visão geral</button></p>
     <div class="card" id="cardEnviarDoc">
       <h2>Enviar nota fiscal ou comprovante</h2>
       <p class="ajuda">O arquivo chega no escritório exatamente como saiu do seu celular ou computador. O mês de referência é o que está aberto no topo (<span class="mesTxt"></span>).</p>
@@ -1676,9 +1692,11 @@
   const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2400); };
 
   function irParaAba(nome) {
+    if (!nome) return;   // ex.: botão "← Visão geral" da barra, que navega pelo data-ir
     document.querySelectorAll('nav.abas button').forEach(x => x.classList.toggle('ativa', x.dataset.aba === nome));
     document.querySelectorAll('.aba').forEach(s => s.classList.toggle('ativa', s.id === 'aba-' + nome));
     document.body.dataset.aba = nome;
+    aplicarArea(areaDaAba(nome));
     const botao = document.querySelector(`nav.abas button[data-aba="${nome}"]`);
     if (botao && botao.scrollIntoView) botao.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
@@ -2183,7 +2201,7 @@
     }
     mostrarTela('app');
     document.getElementById('abaGeral').hidden = p.papel !== 'super_master';
-    if (p.papel === 'super_master') nomesDev();
+    if (p.papel === 'super_master') { nomesDev(); aplicarArea(areaDaAba(document.body.dataset.aba)); }
     try {
       const a = sessionStorage.getItem('slz-aba');
       if ((a === 'usuarios' || a === 'geral') && p.papel !== 'super_master') irParaAba('painel');
@@ -2489,6 +2507,13 @@
       document.getElementById('btnZip').hidden = true;
       return;
     }
+    if (ehDev() && document.body.dataset.modo === 'condominio') {
+      const fd = document.getElementById('fdCondo');
+      if (!fd.value) { try { fd.value = sessionStorage.getItem('slz-condo') || ''; } catch (e) {} }
+      if (!fd.value && condosDocs.length) fd.value = condosDocs[0].id;
+      fd.hidden = true;
+      aplicarArea('condominio');
+    }
     const todosMeses = ehEquipe && document.getElementById('fdTodosMeses').checked;
     const condo = document.getElementById('fdCondo').value || (condosDocs.length === 1 ? condosDocs[0].id : '');
     const situacao = document.getElementById('fdStatus').value;
@@ -2779,19 +2804,33 @@
     btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
   });
 
-  // abas do dev: nomes por área do sistema e sem a aba Documentos no menu
+  // ---------- dev: três áreas — Visão geral, Escritório e Condomínio ----------
+  // No topo, o dev vê só "Visão geral" e "Acessos". Clicando no escritório ou num condomínio,
+  // entra na interface daquela área (a mesma do Master do escritório) e volta pela "← Visão geral".
+  function areaDaAba(aba) {
+    return { geral: 'geral', usuarios: 'geral', painel: 'escritorio', contas: 'escritorio', despesas: 'escritorio', balancete: 'escritorio', config: 'escritorio', documentos: 'condominio' }[aba] || 'geral';
+  }
+  function ehDev() { return document.body.classList.contains('dev'); }
   function nomesDev() {
     document.body.classList.add('dev');
-    const rotulo = (aba, html) => {
-      const b = document.querySelector(`nav.abas [data-aba="${aba}"]`);
-      const icone = b.querySelector('svg');
-      b.replaceChildren(icone);
-      b.insertAdjacentHTML('beforeend', `<span>${html}</span>`);
-    };
-    rotulo('painel', 'Escritório');
-    rotulo('config', 'Plano<span class="rot-longo"> de contas</span>');
-    rotulo('usuarios', 'Acessos');
-    document.querySelector('nav.abas [data-aba="documentos"]').hidden = true;
+    const b = document.querySelector('nav.abas [data-aba="usuarios"]');
+    b.replaceChildren(b.querySelector('svg'));
+    b.insertAdjacentHTML('beforeend', '<span>Acessos</span>');
+    document.getElementById('geralEscritorio').classList.add('clicavel');
+  }
+  function aplicarArea(area) {
+    if (!ehDev()) return;
+    document.body.dataset.modo = area;
+    document.querySelectorAll('nav.abas button[data-aba]').forEach(b => { b.hidden = areaDaAba(b.dataset.aba) !== area; });
+    document.getElementById('abaVoltar').hidden = area === 'geral';
+    const nome = document.getElementById('contextoNome'), dica = document.getElementById('contextoDica');
+    if (area === 'escritorio') { nome.textContent = 'ESCRITÓRIO SLZ'; dica.textContent = 'Controle de gastos do escritório'; }
+    if (area === 'condominio') {
+      const c = condosDocs.find(x => x.id === document.getElementById('fdCondo').value);
+      nome.textContent = c ? c.nome : 'Condomínio';
+      dica.textContent = 'Documentos e despesas do Superlógica';
+    }
+    document.getElementById('subTitulo').textContent = area === 'escritorio' ? 'Controle de gastos do escritório' : area === 'condominio' ? 'Condomínio' : 'Visão geral do sistema';
   }
 
   // ---------- modo claro / escuro ----------
@@ -2872,12 +2911,12 @@
       }
       const cont = [['enviado', 'pendente', 'aguardando'], ['pendencia', 'atrasada', 'pendência'], ['conferido', 'paga', 'conferidos']]
         .map(([st, cls, rot]) => n(c.id, st) ? `<span class="tag ${cls}">${n(c.id, st)} ${rot}</span>` : '').join('');
-      return `<tr>
+      return `<tr class="clicavel" data-geral-docs="${c.id}" title="Abrir ${esc(c.nome)}">
         <td class="titulo-linha"><strong>${esc(c.nome)}</strong>${c.id_superlogica ? ` <span class="tag sl">SL ${c.id_superlogica}</span>` : ''}</td>
         <td data-label="Documentos"><div class="contagens">${cont || '<span class="miudo">Nenhum documento</span>'}</div></td>
         <td data-label="Superlógica">${colSL}</td>
         <td data-label="Usuários" class="pessoas">${pessoas.length ? pessoas.map(u => esc(u.nome) + (u.trocar_senha ? ' <span class="tag trocar">1º acesso</span>' : '')).join('<br>') : '<span class="tag atrasada">Sem síndica cadastrada</span>'}</td>
-        <td class="num"><button class="btn sec peq" data-geral-docs="${c.id}">Ver documentos</button></td>
+        <td class="num"><button class="btn sec peq" data-geral-docs="${c.id}">Abrir condomínio</button></td>
       </tr>`;
     });
     document.getElementById('tabGeralCondos').innerHTML = linhas.join('') ||
@@ -2906,13 +2945,20 @@
         `<span class="neutro">${semVinculo.length ? 'sem condomínio: ' + semVinculo.map(u => esc(u.nome)).join(', ') : 'todos com acesso definido'}</span>`, semVinculo.length ? 't-mais' : '');
   }
   document.getElementById('geralAtualizar').addEventListener('click', async () => { await carregarUsuarios(); carregarGeral(true); });
-  document.getElementById('tabGeralCondos').addEventListener('click', e => {
-    const id = e.target.dataset.geralDocs; if (!id) return;
+  // clicar num condomínio (linha ou botão) abre a área daquele condomínio
+  function abrirCondominio(id) {
     document.getElementById('fdTodosMeses').checked = false;
     document.getElementById('fdCondo').value = id;
+    try { sessionStorage.setItem('slz-condo', id); } catch (e) {}
     irParaAba('documentos');
     window.scrollTo(0, 0);
+  }
+  document.getElementById('tabGeralCondos').addEventListener('click', e => {
+    const alvo = e.target.closest('[data-geral-docs]');
+    if (alvo) abrirCondominio(alvo.dataset.geralDocs);
   });
+  // clicar nos indicadores do escritório abre o escritório
+  document.getElementById('geralEscritorio').addEventListener('click', () => { irParaAba('painel'); window.scrollTo(0, 0); });
 
   // ---------- início ----------
   (async () => {
