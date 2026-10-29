@@ -155,13 +155,17 @@
   nav.abas button:hover { color: #fff; }
 
   main { max-width: 1150px; margin: 0 auto; padding: 20px 24px 60px; }
+  /* telas grandes (Mac, monitores): aproveita melhor a largura */
+  @media (min-width: 1440px) { main { max-width: 1320px; } }
+  .card, .grid > *, form.lancar > div, .doc, .sl-item > div { min-width: 0; }
+  .card { overflow-wrap: anywhere; }
   .aba { display: none; }
   .aba.ativa { display: block; animation: surgir .18s ease-out; }
   @keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
   .grid { display: grid; gap: 16px; }
-  .g4 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-  .g2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
   .mt { margin-top: 16px; }
   .card { background: var(--card); border: 1px solid var(--borda); border-radius: var(--raio); padding: 18px; box-shadow: 0 1px 2px rgba(22, 35, 122, .04); }
   .card h2 { margin: 0 0 14px; font-size: 16px; color: var(--azul); }
@@ -281,7 +285,7 @@
   .check-grupo { margin-bottom: 14px; }
   .check-grupo h3 { font-size: 12px; margin: 0 0 8px; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; }
   .opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
-  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 99px; font-size: 13px; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: #fff; user-select: none; }
+  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 18px; font-size: 13px; line-height: 1.3; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: #fff; user-select: none; max-width: 100%; }
   label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); font-weight: 600; }
   label.check.forte { font-weight: 700; }
   label.check.desab { opacity: .45; pointer-events: none; }
@@ -330,7 +334,7 @@
   .resumo.menos { background: var(--verde-claro); border-color: #bfe3cd; }
   .resumo.igual { background: var(--cinza-claro); color: var(--texto); }
   .filtro { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  .filtro select { width: auto; }
+  .filtro select { width: auto; max-width: 100%; min-width: 0; }
   .filtro .total { margin-left: auto; font-weight: 700; color: var(--azul); }
   .ajuda { color: var(--cinza); font-size: 13px; margin: 4px 0 14px; }
   .print-head { display: none; }
@@ -342,6 +346,17 @@
   .toast.on { opacity: 1; transform: translateX(-50%); }
   .fab { display: none; }
 
+  /* ---------- tablet e notebook pequeno: abas mais compactas ---------- */
+  @media (min-width: 761px) and (max-width: 1180px) {
+    nav.abas { padding: 0 12px; gap: 0; }
+    nav.abas button { padding: 12px 10px; font-size: 14px; gap: 6px; }
+  }
+  @media (min-width: 761px) and (max-width: 980px) {
+    nav.abas button svg { display: none; }
+    header { padding: 10px 16px; }
+    main { padding: 18px 16px 48px; }
+  }
+
   /* ---------- tablet ---------- */
   @media (max-width: 980px) {
     form.lancar > div { flex: 1 1 calc(50% - 5px); }
@@ -349,47 +364,8 @@
     form.lancar .enviar .btn { width: 100%; padding: 12px; }
   }
 
-  /* ---------- celular ---------- */
-  @media (max-width: 760px) {
-    body { font-size: 15px; }
-    header { position: sticky; top: 0; z-index: 30; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); gap: 10px; box-shadow: 0 2px 8px rgba(22,35,122,.08); }
-    header img { height: 34px; }
-    header .titulo { display: none; }
-    .topo-dir { margin-left: auto; gap: 8px; }
-    .mes-nav .mes { min-width: 0; font-size: 14px; padding: 0 4px; }
-    .mes-nav button { width: 32px; height: 32px; }
-    #btnInstalar { padding: 7px 10px; font-size: 13px; }
-    #quemSou { display: none; }
-    .usuario-box { gap: 6px; }
-
-    /* abas viram barra inferior */
-    nav.abas { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; padding: 0 0 env(safe-area-inset-bottom); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; box-shadow: 0 -2px 10px rgba(0,0,0,.12); }
-    nav.abas button { flex-direction: column; gap: 3px; font-size: 10.5px; padding: 8px 2px 7px; border-bottom: 0; border-top: 3px solid transparent; }
-    nav.abas button.ativa { border-top-color: #fff; background: rgba(255,255,255,.08); }
-    nav.abas button svg { width: 22px; height: 22px; }
-    nav.abas .rot-longo { display: none; }
-    main { padding: 14px 12px calc(96px + env(safe-area-inset-bottom)); }
-    .card { padding: 14px; }
-    .g2 { grid-template-columns: 1fr; }
-    .g4 { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi .val { font-size: 19px; }
-    .kpi .det { font-size: 12px; }
-    .barra-linha { grid-template-columns: 74px 1fr; font-size: 12px; }
-    .b { grid-template-columns: 1fr 84px; }
-    .colunas, .rotulos { gap: 6px; }
-    .chips { grid-template-columns: 1fr 1fr; }
-    .card-topo .acoes { margin-left: 0; width: 100%; }
-    .card-topo .acoes .btn { flex: 1; }
-    .filtro select { flex: 1; }
-    .filtro .total { width: 100%; margin-left: 0; text-align: right; }
-    .presets .btn { flex: 1 1 calc(50% - 4px); }
-    form.add .btn { flex: 1 1 100%; }
-    /* código + nome + botão na mesma linha; seletor de grupo embaixo */
-    .lista-edit .linha:not(.so-ler) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
-    .lista-edit .linha select { grid-column: 2 / 4; grid-row: 2; min-height: 34px; padding: 5px 8px; font-size: 13px; }
-    .lista-edit .linha .cod { min-width: 44px; }
-    .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
-
+  /* ---------- tablet em pé e celular: tabelas viram cartões ---------- */
+  @media (max-width: 900px) {
     /* tabelas viram cartões */
     table.resp thead { display: none; }
     table.resp, table.resp tbody, table.resp tr, table.resp td { display: block; width: 100%; }
@@ -410,9 +386,89 @@
     table.resp td.so-desk { display: none; }
     table.resp tr.item { margin-left: 14px; width: calc(100% - 14px); border-style: dashed; }
     table.resp td.sub2 { padding-left: 0; }
+    /* nome editável (ex.: usuários) ocupa a linha toda, alinhado à esquerda */
+    table.resp td.titulo-linha input.inline { max-width: none; text-align: left; font-weight: 600; }
+    table.resp td.num .acoes { width: 100%; justify-content: flex-end; }
+    table.resp td details { text-align: right; }
+    table.resp td details .condos { justify-content: flex-end; }
+    table.resp td.titulo-linha { text-align: left; flex-wrap: wrap; }
+    /* visão geral: o progresso dos comprovantes ocupa a linha inteira, embaixo do rótulo */
+    #tabGeralCondos td[data-label="Superlógica"] { flex-wrap: wrap; }
+    #tabGeralCondos td[data-label="Superlógica"] > * { flex: 1 1 100%; text-align: left; overflow-wrap: normal; }
+    #tabGeralCondos .progresso-sl { min-width: 0; }
+  }
+  @media (min-width: 761px) and (max-width: 900px) {
+    /* no tablet, os cartões das tabelas ficam em duas colunas quando cabem */
+    #tabContas, #tabUsuarios { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    #tabContas tr, #tabUsuarios tr { margin-bottom: 0; }
+    #tabContas tr.total, #tabUsuarios td.vazio, #tabContas td.vazio { grid-column: 1 / -1; }
+  }
+
+  /* ---------- celular ---------- */
+  @media (max-width: 760px) {
+    /* campos com letra de 16px: o iPhone não dá zoom sozinho ao tocar */
+    input, select, textarea { font-size: 16px; }
+    body { font-size: 15px; }
+    header { position: sticky; top: 0; z-index: 30; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); gap: 10px; box-shadow: 0 2px 8px rgba(22,35,122,.08); }
+    header img { height: 34px; }
+    header .titulo { display: none; }
+    .topo-dir { margin-left: auto; gap: 8px; }
+    .mes-nav .mes { min-width: 0; font-size: 14px; padding: 0 4px; }
+    .mes-nav button { width: 32px; height: 32px; }
+    #btnInstalar { padding: 7px 10px; font-size: 13px; }
+    #quemSou { display: none; }
+    .usuario-box { gap: 6px; }
+
+    /* abas viram barra inferior */
+    /* muitas abas (Super Master): a barra rola para o lado em vez de espremer os nomes */
+    nav.abas { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; padding: 0 0 env(safe-area-inset-bottom); display: grid; grid-auto-flow: column; grid-auto-columns: minmax(72px, 1fr); gap: 0; box-shadow: 0 -2px 10px rgba(0,0,0,.12); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+    nav.abas::-webkit-scrollbar { display: none; }
+    nav.abas button { flex-direction: column; gap: 3px; font-size: 11px; padding: 8px 4px 7px; border-bottom: 0; border-top: 3px solid transparent; min-width: 0; }
+    nav.abas button > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    nav.abas button.ativa { border-top-color: #fff; background: rgba(255,255,255,.08); }
+    nav.abas button svg { width: 22px; height: 22px; }
+    nav.abas .rot-longo { display: none; }
+    main { padding: 14px 12px calc(96px + env(safe-area-inset-bottom)); }
+    .card { padding: 14px; }
+    .g2 { grid-template-columns: 1fr; }
+    .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .kpi .val { font-size: 19px; }
+    .kpi .det { font-size: 12px; }
+    .barra-linha { grid-template-columns: 74px 1fr; font-size: 12px; }
+    .b { grid-template-columns: 1fr 84px; }
+    .colunas, .rotulos { gap: 6px; }
+    .chips { grid-template-columns: 1fr 1fr; }
+    .card-topo .acoes { margin-left: 0; width: 100%; }
+    .card-topo .acoes .btn { flex: 1; }
+    .filtro select { flex: 1 1 100%; }
+    .filtro label.check { flex: 1 1 100%; }
+    .filtro .total { width: 100%; margin-left: 0; text-align: right; }
+    .presets .btn { flex: 1 1 calc(50% - 4px); }
+    form.add .btn { flex: 1 1 100%; }
+    /* código + nome + botão na mesma linha; seletor de grupo embaixo */
+    .lista-edit .linha:not(.so-ler) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+    /* lista de condomínios (sem código na frente): nome inteiro numa linha, etiqueta e botão embaixo */
+    #listaCondos .linha { display: flex !important; flex-wrap: wrap; justify-content: flex-end; }
+    #listaCondos .linha input { flex: 1 1 100%; }
+    .lista-edit .linha select { grid-column: 2 / 4; grid-row: 2; min-height: 34px; padding: 5px 8px; font-size: 13px; }
+    .lista-edit .linha .cod { min-width: 44px; }
+    .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
+
     .fab { display: flex; position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 31; width: 56px; height: 56px; border-radius: 50%; background: var(--azul); color: #fff; border: 0; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 18px rgba(22,35,122,.35); }
     .toast { bottom: calc(150px + env(safe-area-inset-bottom)); }
+    .kpi .val { overflow-wrap: anywhere; }
+    .doc-cab .doc-valor { margin-left: 0; width: 100%; }
+    dialog.modal .linha2 { grid-template-columns: 1fr; }
   }
+  @media (max-width: 380px) {
+    /* celulares bem pequenos */
+    .kpi .val { font-size: 17px; }
+    .kpi { padding: 12px; }
+    .mes-nav .mes { font-size: 13px; }
+    header img { height: 30px; }
+  }
+  /* o "+" azul de lançar despesa só aparece onde faz sentido */
+  body:not([data-aba="painel"]):not([data-aba="despesas"]) .fab { display: none !important; }
 
   @media print {
     header, nav.abas, .nao-imprimir, .alertas, .fab { display: none !important; }
@@ -428,7 +484,7 @@
   }
 </style>
 </head>
-<body>
+<body data-aba="painel">
 
 <div class="tela-cheia" id="telaCarregando">
   <div class="card"><img class="logo" src="logo-slz.png" alt="SLZ"><p class="carregando">Carregando o Portal SLZ…</p></div>
@@ -1556,6 +1612,9 @@
   function irParaAba(nome) {
     document.querySelectorAll('nav.abas button').forEach(x => x.classList.toggle('ativa', x.dataset.aba === nome));
     document.querySelectorAll('.aba').forEach(s => s.classList.toggle('ativa', s.id === 'aba-' + nome));
+    document.body.dataset.aba = nome;
+    const botao = document.querySelector(`nav.abas button[data-aba="${nome}"]`);
+    if (botao && botao.scrollIntoView) botao.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
     if (nome === 'documentos' && perfil) carregarDocs();
     if (nome === 'geral' && perfil) carregarGeral();
