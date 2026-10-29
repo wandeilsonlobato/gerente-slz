@@ -76,6 +76,17 @@
   .so-leitura .editar { display: none !important; }
   .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
 
+  /* ---------- botão vermelho "+" e janelas de cadastro rápido ---------- */
+  .btn-mais { width: 40px; height: 40px; border-radius: 50%; background: var(--vermelho); color: #fff; border: 0; font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(192, 57, 43, .35); flex-shrink: 0; padding: 0 0 3px; }
+  .btn-mais:hover { background: #a93226; }
+  .card-topo .btn-mais { margin-left: 8px; }
+  dialog.modal { border: 0; border-radius: 14px; padding: 22px; width: min(440px, calc(100% - 32px)); box-shadow: 0 20px 50px rgba(22, 35, 122, .25); color: var(--texto); }
+  dialog.modal::backdrop { background: rgba(22, 35, 122, .35); }
+  dialog.modal h2 { margin: 0 0 4px; color: var(--azul); font-size: 18px; }
+  dialog.modal label { margin-top: 12px; }
+  dialog.modal .linha2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog.modal .acoes { justify-content: flex-end; margin-top: 18px; }
+
   /* ---------- documentos (notas e comprovantes) ---------- */
   .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
   #formDoc .f-condo { flex-basis: 220px; }
@@ -504,7 +515,10 @@
   <!-- CONTAS FIXAS -->
   <section class="aba" id="aba-contas">
     <div class="card">
-      <h2>Contas fixas — <span class="mesTxt"></span></h2>
+      <div class="card-topo">
+        <h2>Contas fixas — <span class="mesTxt"></span></h2>
+        <button class="btn-mais editar" id="maisFixa" title="Adicionar conta fixa" aria-label="Adicionar conta fixa" style="margin-left:auto">+</button>
+      </div>
       <p class="ajuda">Toque na data para abrir o calendário, ajuste o valor da fatura e marque como paga quando quitar. <button class="link-btn editar" data-ir="config">Adicionar ou remover contas fixas</button></p>
       <table class="resp">
         <thead><tr><th>Conta</th><th>Vencimento</th><th class="num">Valor (R$)</th><th class="num">× mês anterior</th><th>Situação</th><th>Pago em</th><th></th></tr></thead>
@@ -519,6 +533,7 @@
       <div class="card-topo">
         <h2>Lançar despesa</h2>
         <button class="link-btn" data-ir="config" style="margin-left:auto">Gerenciar plano de contas</button>
+        <button class="btn-mais" id="maisConta" title="Adicionar conta de despesa" aria-label="Adicionar conta de despesa">+</button>
       </div>
       <form class="lancar" id="formDespesa">
         <div><label for="fData">Data</label><input type="date" id="fData" min="2026-11-01" required></div>
@@ -744,6 +759,32 @@
     </div>
   </section>
 </main>
+
+<dialog class="modal" id="modalFixa">
+  <form method="dialog" id="formModalFixa">
+    <h2>Nova conta fixa</h2>
+    <p class="ajuda" style="margin:0">Entra a partir de <span class="mesTxt"></span>, com o próximo código do grupo 1.</p>
+    <label for="mfNome">Nome</label>
+    <input id="mfNome" placeholder="ex.: Água, Aluguel, Telefone" autocomplete="off" required>
+    <div class="linha2">
+      <div><label for="mfDia">Dia do vencimento</label><input id="mfDia" type="number" min="1" max="31" inputmode="numeric" required></div>
+      <div><label for="mfValor">Valor (R$)</label><input id="mfValor" class="valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+    </div>
+    <div class="acoes"><button class="btn sec" type="button" data-fechar>Cancelar</button><button class="btn" type="submit">Adicionar</button></div>
+  </form>
+</dialog>
+
+<dialog class="modal" id="modalConta">
+  <form method="dialog" id="formModalConta">
+    <h2>Nova conta de despesa</h2>
+    <p class="ajuda" style="margin:0">Ela entra no plano de contas e já fica pronta para lançar.</p>
+    <label for="mcNome">Nome</label>
+    <input id="mcNome" placeholder="ex.: Material de limpeza" autocomplete="off" required>
+    <label for="mcGrupo">Grupo</label>
+    <select id="mcGrupo"></select>
+    <div class="acoes"><button class="btn sec" type="button" data-fechar>Cancelar</button><button class="btn" type="submit">Adicionar</button></div>
+  </form>
+</dialog>
 
 <button class="fab editar" id="fab" aria-label="Lançar despesa">+</button>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1617,19 +1658,66 @@
     });
     salvar(); render(); toast('Contas fixas salvas');
   };
-  document.getElementById('formNovaFixa').addEventListener('submit', e => {
-    e.preventDefault();
-    const nome = document.getElementById('nfNome').value.trim();
-    const dia = parseInt(document.getElementById('nfDia').value, 10);
-    const valorTxt = document.getElementById('nfValor').value.trim();
-    const valor = valorTxt ? lerValor(valorTxt) : 0;
-    if (!nome) { toast('Informe o nome da conta'); return; }
-    if (!(dia >= 1 && dia <= 31)) { toast('Informe o dia do vencimento (1 a 31)'); return; }
-    if (isNaN(valor) || valor < 0) { toast('Valor inválido'); return; }
+  // nova conta fixa (usada em Ajustes e no botão vermelho da aba Contas fixas)
+  function novaFixa(nome, diaTxt, valorTxt) {
+    nome = nome.trim();
+    const dia = parseInt(diaTxt, 10);
+    const valor = valorTxt.trim() ? lerValor(valorTxt) : 0;
+    if (!podeEditar) return false;
+    if (!nome) { toast('Informe o nome da conta'); return false; }
+    if (!(dia >= 1 && dia <= 31)) { toast('Informe o dia do vencimento (1 a 31)'); return false; }
+    if (isNaN(valor) || valor < 0) { toast('Valor inválido'); return false; }
     const f = { id: novoId('f'), nome, dia, valor, desde: mesSel, seq: proxSeq(dados.fixas, () => true) };
     dados.fixas.push(f);
-    e.target.reset();
     salvar(); render(); toast(codFixa(f) + ' ' + nome + ' adicionada a partir de ' + nomeMes(mesSel));
+    return true;
+  }
+  document.getElementById('formNovaFixa').addEventListener('submit', e => {
+    e.preventDefault();
+    if (novaFixa(document.getElementById('nfNome').value, document.getElementById('nfDia').value, document.getElementById('nfValor').value)) e.target.reset();
+  });
+
+  // nova conta de despesa no plano (usada em Ajustes e no botão vermelho da aba Despesas)
+  function novaConta(grupo, nome) {
+    nome = nome.trim();
+    if (!podeEditar || !nome) return null;
+    if (dados.categorias.some(c => c.ativa && mesmoNome(c.nome, nome))) { toast('Essa conta já existe'); return null; }
+    const antigo = dados.categorias.find(c => !c.ativa && mesmoNome(c.nome, nome));
+    let c;
+    if (antigo) { c = antigo; c.ativa = true; if (c.grupo !== grupo) { c.grupo = grupo; c.seq = proxSeq(dados.categorias, x => x.grupo === grupo && x.id !== c.id); } }
+    else { c = { id: novoId('c'), nome, ativa: true, grupo, seq: proxSeq(dados.categorias, x => x.grupo === grupo) }; dados.categorias.push(c); }
+    salvar(); render(); toast(codCat(c) + ' ' + nome + ' adicionada');
+    return c;
+  }
+
+  // janelas do botão vermelho "+"
+  document.querySelectorAll('dialog.modal [data-fechar]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+  document.getElementById('maisFixa').onclick = () => {
+    document.getElementById('formModalFixa').reset();
+    document.getElementById('modalFixa').showModal();
+    document.getElementById('mfNome').focus();
+  };
+  document.getElementById('formModalFixa').addEventListener('submit', e => {
+    e.preventDefault();
+    if (novaFixa(document.getElementById('mfNome').value, document.getElementById('mfDia').value, document.getElementById('mfValor').value))
+      document.getElementById('modalFixa').close();
+  });
+  document.getElementById('maisConta').onclick = () => {
+    document.getElementById('formModalConta').reset();
+    document.getElementById('mcGrupo').innerHTML = gruposOrdenados().filter(g => g.ativa && g.tipo !== 'fixas')
+      .map(g => `<option value="${g.id}">Grupo ${g.num} · ${esc(g.nome)}</option>`).join('');
+    document.getElementById('modalConta').showModal();
+    document.getElementById('mcNome').focus();
+  };
+  document.getElementById('formModalConta').addEventListener('submit', e => {
+    e.preventDefault();
+    const c = novaConta(document.getElementById('mcGrupo').value, document.getElementById('mcNome').value);
+    if (!c) return;
+    document.getElementById('modalConta').close();
+    // já deixa a conta nova escolhida no formulário de lançar
+    document.getElementById('fCat').value = c.id;
+    atualizarFormOutros();
+    document.getElementById('fValor').focus();
   });
   document.getElementById('tabConfig').addEventListener('click', e => {
     const id = e.target.dataset.remFixa;
@@ -1700,13 +1788,7 @@
       else lista.push({ id: novoId('i'), nome, ativa: true, seq: proxSeq(lista, () => true) });
       salvar(); render(); toast('Item adicionado');
     } else if (form.dataset.addCat) {
-      const grupo = form.dataset.addCat;
-      if (dados.categorias.some(c => c.ativa && mesmoNome(c.nome, nome))) { toast('Essa conta já existe'); return; }
-      const antigo = dados.categorias.find(c => !c.ativa && mesmoNome(c.nome, nome));
-      let c;
-      if (antigo) { c = antigo; c.ativa = true; if (c.grupo !== grupo) { c.grupo = grupo; c.seq = proxSeq(dados.categorias, x => x.grupo === grupo && x.id !== c.id); } }
-      else { c = { id: novoId('c'), nome, ativa: true, grupo, seq: proxSeq(dados.categorias, x => x.grupo === grupo) }; dados.categorias.push(c); }
-      salvar(); render(); toast(codCat(c) + ' ' + nome + ' adicionada');
+      novaConta(form.dataset.addCat, nome);
     }
   });
   document.getElementById('formNovoGrupo').addEventListener('submit', e => {
