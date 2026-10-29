@@ -1718,7 +1718,7 @@
         <td data-label="× mês anterior" class="num">${pilula(c.valor, cAnt ? cAnt.valor : 0, !!cAnt)}</td>
         <td data-label="Situação"><span class="tag ${s.cls}">${s.txt}</span></td>
         <td data-label="Pago em">${c.pago ? fmtData(c.pagoEm) : '—'}</td>
-        <td class="num"><button class="btn peq editar ${c.pago ? 'sec' : ''}" data-conta-pagar="${f.id}">${c.pago ? 'Desmarcar' : 'Marcar como paga'}</button></td>
+        <td class="num"><button class="btn peq editar ${c.pago ? 'sec' : ''}" data-conta-pagar="${f.id}" title="${c.pago ? 'Voltar esta conta para não paga' : 'Marcar esta conta como paga hoje'}">${c.pago ? ic('seta') + 'Desfazer pagamento' : 'Marcar como paga'}</button></td>
       </tr>`;
     }).join('') : '<tr><td colspan="7" class="vazio">Nenhuma conta fixa neste mês.</td></tr>') +
       `<tr class="total"><td class="titulo-linha" colspan="2">Total contas fixas</td><td class="num" data-label="Valor">${brl(totais(mesSel).fixas)}</td><td colspan="4"></td></tr>`;
@@ -2059,7 +2059,8 @@
     salvar(); render(); toast('Valor atualizado');
   });
   document.getElementById('tabContas').addEventListener('click', e => {
-    const id = e.target.dataset.contaPagar;
+    const b = e.target.closest('[data-conta-pagar]');
+    const id = b && b.dataset.contaPagar;
     if (!id) return;
     const c = dados.meses[mesSel].contas[id];
     c.pago = !c.pago;
