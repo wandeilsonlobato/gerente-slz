@@ -1,2 +1,3 @@
 backup-gastos-slz-*.json
 balancete-slz-*.csv
+.wrangler/
