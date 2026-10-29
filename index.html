@@ -7,6 +7,9 @@
 <meta name="description" content="Portal SLZ — controle de gastos e prestação de contas da SLZ Administradora de Condomínios">
 <meta name="theme-color" content="#16237a">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>try { var t = localStorage.getItem('portal-slz-tema'); if (t) document.documentElement.dataset.tema = t; } catch (e) {}</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -15,574 +18,701 @@
 <meta name="apple-mobile-web-app-title" content="Portal SLZ">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
+  /* ==========================================================================
+     Portal SLZ — sistema visual
+     Referências: painéis financeiros modernos (Stripe, Mercury, Ramp, Linear).
+     Paleta neutra; o azul SLZ aparece só no que importa (ação principal, item ativo, faixas).
+     ========================================================================== */
   :root {
-    --azul: #16237a;
+    --azul: #16237a;          /* marca SLZ: textos de destaque e item ativo */
     --azul-2: #2a3aa8;
-    --azul-claro: #e8ebfa;
-    --cinza: #6b6f7a;
-    --cinza-claro: #f3f4f7;
-    --borda: #dde0e8;
-    --texto: #1c1f2a;
-    --fundo: #f6f7fb;
+    --azul-claro: #eef1fb;
+    --acao: #16237a;          /* fundo dos botões principais, com letra branca */
+    --acao-2: #22339a;
+    --barra: #16237a;
+    --texto: #0f172a;
+    --cinza: #64748b;         /* texto secundário */
+    --cinza-claro: #f1f5f9;   /* fundos discretos */
+    --borda: #e6e8ee;
+    --borda-forte: #d3d8e2;
+    --fundo: #f6f7f9;
     --card: #ffffff;
-    --neutro: #b9bfd9;
-    --verde: #1f8a4c;
-    --verde-claro: #e3f4ea;
-    --vermelho: #c0392b;
-    --vermelho-claro: #fbe7e5;
-    --amarelo: #b7791f;
-    --amarelo-claro: #fdf3dc;
+    --campo: #ffffff;
+    --neutro: #c7cddd;
+    --verde: #15803d; --verde-claro: #ecfdf3; --borda-verde: #b7ebc8;
+    --vermelho: #b42318; --vermelho-claro: #fef3f2; --borda-verm: #fecdca;
+    --amarelo: #b54708; --amarelo-claro: #fffaeb; --borda-amar: #fedf89;
+    --borda-azul: #c9d1f3;
+    --sombra-1: 0 1px 2px rgba(15, 23, 42, .05);
+    --sombra-2: 0 1px 3px rgba(15, 23, 42, .07), 0 1px 2px rgba(15, 23, 42, .04);
+    --sombra-3: 0 18px 40px -12px rgba(15, 23, 42, .25);
+    --foco: 0 0 0 3px rgba(22, 35, 122, .16);
     --raio: 12px;
-    /* papéis extras da paleta (para o modo escuro funcionar em tudo) */
-    --acao: #16237a;        /* fundo de botões, com letra branca */
-    --acao-2: #2a3aa8;
-    --barra: #16237a;       /* barra das abas */
-    --campo: #ffffff;       /* fundo dos campos */
-    --borda-verm: #f0c2bc;
-    --borda-verde: #bfe3cd;
-    --borda-amar: #f1dca8;
-    --borda-azul: #c8cef3;
+    --lateral: 248px;
+    --fonte: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
     color-scheme: light;
   }
-  /* modo escuro: segue o aparelho, ou a escolha feita no botão 🌙/☀️ do topo */
+  /* modo escuro: segue o aparelho, ou a escolha feita no botão de tema */
   @media (prefers-color-scheme: dark) {
     :root:not([data-tema="claro"]) {
       color-scheme: dark;
-      --azul: #9aa8ff; --azul-2: #b3beff; --azul-claro: #232a4a;
-      --acao: #4a5fd6; --acao-2: #5d71e6; --barra: #151b45;
-      --cinza: #a0a6ba; --cinza-claro: #21263a; --borda: #343b52;
-      --texto: #e8eaf3; --fundo: #0e1120; --card: #171b2c; --campo: #10142a;
-      --neutro: #4b5274;
-      --verde: #52c78a; --verde-claro: #163428; --borda-verde: #2b5c45;
-      --vermelho: #f2807a; --vermelho-claro: #3b1f23; --borda-verm: #6b3236;
-      --amarelo: #e8b75c; --amarelo-claro: #382d16; --borda-amar: #5e4a22;
-      --borda-azul: #3a4478;
+      --azul: #a5b4fc; --azul-2: #b9c4fd; --azul-claro: #1b2142;
+      --acao: #4f63e0; --acao-2: #6174ee; --barra: #151b45;
+      --texto: #e7eaf3; --cinza: #95a0b6; --cinza-claro: #171c2b;
+      --borda: #232a3b; --borda-forte: #303a51;
+      --fundo: #0b0e17; --card: #11151f; --campo: #0e121c; --neutro: #3b4562;
+      --verde: #4ade80; --verde-claro: #0e2a1b; --borda-verde: #1d5132;
+      --vermelho: #f97066; --vermelho-claro: #2c1416; --borda-verm: #5b2428;
+      --amarelo: #fdb022; --amarelo-claro: #2a2010; --borda-amar: #5a4418;
+      --borda-azul: #34407a;
+      --sombra-1: 0 1px 2px rgba(0, 0, 0, .3);
+      --sombra-2: 0 2px 6px rgba(0, 0, 0, .35);
+      --sombra-3: 0 20px 44px -12px rgba(0, 0, 0, .6);
+      --foco: 0 0 0 3px rgba(129, 140, 248, .3);
     }
   }
   :root[data-tema="escuro"] {
       color-scheme: dark;
-      --azul: #9aa8ff; --azul-2: #b3beff; --azul-claro: #232a4a;
-      --acao: #4a5fd6; --acao-2: #5d71e6; --barra: #151b45;
-      --cinza: #a0a6ba; --cinza-claro: #21263a; --borda: #343b52;
-      --texto: #e8eaf3; --fundo: #0e1120; --card: #171b2c; --campo: #10142a;
-      --neutro: #4b5274;
-      --verde: #52c78a; --verde-claro: #163428; --borda-verde: #2b5c45;
-      --vermelho: #f2807a; --vermelho-claro: #3b1f23; --borda-verm: #6b3236;
-      --amarelo: #e8b75c; --amarelo-claro: #382d16; --borda-amar: #5e4a22;
-      --borda-azul: #3a4478;
+      --azul: #a5b4fc; --azul-2: #b9c4fd; --azul-claro: #1b2142;
+      --acao: #4f63e0; --acao-2: #6174ee; --barra: #151b45;
+      --texto: #e7eaf3; --cinza: #95a0b6; --cinza-claro: #171c2b;
+      --borda: #232a3b; --borda-forte: #303a51;
+      --fundo: #0b0e17; --card: #11151f; --campo: #0e121c; --neutro: #3b4562;
+      --verde: #4ade80; --verde-claro: #0e2a1b; --borda-verde: #1d5132;
+      --vermelho: #f97066; --vermelho-claro: #2c1416; --borda-verm: #5b2428;
+      --amarelo: #fdb022; --amarelo-claro: #2a2010; --borda-amar: #5a4418;
+      --borda-azul: #34407a;
+      --sombra-1: 0 1px 2px rgba(0, 0, 0, .3);
+      --sombra-2: 0 2px 6px rgba(0, 0, 0, .35);
+      --sombra-3: 0 20px 44px -12px rgba(0, 0, 0, .6);
+      --foco: 0 0 0 3px rgba(129, 140, 248, .3);
     }
+
+  /* ---------- base ---------- */
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--fundo); color: var(--texto); font-size: 15px; line-height: 1.4; }
-  button, input, select { font: inherit; color: inherit; }
+  body { margin: 0; font-family: var(--fonte); font-size: 14px; line-height: 1.5; background: var(--fundo); color: var(--texto); -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01"; transition: background-color .2s, color .2s; }
+  button, input, select, textarea { font: inherit; color: inherit; }
   button { cursor: pointer; }
+  [hidden] { display: none !important; }
+  .ic { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ic.g { width: 18px; height: 18px; }
+  ::selection { background: rgba(22, 35, 122, .15); }
 
-  /* ---------- topo ---------- */
-  header { background: var(--card); border-bottom: 3px solid var(--azul); padding: 12px 24px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  header img { height: 52px; display: block; }
-  header h1 { margin: 0; font-size: 19px; color: var(--azul); font-weight: 700; }
-  header .sub { color: var(--cinza); font-size: 13px; }
-  .topo-dir { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-  .mes-nav { display: flex; align-items: center; gap: 6px; background: var(--azul-claro); border-radius: 10px; padding: 4px; }
-  .mes-nav button { background: var(--acao); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 8px; font-size: 18px; line-height: 1; }
-  .mes-nav button:disabled { background: var(--borda); cursor: not-allowed; }
-  .mes-nav .mes { min-width: 160px; text-align: center; font-weight: 700; font-size: 16px; color: var(--azul); }
-  #btnInstalar { display: none; }
-  .usuario-box { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  #quemSou { color: var(--cinza); white-space: nowrap; }
-  #quemSou strong { color: var(--texto); }
-  #statusSync { font-size: 12px; font-weight: 600; white-space: nowrap; }
-  #statusSync.salvo { color: var(--verde); }
-  #statusSync.salvando { color: var(--cinza); }
+  /* ---------- estrutura: menu lateral + barra do topo ---------- */
+  body:not(.tela-app) .lateral, body:not(.tela-app) header, body:not(.tela-app) main, body:not(.tela-app) .fab { display: none !important; }
+  .lateral { position: fixed; inset: 0 auto 0 0; width: var(--lateral); background: var(--card); border-right: 1px solid var(--borda); display: flex; flex-direction: column; z-index: 40; }
+  .lateral .marca { display: flex; align-items: center; gap: 10px; padding: 20px 20px 18px; border-bottom: 1px solid var(--borda); }
+  .lateral .marca img { height: 34px; display: block; }
+  .lateral .marca span { font-weight: 600; font-size: 13px; color: var(--cinza); padding-left: 10px; border-left: 1px solid var(--borda); line-height: 1.2; }
+  .lateral .rodape { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--borda); font-size: 12px; color: var(--cinza); }
+  nav.abas { display: flex; flex-direction: column; gap: 2px; padding: 14px 12px; overflow-y: auto; }
+  nav.abas button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 0; border-radius: 8px; background: none; color: var(--cinza); font-weight: 500; font-size: 14px; text-align: left; white-space: nowrap; transition: background .12s, color .12s; }
+  nav.abas button svg { width: 18px; height: 18px; flex-shrink: 0; }
+  nav.abas button:hover { background: var(--cinza-claro); color: var(--texto); }
+  nav.abas button.ativa { background: var(--azul-claro); color: var(--azul); font-weight: 600; }
+  nav.abas #abaVoltar { color: var(--azul); margin-bottom: 6px; }
+
+  header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 10px 32px; margin-left: var(--lateral); background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: saturate(160%) blur(10px); -webkit-backdrop-filter: saturate(160%) blur(10px); border-bottom: 1px solid var(--borda); }
+  header > img.logo-topo { display: none; height: 32px; }
+  header .titulo { min-width: 0; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: var(--texto); line-height: 1.25; }
+  header .sub { color: var(--cinza); font-size: 12.5px; font-weight: 500; }
+  .topo-dir { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .usuario-box { display: flex; align-items: center; gap: 10px; }
+  #quemSou { display: flex; align-items: center; gap: 10px; padding-left: 12px; border-left: 1px solid var(--borda); white-space: nowrap; }
+  #quemSou .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+  #quemSou .quem { display: flex; flex-direction: column; line-height: 1.2; }
+  #quemSou .quem strong { font-size: 13px; font-weight: 600; }
+  #quemSou .quem small { font-size: 12px; color: var(--cinza); }
+  #statusSync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--cinza); white-space: nowrap; }
+  #statusSync .ponto { width: 7px; height: 7px; border-radius: 50%; background: var(--neutro); }
+  #statusSync.salvo .ponto { background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, .15); }
+  #statusSync.salvando .ponto { background: var(--cinza); animation: pulsar 1s infinite; }
   #statusSync.offline { color: var(--amarelo); }
+  #statusSync.offline .ponto { background: #f59e0b; }
   #statusSync.leitura { color: var(--azul); }
+  @keyframes pulsar { 50% { opacity: .3; } }
+  .mes-nav { display: flex; align-items: center; background: var(--card); border: 1px solid var(--borda-forte); border-radius: 9px; box-shadow: var(--sombra-1); overflow: hidden; }
+  .mes-nav button { width: 34px; height: 34px; border: 0; background: none; color: var(--texto); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
+  .mes-nav button:hover:not(:disabled) { background: var(--cinza-claro); }
+  .mes-nav button:disabled { color: var(--neutro); cursor: not-allowed; }
+  .mes-nav .mes { min-width: 150px; padding: 0 6px; text-align: center; font-weight: 600; font-size: 13.5px; border-left: 1px solid var(--borda); border-right: 1px solid var(--borda); line-height: 34px; }
+  #btnInstalar { display: none; }
+  .btn-tema { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--borda-forte); background: var(--card); color: var(--texto); display: inline-flex; align-items: center; justify-content: center; padding: 0; box-shadow: var(--sombra-1); }
+  .btn-tema:hover { background: var(--cinza-claro); }
 
-  /* ---------- telas de entrada (login, troca de senha, carregando) ---------- */
-  body:not(.tela-app) header, body:not(.tela-app) nav.abas, body:not(.tela-app) main, body:not(.tela-app) .fab { display: none !important; }
-  .tela-cheia { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: linear-gradient(160deg, var(--azul-claro), var(--fundo) 60%); }
-  .tela-cheia .card { width: 100%; max-width: 400px; padding: 28px; box-shadow: 0 10px 30px rgba(22, 35, 122, .12); }
-  .tela-cheia .card.largo-tela { max-width: 560px; }
-  .tela-cheia img.logo { display: block; height: 64px; margin: 0 auto 10px; }
-  .tela-cheia h1 { text-align: center; color: var(--azul); margin: 0 0 4px; font-size: 22px; }
-  .tela-cheia .sub { text-align: center; color: var(--cinza); font-size: 14px; margin: 0 0 20px; }
-  .tela-cheia form label { margin-top: 12px; }
-  .tela-cheia form .btn { width: 100%; margin-top: 18px; padding: 12px; font-size: 16px; }
-  .erro-form { color: var(--vermelho); font-size: 14px; margin: 10px 0 0; min-height: 1em; }
-  .carregando { color: var(--azul); font-weight: 600; text-align: center; }
+  main { margin-left: var(--lateral); max-width: calc(1280px + var(--lateral)); padding: 28px 32px 72px; }
+  @media (min-width: 1600px) { main { padding-left: 48px; padding-right: 48px; } }
+  .aba { display: none; }
+  .aba.ativa { display: block; animation: surgir .2s ease-out; }
+  @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- telas de entrada ---------- */
+  .tela-cheia { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: var(--fundo); }
+  .tela-cheia > .card { width: 100%; max-width: 400px; padding: 32px; box-shadow: var(--sombra-3); }
+  .tela-cheia img.logo { display: block; height: 52px; margin: 0 0 22px; }
+  .tela-cheia h1 { margin: 0 0 6px; font-size: 22px; font-weight: 600; letter-spacing: -.015em; }
+  .tela-cheia .sub { color: var(--cinza); font-size: 14px; margin: 0 0 22px; }
+  .tela-cheia form label { margin-top: 14px; }
+  .tela-cheia form .btn { width: 100%; margin-top: 20px; height: 42px; font-size: 15px; justify-content: center; }
+  .tela-cheia .btn-tema { position: fixed; top: 16px; right: 16px; z-index: 2; }
+  .carregando { color: var(--cinza); font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .carregando::before { content: ''; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--borda-forte); border-top-color: var(--azul); animation: girar .7s linear infinite; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  .erro-form { color: var(--vermelho); font-size: 13.5px; margin: 10px 0 0; min-height: 1em; }
+  /* login em duas colunas: marca à esquerda, formulário à direita */
+  #telaLogin { padding: 0; align-items: stretch; }
+  .login-wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); width: 100%; min-height: 100vh; min-height: 100dvh; }
+  .login-marca { background: #16237a; color: #fff; padding: 48px 56px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .login-marca::after { content: ''; position: absolute; right: -140px; bottom: -140px; width: 420px; height: 420px; border-radius: 50%; border: 70px solid rgba(255, 255, 255, .05); }
+  .login-marca .selo { background: #fff; border-radius: 12px; padding: 10px 14px; align-self: flex-start; }
+  .login-marca .selo img { height: 40px; display: block; }
+  .login-marca h2 { font-size: 34px; line-height: 1.15; letter-spacing: -.02em; margin: auto 0 14px; font-weight: 600; max-width: 460px; }
+  .login-marca p { color: rgba(255, 255, 255, .75); font-size: 15px; max-width: 440px; margin: 0 0 28px; }
+  .login-marca ul { list-style: none; padding: 0; margin: 0 0 auto; display: grid; gap: 12px; font-size: 14px; color: rgba(255, 255, 255, .9); }
+  .login-marca li { display: flex; align-items: center; gap: 10px; }
+  .login-marca li .ic { width: 18px; height: 18px; padding: 6px; box-sizing: content-box; border-radius: 8px; background: rgba(255, 255, 255, .1); }
+  .login-marca small { color: rgba(255, 255, 255, .55); font-size: 12px; margin-top: 32px; }
+  .login-form { display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
+  .login-form .card { width: 100%; max-width: 380px; border: 0; box-shadow: none; background: transparent; padding: 0; }
+  .login-form .logo { display: none; }
 
   /* ---------- quem só visualiza ---------- */
   .so-leitura .editar { display: none !important; }
-  .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
+  .so-leitura input:disabled, .so-leitura select:disabled { background: transparent; border-color: transparent; box-shadow: none; color: var(--texto); opacity: 1; -webkit-text-fill-color: var(--texto); }
 
-  /* ---------- visão geral (só Super Master) ---------- */
-  /* faixa azul que separa Escritório, Condomínios e Usuários */
-  .geral-sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: var(--acao); margin: 26px 0 12px; padding: 11px 16px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(22, 35, 122, .15); }
-  .geral-sec:first-child { margin-top: 0; }
-  .geral-sec .link-btn { margin-left: auto; text-transform: none; letter-spacing: 0; color: #fff; }
-  /* ---------- conciliação bancária (só devs) ---------- */
-  .conc-extrato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; margin-bottom: 8px; background: var(--cinza-claro); font-size: 14px; }
-  .conc-extrato .acoes { margin-left: auto; }
-  .conc-grupo { margin-top: 16px; }
-  .conc-grupo h3 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
-  .conc-linha { display: grid; grid-template-columns: 90px minmax(0, 1.4fr) minmax(0, 1fr) 120px; gap: 10px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--borda); font-size: 13px; }
-  .conc-linha .v { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .conc-linha .doc-ref { color: var(--cinza); }
-  .sl-desc { display: block; font-size: 12px; color: var(--azul); margin-top: 2px; }
-  .sl-desc .tag { font-size: 11px; padding: 1px 8px; }
-  .progresso-conc { display: flex; align-items: center; gap: 8px; min-width: 150px; }
-  .progresso-conc .trilho { flex: 1; height: 10px; }
-  .progresso-conc .barra { background: var(--verde); }
-  .progresso-conc.baixo .barra { background: var(--vermelho); }
-  .progresso-conc.medio .barra { background: var(--amarelo); }
-  @media (max-width: 760px) {
-    .conc-linha { grid-template-columns: 1fr auto; }
-    .conc-linha > :nth-child(1) { grid-column: 1 / -1; color: var(--cinza); font-size: 12px; }
-    .conc-linha .doc-ref { grid-column: 1 / -1; }
-  }
-  .contagens { display: flex; gap: 6px; flex-wrap: wrap; }
-  .pessoas { font-size: 13px; }
-
-  /* ---------- modo escuro: detalhes ---------- */
-  body { transition: background-color .2s, color .2s; }
-  .btn-tema { background: none; border: 1px solid var(--borda); color: var(--texto); width: 34px; height: 34px; border-radius: 8px; font-size: 16px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
-  .btn-tema:hover { background: var(--cinza-claro); }
-  .tela-cheia .btn-tema { position: fixed; top: 14px; right: 14px; background: var(--card); }
-  :root[data-tema="escuro"] header img, :root[data-tema="escuro"] .tela-cheia img.logo,
-  :root[data-tema="escuro"] .print-head img { background: #fff; border-radius: 8px; padding: 4px 8px; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-tema="claro"]) header img, :root:not([data-tema="claro"]) .tela-cheia img.logo { background: #fff; border-radius: 8px; padding: 4px 8px; }
-  }
-
-  /* ---------- botão vermelho "+" e janelas de cadastro rápido ---------- */
-  .btn-mais { width: 40px; height: 40px; border-radius: 50%; background: var(--vermelho); color: #fff; border: 0; font-size: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(192, 57, 43, .35); flex-shrink: 0; padding: 0 0 3px; }
-  .btn-mais:hover { background: #a93226; }
-  .card-topo .btn-mais { margin-left: 8px; }
-  dialog.modal { border: 0; border-radius: 14px; padding: 22px; width: min(440px, calc(100% - 32px)); box-shadow: 0 20px 50px rgba(22, 35, 122, .25); color: var(--texto); }
-  dialog.modal::backdrop { background: rgba(22, 35, 122, .35); }
-  dialog.modal h2 { margin: 0 0 4px; color: var(--azul); font-size: 18px; }
-  dialog.modal label { margin-top: 12px; }
-  dialog.modal .linha2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  dialog.modal .acoes { justify-content: flex-end; margin-top: 18px; }
-
-  /* ---------- documentos (notas e comprovantes) ---------- */
-  body:not(.dev) .so-dev { display: none !important; }
-  /* dev: barra que mostra onde ele está (escritório ou condomínio) e volta para a Visão geral */
-  .contexto { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--acao); color: #fff; border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(22, 35, 122, .15); }
-  .contexto .link-btn { color: #fff; font-size: 14px; }
-  .contexto strong { font-size: 15px; letter-spacing: .02em; }
-  .contexto .miudo { color: rgba(255, 255, 255, .8); margin-left: auto; }
-  body.dev[data-modo="geral"] .contexto { display: none; }
-  /* no dev, os lembretes de contas do escritório só aparecem dentro do escritório */
-  body.dev:not([data-modo="escritorio"]) .alertas { display: none; }
-  .clicavel { cursor: pointer; transition: transform .12s, box-shadow .12s; }
-  .clicavel:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(22, 35, 122, .12); }
-  #tabGeralCondos tr.clicavel:hover td { background: var(--azul-claro); }
-  .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
-  #formDoc .f-condo { flex-basis: 220px; }
-  #formDoc .arquivos { flex: 1 1 100%; }
-  #formDoc input[type="file"] { padding: 8px; background: var(--cinza-claro); cursor: pointer; }
-  .progresso { margin-top: 12px; display: grid; gap: 6px; }
-  .progresso .item { font-size: 13px; display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 10px; align-items: center; }
-  .progresso .item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .progresso .barrinha { height: 8px; background: var(--cinza-claro); border-radius: 4px; overflow: hidden; }
-  .progresso .barrinha i { display: block; height: 100%; width: 0; background: var(--acao); transition: width .2s; }
-  .progresso .item.ok .barrinha i { background: var(--verde); }
-  .progresso .item.falha { color: var(--vermelho); }
-  .docs { display: grid; gap: 12px; }
-  .doc { border: 1px solid var(--borda); border-left: 5px solid var(--amarelo); border-radius: 10px; padding: 14px; background: var(--card); display: grid; gap: 8px; }
-  .doc.s-pendencia { border-left-color: var(--vermelho); }
-  .doc.s-conferido { border-left-color: var(--verde); }
-  .doc-cab { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .doc-cab strong { font-size: 15px; }
-  .doc-valor { margin-left: auto; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
-  .doc .pendencia { background: var(--vermelho-claro); color: var(--vermelho); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
-  .doc-arqs { display: grid; gap: 6px; }
-  .arq { display: flex; align-items: center; gap: 8px; background: var(--cinza-claro); border-radius: 8px; padding: 6px 10px; font-size: 13px; flex-wrap: wrap; }
-  .arq .nome { flex: 1 1 160px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .arq .btn { padding: 4px 10px; font-size: 12px; }
-  .resumo-docs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .tag.sl { background: var(--azul-claro); color: var(--azul); }
-  .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: #f6c445; color: #1c1f2a; font-size: 11px; font-weight: 700; margin-left: 4px; }
-
-  /* ---------- usuários ---------- */
-  .form-usuario label { margin-top: 10px; }
-  .form-usuario .linha-senha { display: flex; gap: 8px; }
-  .form-usuario .linha-senha input { flex: 1; font-family: Consolas, monospace; }
-  .form-usuario .btn[type="submit"] { margin-top: 16px; width: 100%; }
-  .condos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-  .papel-desc { font-size: 12px; color: var(--cinza); margin-top: 4px; }
-  td details summary { cursor: pointer; color: var(--azul); font-size: 13px; }
-  td details .condos { margin-top: 8px; }
-  .tag.bloq { background: var(--vermelho-claro); color: var(--vermelho); }
-  .tag.ativo { background: var(--verde-claro); color: var(--verde); }
-  .tag.trocar { background: var(--amarelo-claro); color: var(--amarelo); }
-
-  /* ---------- abas ---------- */
-  nav.abas { display: flex; gap: 4px; padding: 0 24px; background: var(--barra); overflow-x: auto; }
-  nav.abas button { background: none; border: 0; color: #c9cef0; padding: 12px 16px; font-weight: 600; white-space: nowrap; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px; }
-  nav.abas button svg { width: 18px; height: 18px; }
-  nav.abas button.ativa { color: #fff; border-bottom-color: #fff; }
-  nav.abas button:hover { color: #fff; }
-
-  main { max-width: 1150px; margin: 0 auto; padding: 20px 24px 60px; }
-  /* telas grandes (Mac, monitores): aproveita melhor a largura */
-  @media (min-width: 1440px) { main { max-width: 1320px; } }
-  .card, .grid > *, form.lancar > div, .doc, .sl-item > div { min-width: 0; }
-  .card { overflow-wrap: anywhere; }
-  .aba { display: none; }
-  .aba.ativa { display: block; animation: surgir .18s ease-out; }
-  @keyframes surgir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
+  /* ---------- cartões e grades ---------- */
   .grid { display: grid; gap: 16px; }
-  .g4 { grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
-  .g2 { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
   .mt { margin-top: 16px; }
-  .card { background: var(--card); border: 1px solid var(--borda); border-radius: var(--raio); padding: 18px; box-shadow: 0 1px 2px rgba(22, 35, 122, .04); }
-  .card h2 { margin: 0 0 14px; font-size: 16px; color: var(--azul); }
-  .card-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .largo { grid-column: 1 / -1; }
+  .card { background: var(--card); border: 1px solid var(--borda); border-radius: var(--raio); padding: 20px; box-shadow: var(--sombra-1); min-width: 0; overflow-wrap: anywhere; }
+  /* valores em dinheiro nunca quebram no meio */
+  td.num, .kpi .val, .doc-valor, .chip .v, .conc-linha .v, .b span, .valor-total { overflow-wrap: normal; white-space: nowrap; }
+  .grid > *, form.lancar > div, .doc { min-width: 0; }
+  .card h2 { margin: 0 0 14px; font-size: 15px; font-weight: 600; letter-spacing: -.005em; color: var(--texto); }
+  .card-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
   .card-topo h2 { margin: 0; }
   .card-topo .acoes { margin-left: auto; }
-  .largo { grid-column: 1 / -1; }
+  .ajuda { color: var(--cinza); font-size: 13px; margin: 2px 0 16px; line-height: 1.55; }
+  .miudo { font-size: 12px; color: var(--cinza); }
+  .vazio { color: var(--cinza); text-align: center; padding: 28px 16px; font-size: 13.5px; }
+
+  /* faixa azul que separa Escritório, Condomínios e Usuários na Visão geral */
+  .geral-sec { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 32px 0 14px; padding: 12px 18px; border-radius: 12px; background: #16237a; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 6px 16px -8px rgba(22, 35, 122, .6); }
+  .geral-sec:first-child { margin-top: 0; }
+  .geral-sec .link-btn { margin-left: auto; color: #fff; text-transform: none; letter-spacing: 0; font-weight: 500; opacity: .9; }
+  .geral-sec .link-btn:hover { opacity: 1; }
+  /* dev: onde ele está (escritório ou condomínio) e o caminho de volta */
+  .contexto { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 18px; border-radius: 12px; background: #16237a; color: #fff; box-shadow: 0 6px 16px -8px rgba(22, 35, 122, .6); }
+  .contexto .link-btn { color: rgba(255, 255, 255, .85); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .contexto .link-btn:hover { color: #fff; }
+  .contexto strong { font-size: 14.5px; font-weight: 600; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, .25); }
+  .contexto .miudo { color: rgba(255, 255, 255, .7); margin-left: auto; }
+  body.dev[data-modo="geral"] .contexto { display: none; }
+  body.dev:not([data-modo="escritorio"]) .alertas { display: none; }
+  body:not(.dev) .so-dev { display: none !important; }
+  .clicavel { cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+  .clicavel:hover { box-shadow: var(--sombra-2); border-color: var(--borda-forte); }
+  #tabGeralCondos tr.clicavel:hover td { background: var(--cinza-claro); }
+  .externo nav.abas button:not([data-aba="documentos"]), .externo .so-equipe, .externo .alertas { display: none !important; }
+
+  /* ---------- indicadores ---------- */
+  .kpi { padding: 18px 20px; }
+  .kpi .rot { display: flex; align-items: center; gap: 8px; color: var(--cinza); font-size: 13px; font-weight: 500; }
+  .kpi .rot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--neutro); flex-shrink: 0; }
+  .kpi.t-mais .rot::before { background: var(--vermelho); }
+  .kpi.t-menos .rot::before, .kpi.t-ok .rot::before { background: var(--verde); }
+  .kpi.t-alerta .rot::before { background: #f59e0b; }
+  .kpi .val { font-size: 26px; font-weight: 600; letter-spacing: -.02em; margin-top: 6px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .kpi .det { font-size: 12.5px; margin-top: 6px; }
 
   /* ---------- cores de tendência: vermelho = gastou mais, verde = gastou menos ---------- */
   .mais { color: var(--vermelho); }
   .menos { color: var(--verde); }
   .neutro { color: var(--cinza); }
-  .pill { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .pill { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .pill.mais { background: var(--vermelho-claro); }
   .pill.menos { background: var(--verde-claro); }
   .pill.neutro { background: var(--cinza-claro); }
 
-  /* ---------- KPIs ---------- */
-  .kpi { border-left: 5px solid var(--neutro); }
-  .kpi.t-mais { border-left-color: var(--vermelho); }
-  .kpi.t-menos { border-left-color: var(--verde); }
-  .kpi.t-alerta { border-left-color: var(--amarelo); }
-  .kpi.t-ok { border-left-color: var(--verde); }
-  .kpi .rot { color: var(--cinza); font-size: 13px; font-weight: 600; }
-  .kpi .val { font-size: 26px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .kpi .det { font-size: 13px; margin-top: 6px; }
+  /* ---------- etiquetas de situação: ponto colorido + texto ---------- */
+  .tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 6px; border: 1px solid var(--borda); background: var(--card); color: var(--texto); font-size: 12px; font-weight: 500; white-space: nowrap; line-height: 1.6; }
+  .tag.paga, .tag.pendente, .tag.atrasada, .tag.ativo, .tag.bloq, .tag.trocar { border-color: transparent; }
+  .tag.paga::before, .tag.pendente::before, .tag.atrasada::before, .tag.ativo::before, .tag.bloq::before, .tag.trocar::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .tag.paga, .tag.ativo { background: var(--verde-claro); color: var(--verde); }
+  .tag.pendente, .tag.trocar { background: var(--amarelo-claro); color: var(--amarelo); }
+  .tag.atrasada, .tag.bloq { background: var(--vermelho-claro); color: var(--vermelho); }
+  .tag.sl { background: var(--azul-claro); border-color: transparent; color: var(--azul); }
+  .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 99px; background: #f59e0b; color: #fff; font-size: 11px; font-weight: 700; }
 
-  /* ---------- alertas ---------- */
-  .alertas { margin-bottom: 16px; display: grid; gap: 8px; }
-  .alerta { padding: 10px 14px; border-radius: 10px; display: flex; gap: 10px; align-items: center; font-size: 14px; }
-  .alerta.atrasada { background: var(--vermelho-claro); color: var(--vermelho); border: 1px solid var(--borda-verm); }
-  .alerta.proxima { background: var(--amarelo-claro); color: var(--amarelo); border: 1px solid var(--borda-amar); }
+  /* ---------- avisos ---------- */
+  .alertas { margin-bottom: 20px; display: grid; gap: 8px; }
+  .alerta { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; font-size: 13.5px; border: 1px solid; }
+  .alerta .ic { width: 18px; height: 18px; }
+  .alerta.atrasada { background: var(--vermelho-claro); color: var(--vermelho); border-color: var(--borda-verm); }
+  .alerta.proxima { background: var(--amarelo-claro); color: var(--amarelo); border-color: var(--borda-amar); }
+  .resumo { padding: 14px 16px; border-radius: 10px; font-size: 14px; margin-bottom: 16px; border: 1px solid var(--borda); background: var(--cinza-claro); }
+  .resumo.mais { background: var(--vermelho-claro); border-color: var(--borda-verm); }
+  .resumo.menos { background: var(--verde-claro); border-color: var(--borda-verde); }
 
   /* ---------- tabelas ---------- */
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--borda); vertical-align: middle; }
-  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--cinza); font-weight: 600; background: var(--cinza-claro); }
+  th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--borda); vertical-align: middle; }
+  th { font-size: 11.5px; font-weight: 600; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; background: var(--cinza-claro); border-bottom-color: var(--borda); }
+  th:first-child { border-top-left-radius: 8px; } th:last-child { border-top-right-radius: 8px; }
+  tbody tr:hover td { background: color-mix(in srgb, var(--cinza-claro) 55%, transparent); }
   td.num, th.num { text-align: right; }
-  tr.grupo td { background: var(--cinza-claro); font-weight: 700; }
-  tr.total td { font-weight: 700; background: var(--azul-claro); color: var(--azul); }
-  td.sub { padding-left: 22px; }
-  .tag { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .tag.paga { background: var(--verde-claro); color: var(--verde); }
-  .tag.pendente { background: var(--amarelo-claro); color: var(--amarelo); }
-  .tag.atrasada { background: var(--vermelho-claro); color: var(--vermelho); }
-  .miudo { font-size: 12px; color: var(--cinza); }
-  .cod { font-variant-numeric: tabular-nums; color: var(--cinza); font-weight: 600; font-size: 12px; margin-right: 6px; white-space: nowrap; }
+  tr.grupo td { background: var(--cinza-claro); font-weight: 600; }
+  tr.total td { font-weight: 600; background: var(--azul-claro); color: var(--azul); border-bottom: 0; }
+  td.sub { padding-left: 24px; }
+  tr.item td { font-size: 13px; }
+  td.sub2 { padding-left: 44px; color: var(--cinza); }
+  .cod { font-variant-numeric: tabular-nums; color: var(--cinza); font-weight: 500; font-size: 12px; margin-right: 8px; white-space: nowrap; }
   tr.grupo .cod, tr.total .cod { color: inherit; font-size: inherit; }
+  .qtd { font-size: 12px; color: var(--cinza); white-space: nowrap; }
+  .nome-cod { display: flex; align-items: center; gap: 4px; }
 
-  /* ---------- botões e campos ---------- */
-  .btn { background: var(--acao); color: #fff; border: 0; padding: 9px 16px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+  /* ---------- botões ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 8px; background: var(--acao); color: #fff; font-weight: 600; font-size: 13.5px; white-space: nowrap; box-shadow: var(--sombra-1), inset 0 1px 0 rgba(255, 255, 255, .08); transition: background .12s, border-color .12s, box-shadow .12s; }
   .btn:hover { background: var(--acao-2); }
-  .btn.sec { background: var(--card); color: var(--azul); border: 1px solid var(--azul); }
-  .btn.sec:hover { background: var(--azul-claro); }
-  .btn.peq { padding: 6px 11px; font-size: 13px; }
-  .btn.perigo { background: none; color: var(--vermelho); border: 1px solid var(--borda); }
-  .btn.perigo:hover { background: var(--vermelho-claro); }
-  .link-btn { background: none; border: 0; color: var(--azul); font-weight: 600; padding: 0; text-decoration: underline; font-size: 13px; }
-  .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
-  label { font-size: 12px; color: var(--cinza); display: block; margin-bottom: 4px; font-weight: 600; }
-  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--borda); border-radius: 8px; background: var(--campo); min-height: 40px; }
-  input:focus, select:focus { outline: 2px solid var(--azul-2); outline-offset: -1px; border-color: transparent; }
+  .btn:focus-visible, .btn-tema:focus-visible, nav.abas button:focus-visible { outline: none; box-shadow: var(--foco); }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .btn.sec { background: var(--card); color: var(--texto); border-color: var(--borda-forte); }
+  .btn.sec:hover { background: var(--cinza-claro); }
+  .btn.peq { height: 30px; padding: 0 10px; font-size: 12.5px; }
+  .btn.perigo { background: var(--card); color: var(--vermelho); border-color: var(--borda); box-shadow: none; }
+  .btn.perigo:hover { background: var(--vermelho-claro); border-color: var(--borda-verm); }
+  .link-btn { background: none; border: 0; padding: 0; color: var(--azul); font-weight: 600; font-size: 13px; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; }
+  .link-btn:hover { text-decoration-color: currentColor; }
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn-mais { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--vermelho); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; padding: 0 0 2px; flex-shrink: 0; box-shadow: 0 6px 14px -6px rgba(180, 35, 24, .7); transition: transform .12s, background .12s; }
+  .btn-mais:hover { background: #912018; transform: translateY(-1px); }
+  .card-topo .btn-mais { margin-left: 8px; }
+
+  /* ---------- campos ---------- */
+  label { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 500; color: var(--texto); }
+  input, select, textarea { width: 100%; min-height: 38px; padding: 8px 11px; border: 1px solid var(--borda-forte); border-radius: 8px; background: var(--campo); box-shadow: var(--sombra-1); transition: border-color .12s, box-shadow .12s; }
+  input::placeholder { color: color-mix(in srgb, var(--cinza) 75%, transparent); }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul-2); box-shadow: var(--foco); }
   input.valor { text-align: right; font-variant-numeric: tabular-nums; }
   input[type="date"] { cursor: pointer; }
-  input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .7; }
-  input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; accent-color: var(--azul); flex-shrink: 0; }
+  input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
+  input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; box-shadow: none; accent-color: var(--acao); flex-shrink: 0; }
+  input[type="file"] { padding: 6px; cursor: pointer; }
+  input[type="file"]::file-selector-button { margin-right: 10px; height: 28px; padding: 0 12px; border: 1px solid var(--borda-forte); border-radius: 6px; background: var(--card); color: var(--texto); font-weight: 500; cursor: pointer; }
   /* campos editáveis dentro das tabelas: discretos até passar o mouse ou focar */
-  .inline { border-color: transparent; background: transparent; padding: 6px 8px; min-height: 34px; }
-  .inline:hover { border-color: var(--borda); background: var(--campo); }
+  .inline { border-color: transparent; background: transparent; box-shadow: none; padding: 6px 8px; min-height: 32px; }
+  .inline:hover { border-color: var(--borda-forte); background: var(--campo); }
   .inline:focus { background: var(--campo); }
   td input.valor { width: 130px; }
   td input.dia { width: 76px; }
   td input[type="date"] { width: 150px; }
-  td select.inline { width: 150px; }
+  td select.inline { width: 160px; }
+  td input.qtd-in { width: 80px; text-align: right; }
+  label.check { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; margin: 0; padding: 6px 12px; border: 1px solid var(--borda-forte); border-radius: 8px; background: var(--card); color: var(--texto); font-size: 13px; font-weight: 500; line-height: 1.35; cursor: pointer; user-select: none; transition: background .12s, border-color .12s; }
+  label.check:hover { background: var(--cinza-claro); }
+  label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--borda-azul); color: var(--azul); }
+  label.check.forte { font-weight: 600; }
+  label.check.desab { opacity: .45; pointer-events: none; }
 
-  [hidden] { display: none !important; }
-  form.lancar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
-  form.lancar > div { flex: 0 0 160px; min-width: 0; }
-  form.lancar .f-cat { flex-basis: 210px; }
+  /* ---------- formulários ---------- */
+  form.lancar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  form.lancar > div { flex: 0 0 160px; }
+  form.lancar .f-cat { flex-basis: 220px; }
   form.lancar .f-qtd { flex-basis: 110px; }
   form.lancar .desc { flex: 1 1 240px; }
   form.lancar .f-valor { flex-basis: 150px; }
   form.lancar .enviar { flex: 0 0 auto; }
-  tr.item td { font-size: 13px; }
-  td.sub2 { padding-left: 40px; color: var(--cinza); }
-  .qtd { font-size: 12px; color: var(--cinza); white-space: nowrap; }
-  td input.qtd-in { width: 80px; text-align: right; }
-  .nome-cod { display: flex; align-items: center; gap: 4px; }
+  form.lancar .enviar .btn { height: 38px; }
+  form.add { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; flex-wrap: wrap; align-items: center; border-top: 1px dashed var(--borda-forte); }
+  form.add input { flex: 1 1 160px; width: auto; min-width: 0; }
+  form.add input.dia { flex: 0 0 96px; }
+  form.add input.valor { flex: 0 1 140px; }
+  form.add.mini { margin-top: 0; padding-top: 0; border-top: 0; }
+  form.add.mini input { min-height: 32px; padding: 5px 10px; font-size: 13.5px; }
+  form.add.mini.sub { padding-left: 28px; }
+  dialog.modal { width: min(440px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--borda); border-radius: 16px; background: var(--card); color: var(--texto); box-shadow: var(--sombra-3); }
+  dialog.modal::backdrop { background: rgba(15, 23, 42, .45); backdrop-filter: blur(2px); }
+  dialog.modal h2 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+  dialog.modal label { margin-top: 14px; }
+  dialog.modal .linha2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog.modal .acoes { justify-content: flex-end; margin-top: 22px; }
 
   /* ---------- ajustes: listas editáveis e plano de contas ---------- */
   .lista-edit { display: grid; gap: 8px; }
   .lista-edit .linha { display: flex; gap: 8px; align-items: center; }
   .lista-edit .linha input { flex: 1; min-width: 0; }
-  .lista-edit .linha select { width: auto; flex: 0 0 190px; }
+  .lista-edit .linha select { width: auto; flex: 0 0 200px; }
   .lista-edit .linha .cod { min-width: 58px; }
   .lista-edit .linha.sub { padding-left: 28px; }
   .lista-edit .fixo { font-size: 12px; color: var(--cinza); white-space: nowrap; padding: 0 4px; }
-  .grupo-plano { border: 1px solid var(--borda); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
-  .grupo-plano .cab input { font-weight: 700; color: var(--azul); }
-  .grupo-plano .cab .cod { color: var(--azul); font-size: 15px; }
-  .grupo-plano .so-ler { font-size: 14px; padding: 4px 0; }
-  form.add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; padding-top: 12px; border-top: 1px dashed var(--borda); }
-  form.add input { flex: 1 1 160px; width: auto; min-width: 0; }
-  form.add input.dia { flex: 0 0 96px; }
-  form.add input.valor { flex: 0 1 140px; }
-  form.add.mini { margin-top: 0; padding-top: 0; border-top: 0; }
-  form.add.mini input { min-height: 34px; padding: 6px 10px; font-size: 14px; }
-  form.add.mini.sub { padding-left: 28px; }
+  .grupo-plano { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--borda); border-radius: 10px; background: color-mix(in srgb, var(--cinza-claro) 45%, var(--card)); }
+  .grupo-plano .cab input { font-weight: 600; }
+  .grupo-plano .cab .cod { color: var(--azul); font-size: 14px; font-weight: 600; }
+  .grupo-plano .so-ler { font-size: 13.5px; padding: 4px 0; }
 
   /* ---------- filtro do balancete ---------- */
-  details.card > summary { cursor: pointer; font-weight: 700; color: var(--azul); font-size: 16px; list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.card > summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14.5px; }
   details.card > summary::-webkit-details-marker { display: none; }
-  details.card > summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
-  details.card[open] > summary::after { transform: rotate(180deg); }
-  details.card[open] > summary { margin-bottom: 14px; }
-  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .check-grupo { margin-bottom: 14px; }
-  .check-grupo h3 { font-size: 12px; margin: 0 0 8px; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; }
+  details.card > summary::after { content: ''; width: 7px; height: 7px; margin-left: auto; border-right: 2px solid var(--cinza); border-bottom: 2px solid var(--cinza); transform: rotate(45deg); transition: transform .2s; }
+  details.card[open] > summary::after { transform: rotate(-135deg); }
+  details.card[open] > summary { margin-bottom: 16px; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .check-grupo { margin-bottom: 16px; }
+  .check-grupo h3 { margin: 0 0 8px; font-size: 11.5px; font-weight: 600; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; }
   .opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
-  label.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--borda); border-radius: 18px; font-size: 13px; line-height: 1.3; color: var(--texto); font-weight: 500; margin: 0; cursor: pointer; background: var(--campo); user-select: none; max-width: 100%; }
-  label.check:has(input:checked) { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); font-weight: 600; }
-  label.check.forte { font-weight: 700; }
-  label.check.desab { opacity: .45; pointer-events: none; }
   .filtro-ativo { font-size: 13px; color: var(--cinza); margin: -6px 0 14px; }
   .filtro-ativo strong { color: var(--azul); }
   .sem-comp .comp { display: none !important; }
+  .filtro { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .filtro select { width: auto; max-width: 100%; min-width: 0; }
+  .filtro .total { margin-left: auto; font-weight: 600; color: var(--texto); font-variant-numeric: tabular-nums; }
 
-  /* ---------- resumo por categoria ---------- */
-  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .chip { border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px; background: var(--card); text-align: left; border-left: 4px solid var(--neutro); }
-  .chip.mais { border-left-color: var(--vermelho); }
-  .chip.menos { border-left-color: var(--verde); }
-  .chip.sel { outline: 2px solid var(--azul); }
-  .chip .n { font-size: 12px; color: var(--cinza); font-weight: 600; }
-  .chip .v { font-size: 17px; font-weight: 700; color: var(--texto); font-variant-numeric: tabular-nums; }
-  .chip .d { font-size: 12px; font-weight: 600; }
+  /* ---------- resumo por conta (despesas) ---------- */
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .chip { padding: 12px 14px; border: 1px solid var(--borda); border-radius: 10px; background: var(--card); text-align: left; box-shadow: var(--sombra-1); transition: border-color .12s, box-shadow .12s; }
+  .chip:hover { border-color: var(--borda-forte); box-shadow: var(--sombra-2); }
+  .chip.sel { border-color: var(--azul); box-shadow: var(--foco); }
+  .chip .n { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--cinza); font-weight: 500; }
+  .chip .n::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--neutro); flex-shrink: 0; }
+  .chip.mais .n::before { background: var(--vermelho); }
+  .chip.menos .n::before { background: var(--verde); }
+  .chip .v { margin-top: 4px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; color: var(--texto); font-variant-numeric: tabular-nums; }
+  .chip .d { font-size: 12px; font-weight: 500; }
 
   /* ---------- gráficos ---------- */
-  .legenda { display: flex; gap: 14px; font-size: 12px; color: var(--cinza); margin-bottom: 12px; flex-wrap: wrap; }
-  .legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+  .legenda { display: flex; gap: 16px; font-size: 12px; color: var(--cinza); margin-bottom: 14px; flex-wrap: wrap; }
+  .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
   .barras { display: grid; gap: 12px; }
-  .barra-linha { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; font-size: 13px; }
+  .barra-linha { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; font-size: 13px; }
   .barra-par { display: grid; gap: 3px; }
   .b { display: grid; grid-template-columns: 1fr 96px; gap: 8px; align-items: center; }
   .b span { font-size: 12px; color: var(--cinza); text-align: right; font-variant-numeric: tabular-nums; }
   .b.atu span { color: var(--texto); font-weight: 600; }
-  .trilho { height: 12px; background: var(--cinza-claro); border-radius: 4px; overflow: hidden; }
-  .barra { height: 100%; border-radius: 4px; background: var(--neutro); transition: width .3s; }
+  .trilho { height: 8px; background: var(--cinza-claro); border-radius: 99px; overflow: hidden; }
+  .barra { height: 100%; border-radius: 99px; background: var(--neutro); transition: width .3s; }
   .barra.atu { background: var(--azul); }
   .barra.atu.mais { background: var(--vermelho); }
   .barra.atu.menos { background: var(--verde); }
-  .colunas { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding-top: 24px; border-bottom: 1px solid var(--borda); }
+  .colunas { display: flex; align-items: flex-end; gap: 14px; height: 200px; padding-top: 24px; border-bottom: 1px solid var(--borda); }
   .coluna { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; color: var(--cinza); min-width: 0; }
-  .coluna .c { width: 100%; max-width: 56px; background: var(--neutro); border-radius: 6px 6px 0 0; min-height: 2px; transition: height .3s; }
+  .coluna .c { width: 100%; max-width: 52px; background: var(--neutro); border-radius: 6px 6px 0 0; min-height: 2px; transition: height .3s; }
   .coluna.mais .c { background: var(--vermelho); }
   .coluna.menos .c { background: var(--verde); }
-  .coluna.sel .c { box-shadow: 0 0 0 3px var(--azul-claro), 0 0 0 4px var(--azul); }
-  .coluna .v { margin-bottom: 4px; white-space: nowrap; font-weight: 600; }
-  .rotulos { display: flex; gap: 12px; }
-  .rotulos div { flex: 1; text-align: center; font-size: 12px; color: var(--cinza); padding-top: 6px; min-width: 0; }
-  .rotulos div.sel { color: var(--azul); font-weight: 700; }
+  .coluna.sel .c { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--azul); }
+  .coluna .v { margin-bottom: 6px; white-space: nowrap; font-weight: 600; }
+  .rotulos { display: flex; gap: 14px; }
+  .rotulos div { flex: 1; text-align: center; font-size: 12px; color: var(--cinza); padding-top: 8px; min-width: 0; }
+  .rotulos div.sel { color: var(--texto); font-weight: 600; }
 
-  .vazio { color: var(--cinza); text-align: center; padding: 22px; font-size: 14px; }
-  .resumo { padding: 14px 16px; border-radius: 10px; font-size: 15px; margin-bottom: 16px; border: 1px solid transparent; }
-  .resumo.mais { background: var(--vermelho-claro); border-color: var(--borda-verm); }
-  .resumo.menos { background: var(--verde-claro); border-color: var(--borda-verde); }
-  .resumo.igual { background: var(--cinza-claro); color: var(--texto); }
-  .filtro { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  .filtro select { width: auto; max-width: 100%; min-width: 0; }
-  .filtro .total { margin-left: auto; font-weight: 700; color: var(--azul); }
-  .ajuda { color: var(--cinza); font-size: 13px; margin: 4px 0 14px; }
+  /* ---------- documentos ---------- */
+  #formDoc .f-condo { flex-basis: 220px; }
+  #formDoc .arquivos { flex: 1 1 100%; }
+  .progresso { margin-top: 14px; display: grid; gap: 8px; }
+  .progresso .item { display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 10px; align-items: center; font-size: 13px; }
+  .progresso .item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .progresso .barrinha { height: 6px; background: var(--cinza-claro); border-radius: 99px; overflow: hidden; }
+  .progresso .barrinha i { display: block; height: 100%; width: 0; background: var(--acao); transition: width .2s; }
+  .progresso .item.ok .barrinha i { background: var(--verde); }
+  .progresso .item.falha { color: var(--vermelho); }
+  .docs { display: grid; gap: 12px; }
+  .doc { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--borda); border-radius: 12px; background: var(--card); box-shadow: var(--sombra-1); }
+  .doc-cab { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .doc-cab strong { font-size: 14.5px; font-weight: 600; }
+  .doc-valor { margin-left: auto; font-weight: 600; font-size: 15.5px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .doc .pendencia { padding: 10px 12px; border: 1px solid var(--borda-verm); border-radius: 8px; background: var(--vermelho-claro); color: var(--vermelho); font-size: 13.5px; }
+  .doc-arqs { display: grid; gap: 6px; }
+  .arq { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 10px; border: 1px solid var(--borda); border-radius: 8px; background: color-mix(in srgb, var(--cinza-claro) 60%, var(--card)); font-size: 13px; }
+  .arq > .ic { color: var(--cinza); }
+  .arq .nome { flex: 1 1 160px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .arq .btn { height: 26px; padding: 0 9px; font-size: 12px; }
+  .resumo-docs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+
+  /* ---------- conciliação bancária (só devs) ---------- */
+  .conc-extrato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; background: color-mix(in srgb, var(--cinza-claro) 60%, var(--card)); font-size: 13.5px; }
+  .conc-extrato > .ic { color: var(--cinza); }
+  .conc-extrato .acoes { margin-left: auto; }
+  .conc-grupo { margin-top: 20px; }
+  .conc-grupo h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13.5px; font-weight: 600; }
+  .conc-grupo h3 .ic { width: 16px; height: 16px; }
+  .conc-linha { display: grid; grid-template-columns: 92px minmax(0, 1.4fr) minmax(0, 1fr) 120px; gap: 12px; align-items: center; padding: 9px 10px; border-bottom: 1px solid var(--borda); font-size: 13px; }
+  .conc-linha:hover { background: color-mix(in srgb, var(--cinza-claro) 55%, transparent); }
+  .conc-linha .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .conc-linha .doc-ref { color: var(--cinza); }
+  .sl-desc { display: block; margin-top: 3px; font-size: 12px; color: var(--azul); }
+  .sl-desc .tag { font-size: 11px; padding: 0 7px; }
+  .progresso-conc { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+  .progresso-conc .trilho { flex: 1; height: 8px; }
+  .progresso-conc .barra { background: var(--verde); }
+  .progresso-conc.baixo .barra { background: var(--vermelho); }
+  .progresso-conc.medio .barra { background: #f59e0b; }
+  .contagens { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pessoas { font-size: 13px; }
+
+  /* ---------- usuários ---------- */
+  .form-usuario label { margin-top: 12px; }
+  .form-usuario .linha-senha { display: flex; gap: 8px; }
+  .form-usuario .linha-senha input { flex: 1; font-family: ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .03em; }
+  .form-usuario .btn[type="submit"] { margin-top: 18px; width: 100%; height: 40px; }
+  .condos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  td details summary { cursor: pointer; color: var(--azul); font-size: 13px; font-weight: 500; }
+  td details .condos { margin-top: 8px; }
+
+  /* ---------- outros ---------- */
   .print-head { display: none; }
-  .passos { margin: 0; padding-left: 20px; font-size: 14px; }
+  .passos { margin: 0; padding-left: 20px; font-size: 13.5px; }
   .passos li { margin-bottom: 6px; }
   .link-app { word-break: break-all; font-weight: 600; color: var(--azul); }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--acao); color: #fff; padding: 10px 18px; border-radius: 8px; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .toast { position: fixed; bottom: 24px; left: 50%; z-index: 60; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 10px; background: #0f172a; color: #fff; font-size: 13.5px; font-weight: 500; text-align: center; box-shadow: var(--sombra-3); opacity: 0; transform: translateX(-50%) translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none; }
   .toast.on { opacity: 1; transform: translateX(-50%); }
   .fab { display: none; }
 
-  /* ---------- tablet e notebook pequeno: abas mais compactas ---------- */
-  @media (min-width: 761px) and (max-width: 1180px) {
-    nav.abas { padding: 0 12px; gap: 0; }
-    nav.abas button { padding: 12px 10px; font-size: 14px; gap: 6px; }
-  }
-  @media (min-width: 761px) and (max-width: 980px) {
-    nav.abas button svg { display: none; }
-    header { padding: 10px 16px; }
-    main { padding: 18px 16px 48px; }
+  /* logo sobre fundo escuro: plaquinha branca para continuar legível */
+  :root[data-tema="escuro"] .lateral .marca img, :root[data-tema="escuro"] header > img.logo-topo,
+  :root[data-tema="escuro"] .tela-cheia img.logo, :root[data-tema="escuro"] .print-head img { background: #fff; border-radius: 8px; padding: 4px 8px; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) .lateral .marca img, :root:not([data-tema="claro"]) header > img.logo-topo,
+    :root:not([data-tema="claro"]) .tela-cheia img.logo { background: #fff; border-radius: 8px; padding: 4px 8px; }
   }
 
-  /* ---------- tablet ---------- */
-  @media (max-width: 980px) {
-    form.lancar > div { flex: 1 1 calc(50% - 5px); }
+  /* ==========================================================================
+     Telas menores
+     ========================================================================== */
+  /* formulários mais estreitos */
+  @media (max-width: 1100px) {
+    form.lancar > div { flex: 1 1 calc(50% - 6px); }
     form.lancar .desc, form.lancar .enviar { flex-basis: 100%; }
-    form.lancar .enviar .btn { width: 100%; padding: 12px; }
+    form.lancar .enviar .btn { width: 100%; height: 42px; }
   }
 
-  /* ---------- tablet em pé e celular: tabelas viram cartões ---------- */
+  /* tablet e celular: sem menu lateral; abas numa barra clara embaixo */
+  @media (max-width: 1023px) {
+    .lateral { display: contents; }
+    .lateral .marca, .lateral .rodape { display: none; }
+    header { margin-left: 0; padding: 10px 20px; padding-top: max(10px, env(safe-area-inset-top)); }
+    header > img.logo-topo { display: block; }
+    header .sub { display: none; }
+    #quemSou .quem small { display: none; }
+    main { margin-left: 0; padding: 22px 20px calc(96px + env(safe-area-inset-bottom)); }
+    /* muitas abas (Super Master): a barra rola para o lado em vez de espremer os nomes */
+    nav.abas { position: fixed; inset: auto 0 0 0; z-index: 30; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(76px, 1fr); gap: 0; padding: 4px 4px env(safe-area-inset-bottom); background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: saturate(160%) blur(12px); -webkit-backdrop-filter: saturate(160%) blur(12px); border-top: 1px solid var(--borda); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+    nav.abas::-webkit-scrollbar { display: none; }
+    nav.abas button { flex-direction: column; justify-content: center; gap: 3px; padding: 7px 4px 6px; border-radius: 10px; font-size: 11px; font-weight: 500; text-align: center; min-width: 0; }
+    nav.abas button > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    nav.abas button svg { width: 22px; height: 22px; }
+    nav.abas button:hover { background: none; }
+    nav.abas button.ativa { background: none; color: var(--azul); }
+    nav.abas button.ativa svg { stroke-width: 2.4; }
+    nav.abas #abaVoltar { margin-bottom: 0; }
+    nav.abas .rot-longo { display: none; }
+    .fab { display: flex; position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 31; width: 54px; height: 54px; border: 0; border-radius: 16px; background: var(--acao); color: #fff; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 10px 24px -8px rgba(22, 35, 122, .7); }
+    .toast { bottom: calc(150px + env(safe-area-inset-bottom)); }
+    .login-wrap { grid-template-columns: 1fr; }
+    .login-marca { display: none; }
+    .login-form .logo { display: block; }
+  }
+
+  /* tablet em pé e celular: tabelas viram cartões */
   @media (max-width: 900px) {
-    /* tabelas viram cartões */
     table.resp thead { display: none; }
     table.resp, table.resp tbody, table.resp tr, table.resp td { display: block; width: 100%; }
-    table.resp tr { border: 1px solid var(--borda); border-radius: 10px; padding: 6px 12px; margin-bottom: 10px; background: var(--card); }
-    table.resp td { display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 0; padding: 6px 0; text-align: right; background: none !important; }
-    table.resp td::before { content: attr(data-label); font-size: 12px; color: var(--cinza); font-weight: 600; text-align: left; flex-shrink: 0; }
+    table.resp tr { margin-bottom: 10px; padding: 6px 14px; border: 1px solid var(--borda); border-radius: 12px; background: var(--card); box-shadow: var(--sombra-1); }
+    table.resp tbody tr:hover td { background: none; }
+    table.resp td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border: 0; text-align: right; background: none !important; }
+    table.resp td::before { content: attr(data-label); flex-shrink: 0; font-size: 12px; font-weight: 500; color: var(--cinza); text-align: left; }
     table.resp td:not([data-label])::before { content: none; }
     table.resp td:not([data-label]) { justify-content: flex-end; }
-    table.resp td.titulo-linha { justify-content: flex-start; font-size: 15px; padding-top: 8px; }
-    table.resp td.sub { padding-left: 0; }
+    table.resp td.titulo-linha { justify-content: flex-start; flex-wrap: wrap; padding-top: 9px; font-size: 14.5px; text-align: left; }
+    table.resp td.sub, table.resp td.sub2 { padding-left: 0; }
     table.resp td input, table.resp td select, table.resp td input[type="date"], table.resp td input.valor, table.resp td select.inline { width: auto; min-width: 0; max-width: 62%; flex: 1; }
-    table.resp td input.inline, table.resp td select.inline { border-color: var(--borda); background: var(--campo); text-align: right; }
-    table.resp td .nome-cod { flex: 1; }
-    table.resp td .nome-cod input { max-width: none; }
+    table.resp td input.inline, table.resp td select.inline { border-color: var(--borda-forte); background: var(--campo); text-align: right; }
+    table.resp td.titulo-linha input.inline { max-width: none; text-align: left; font-weight: 600; }
+    table.resp td .nome-cod { flex: 1; min-width: 0; }
+    table.resp td .nome-cod input { max-width: none; min-width: 0; width: 100%; }
     table.resp tr.grupo { background: var(--cinza-claro); }
     table.resp tr.total { background: var(--azul-claro); border-color: var(--borda-azul); color: var(--azul); }
     table.resp td.vazio { justify-content: center; }
     table.resp td.so-desk { display: none; }
-    table.resp tr.item { margin-left: 14px; width: calc(100% - 14px); border-style: dashed; }
-    table.resp td.sub2 { padding-left: 0; }
-    /* nome editável (ex.: usuários) ocupa a linha toda, alinhado à esquerda */
-    table.resp td.titulo-linha input.inline { max-width: none; text-align: left; font-weight: 600; }
+    table.resp tr.item { margin-left: 14px; width: calc(100% - 14px); border-style: dashed; box-shadow: none; }
     table.resp td.num .acoes { width: 100%; justify-content: flex-end; }
     table.resp td details { text-align: right; }
     table.resp td details .condos { justify-content: flex-end; }
-    table.resp td.titulo-linha { text-align: left; flex-wrap: wrap; }
   }
-  @media (min-width: 761px) and (max-width: 900px) {
-    /* no tablet, os cartões das tabelas ficam em duas colunas quando cabem */
+  /* tabelas largas viram cartões antes (até 1279px) */
+  @media (min-width: 901px) and (max-width: 1279px) {
+    table.tab-larga thead { display: none; }
+    table.tab-larga, table.tab-larga tbody, table.tab-larga tr, table.tab-larga td { display: block; width: 100%; }
+    table.tab-larga tr { margin-bottom: 10px; padding: 6px 14px; border: 1px solid var(--borda); border-radius: 12px; background: var(--card); box-shadow: var(--sombra-1); }
+    table.tab-larga tbody tr:hover td { background: none; }
+    table.tab-larga td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border: 0; text-align: right; background: none !important; }
+    table.tab-larga td::before { content: attr(data-label); flex-shrink: 0; font-size: 12px; font-weight: 500; color: var(--cinza); text-align: left; }
+    table.tab-larga td:not([data-label])::before { content: none; }
+    table.tab-larga td:not([data-label]) { justify-content: flex-end; }
+    table.tab-larga td.titulo-linha { justify-content: flex-start; flex-wrap: wrap; padding-top: 9px; font-size: 14.5px; text-align: left; }
+    table.tab-larga td.sub, table.tab-larga td.sub2 { padding-left: 0; }
+    table.tab-larga td input, table.tab-larga td select, table.tab-larga td input[type="date"], table.tab-larga td input.valor, table.tab-larga td select.inline { width: auto; min-width: 0; max-width: 62%; flex: 1; }
+    table.tab-larga td input.inline, table.tab-larga td select.inline { border-color: var(--borda-forte); background: var(--campo); text-align: right; }
+    table.tab-larga td.titulo-linha input.inline { max-width: none; text-align: left; font-weight: 600; }
+    table.tab-larga td .nome-cod { flex: 1; }
+    table.tab-larga td .nome-cod input { max-width: none; }
+    table.tab-larga tr.grupo { background: var(--cinza-claro); }
+    table.tab-larga tr.total { background: var(--azul-claro); border-color: var(--borda-azul); color: var(--azul); }
+    table.tab-larga td.vazio { justify-content: center; }
+    table.tab-larga td.so-desk { display: none; }
+    table.tab-larga tr.item { margin-left: 14px; width: calc(100% - 14px); border-style: dashed; box-shadow: none; }
+    table.tab-larga td.num .acoes { width: 100%; justify-content: flex-end; }
+    table.tab-larga td details { text-align: right; }
+    table.tab-larga td details .condos { justify-content: flex-end; }
+  }
+  @media (min-width: 761px) and (max-width: 1279px) {
+    /* tablet e notebook pequeno: os cartões das tabelas largas ficam em duas colunas */
     #tabContas, #tabUsuarios { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     #tabContas tr, #tabUsuarios tr { margin-bottom: 0; }
     #tabContas tr.total, #tabUsuarios td.vazio, #tabContas td.vazio { grid-column: 1 / -1; }
   }
 
-  /* ---------- celular ---------- */
+  /* celular */
   @media (max-width: 760px) {
     /* campos com letra de 16px: o iPhone não dá zoom sozinho ao tocar */
     input, select, textarea { font-size: 16px; }
-    body { font-size: 15px; }
-    header { position: sticky; top: 0; z-index: 30; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); gap: 10px; box-shadow: 0 2px 8px rgba(22,35,122,.08); }
-    header img { height: 34px; }
+    header { gap: 10px; flex-wrap: nowrap; padding-left: 14px; padding-right: 14px; min-height: 58px; }
+    header > img.logo-topo { height: 28px; flex-shrink: 1; min-width: 0; object-fit: contain; object-position: left; }
     header .titulo { display: none; }
-    .topo-dir { margin-left: auto; gap: 8px; }
-    .mes-nav .mes { min-width: 0; font-size: 14px; padding: 0 4px; }
-    .mes-nav button { width: 32px; height: 32px; }
-    #btnInstalar { padding: 7px 10px; font-size: 13px; }
-    #quemSou { display: none; }
-    .usuario-box { gap: 6px; }
-    /* topo numa linha só: o aviso de salvamento vira só o símbolo (✓, ⚠ ou 👁) */
-    header { flex-wrap: nowrap; }
-    header > img { flex-shrink: 1; min-width: 0; object-fit: contain; object-position: left; }
-    #statusSync { display: inline-block; max-width: 1.2em; overflow: hidden; white-space: nowrap; vertical-align: middle; }
-    .btn-tema { width: 32px; height: 32px; font-size: 15px; }
-    #btnSair { padding: 6px 9px; }
     .topo-dir { gap: 6px; flex-shrink: 0; }
-
-    /* abas viram barra inferior */
-    /* muitas abas (Super Master): a barra rola para o lado em vez de espremer os nomes */
-    nav.abas { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; padding: 0 0 env(safe-area-inset-bottom); display: grid; grid-auto-flow: column; grid-auto-columns: minmax(72px, 1fr); gap: 0; box-shadow: 0 -2px 10px rgba(0,0,0,.12); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
-    nav.abas::-webkit-scrollbar { display: none; }
-    nav.abas button { flex-direction: column; gap: 3px; font-size: 11px; padding: 8px 4px 7px; border-bottom: 0; border-top: 3px solid transparent; min-width: 0; }
-    nav.abas button > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-    nav.abas button.ativa { border-top-color: #fff; background: rgba(255,255,255,.08); }
-    nav.abas button svg { width: 22px; height: 22px; }
-    nav.abas .rot-longo { display: none; }
-    main { padding: 14px 12px calc(96px + env(safe-area-inset-bottom)); }
-    .card { padding: 14px; }
+    .usuario-box { gap: 6px; }
+    #quemSou .quem { display: none; }
+    #quemSou { padding-left: 0; border-left: 0; }
+    #quemSou .avatar { width: 30px; height: 30px; }
+    #statusSync .txt { display: none; }
+    .mes-nav .mes { min-width: 0; padding: 0 8px; font-size: 13px; }
+    .mes-nav button, .btn-tema { width: 32px; height: 32px; }
+    #btnSair { height: 32px; padding: 0 10px; }
+    #btnInstalar { height: 32px; font-size: 12.5px; }
+    main { padding: 16px 12px calc(96px + env(safe-area-inset-bottom)); }
+    .card { padding: 16px; }
     .g2 { grid-template-columns: 1fr; }
     .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .kpi .val { font-size: 19px; }
+    .kpi { padding: 14px; }
+    .kpi .val { font-size: 19px; overflow-wrap: anywhere; }
     .kpi .det { font-size: 12px; }
-    .barra-linha { grid-template-columns: 74px 1fr; font-size: 12px; }
+    .geral-sec, .contexto { padding: 10px 14px; }
+    .contexto .miudo { display: none; }
+    /* "Contas fixas do mês" do Painel: nome e valor na linha, situação embaixo */
+    #painelContas tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+    #painelContas td { border-bottom: 0; }
+    #painelContas td:last-child { grid-column: 1 / -1; text-align: left; padding-top: 0; border-bottom: 1px solid var(--borda); }
+    #painelContas tbody tr:hover td { background: none; }
+    .barra-linha { grid-template-columns: 78px 1fr; font-size: 12px; }
     .b { grid-template-columns: 1fr 84px; }
     .colunas, .rotulos { gap: 6px; }
     .chips { grid-template-columns: 1fr 1fr; }
     .card-topo .acoes { margin-left: 0; width: 100%; }
     .card-topo .acoes .btn { flex: 1; }
-    .filtro select { flex: 1 1 100%; }
-    .filtro label.check { flex: 1 1 100%; }
+    .filtro select, .filtro label.check { flex: 1 1 100%; }
     .filtro .total { width: 100%; margin-left: 0; text-align: right; }
     .presets .btn { flex: 1 1 calc(50% - 4px); }
     form.add .btn { flex: 1 1 100%; }
     /* código + nome + botão na mesma linha; seletor de grupo embaixo */
     .lista-edit .linha:not(.so-ler) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+    .lista-edit .linha select { grid-column: 2 / 4; grid-row: 2; min-height: 34px; padding: 5px 8px; font-size: 14px; }
+    .lista-edit .linha .cod { min-width: 44px; }
+    .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
     /* lista de condomínios (sem código na frente): nome inteiro numa linha, etiqueta e botão embaixo */
     #listaCondos .linha { display: flex !important; flex-wrap: wrap; justify-content: flex-end; }
     #listaCondos .linha input { flex: 1 1 100%; }
-    .lista-edit .linha select { grid-column: 2 / 4; grid-row: 2; min-height: 34px; padding: 5px 8px; font-size: 13px; }
-    .lista-edit .linha .cod { min-width: 44px; }
-    .lista-edit .linha.sub, form.add.mini.sub { padding-left: 14px; }
-
-    .fab { display: flex; position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 31; width: 56px; height: 56px; border-radius: 50%; background: var(--acao); color: #fff; border: 0; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 6px 18px rgba(22,35,122,.35); }
-    .toast { bottom: calc(150px + env(safe-area-inset-bottom)); }
-    .kpi .val { overflow-wrap: anywhere; }
+    .conc-linha { grid-template-columns: 1fr auto; }
+    .conc-linha > :nth-child(1) { grid-column: 1 / -1; color: var(--cinza); font-size: 12px; }
+    .conc-linha .doc-ref { grid-column: 1 / -1; }
     .doc-cab .doc-valor { margin-left: 0; width: 100%; }
     dialog.modal .linha2 { grid-template-columns: 1fr; }
+    .tela-cheia > .card { padding: 24px; }
   }
   @media (max-width: 380px) {
-    /* celulares bem pequenos */
     .kpi .val { font-size: 17px; }
-    .kpi { padding: 12px; }
-    .mes-nav .mes { font-size: 13px; }
-    header img { height: 30px; }
+    .mes-nav .mes { font-size: 12.5px; padding: 0 5px; }
+    header > img.logo-topo { height: 24px; }
   }
-  /* o "+" azul de lançar despesa só aparece onde faz sentido */
+  /* o "+" de lançar despesa só aparece onde faz sentido */
   body:not([data-aba="painel"]):not([data-aba="despesas"]) .fab { display: none !important; }
 
+  /* ---------- impressão: sempre clara e sem menus ---------- */
   @media print {
     :root, :root[data-tema="escuro"], :root:not([data-tema="claro"]) {
-      color-scheme: light; --azul: #16237a; --azul-claro: #e8ebfa; --cinza: #6b6f7a; --cinza-claro: #f3f4f7; --borda: #dde0e8;
-      --texto: #1c1f2a; --fundo: #ffffff; --card: #ffffff; --campo: #ffffff; --neutro: #b9bfd9;
-      --verde: #1f8a4c; --verde-claro: #e3f4ea; --vermelho: #c0392b; --vermelho-claro: #fbe7e5; --amarelo: #b7791f; --amarelo-claro: #fdf3dc;
+      color-scheme: light; --azul: #16237a; --azul-claro: #eef1fb; --cinza: #64748b; --cinza-claro: #f1f5f9; --borda: #e2e5ec; --borda-forte: #d3d8e2;
+      --texto: #0f172a; --fundo: #ffffff; --card: #ffffff; --campo: #ffffff; --neutro: #c7cddd;
+      --verde: #15803d; --verde-claro: #ecfdf3; --vermelho: #b42318; --vermelho-claro: #fef3f2; --amarelo: #b54708; --amarelo-claro: #fffaeb;
     }
-    header, nav.abas, .nao-imprimir, .alertas, .fab, .btn-tema { display: none !important; }
+    .lateral, header, nav.abas, .nao-imprimir, .alertas, .fab, .btn-tema, .contexto { display: none !important; }
     body { background: #fff; }
-    main { padding: 0; max-width: none; }
+    main { margin: 0; padding: 0; max-width: none; }
     .aba { display: none !important; }
     .aba.imprimir { display: block !important; }
     .card { border: 0; padding: 0; margin-bottom: 18px; box-shadow: none; }
     .print-head { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--azul); padding-bottom: 10px; margin-bottom: 18px; }
     .print-head img { height: 50px; }
     .filtro-ativo { display: none; }
+    tbody tr:hover td { background: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>
 <body data-aba="painel">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-sino" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-olho" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-arquivo" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-imagem" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-lua" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-duvida" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+  <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-esq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-dir" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+</svg>
 
 <div class="tela-cheia" id="telaCarregando">
   <div class="card"><img class="logo" src="logo-slz.png" alt="SLZ"><p class="carregando">Carregando o Portal SLZ…</p></div>
 </div>
 
 <div class="tela-cheia" id="telaLogin" hidden>
-  <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro">🌙</button>
-  <div class="card">
-    <img class="logo" src="logo-slz.png" alt="SLZ Administradora de Condomínios">
-    <h1>Portal SLZ</h1>
-    <p class="sub">Entre com o usuário e a senha que o escritório cadastrou para você.</p>
-    <form id="formLogin" autocomplete="on">
-      <label for="lUsuario">Usuário</label>
-      <input id="lUsuario" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: maria.silva" required>
-      <label for="lSenha">Senha</label>
-      <input id="lSenha" name="password" type="password" autocomplete="current-password" required>
-      <p class="erro-form" id="erroLogin" role="alert"></p>
-      <button class="btn" type="submit">Entrar</button>
-    </form>
-    <p class="miudo" style="text-align:center;margin:16px 0 0">Esqueceu a senha? Fale com o administrador do sistema.</p>
+  <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro"><svg class="ic" aria-hidden="true"><use href="#i-lua"/></svg></button>
+  <div class="login-wrap">
+    <section class="login-marca" aria-hidden="true">
+      <div class="selo"><img src="logo-slz.png" alt=""></div>
+      <h2>Prestação de contas sem papel e sem WhatsApp.</h2>
+      <p>As notas e comprovantes dos condomínios, o controle de gastos do escritório e a conciliação bancária num só lugar.</p>
+      <ul>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-arquivo"/></svg>Arquivos guardados exatamente como foram enviados</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-grafico"/></svg>Balancete e gastos do escritório mês a mês</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-escudo"/></svg>Cada pessoa vê só o que o acesso dela permite</li>
+      </ul>
+      <small>SLZ Administradora de Condomínios</small>
+    </section>
+    <div class="login-form">
+      <div class="card">
+        <img class="logo" src="logo-slz.png" alt="SLZ Administradora de Condomínios">
+        <h1>Entrar no Portal SLZ</h1>
+        <p class="sub">Use o usuário e a senha que o escritório cadastrou para você.</p>
+        <form id="formLogin" autocomplete="on">
+          <label for="lUsuario">Usuário</label>
+          <input id="lUsuario" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex.: maria.silva" required>
+          <label for="lSenha">Senha</label>
+          <input id="lSenha" name="password" type="password" autocomplete="current-password" required>
+          <p class="erro-form" id="erroLogin" role="alert"></p>
+          <button class="btn" type="submit">Entrar</button>
+        </form>
+        <p class="miudo" style="margin:18px 0 0">Esqueceu a senha? Fale com o administrador do sistema.</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -603,29 +733,9 @@
   </div>
 </div>
 
-<header>
-  <img src="logo-slz.png" alt="SLZ Administradora de Condomínios">
-  <div class="titulo">
-    <h1>Portal SLZ</h1>
-    <div class="sub" id="subTitulo">Controle de gastos do escritório</div>
-  </div>
-  <div class="topo-dir">
-    <div class="usuario-box">
-      <span id="statusSync" aria-live="polite"></span>
-      <span id="quemSou"></span>
-      <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro">🌙</button>
-      <button class="btn sec peq" id="btnSair" title="Sair do Portal SLZ">Sair</button>
-    </div>
-    <button class="btn sec peq" id="btnInstalar">Instalar app</button>
-    <div class="mes-nav">
-      <button id="mesAnt" title="Mês anterior" aria-label="Mês anterior">‹</button>
-      <div class="mes" id="mesLabel"></div>
-      <button id="mesProx" title="Próximo mês" aria-label="Próximo mês">›</button>
-    </div>
-  </div>
-</header>
-
-<nav class="abas">
+<aside class="lateral">
+  <div class="marca"><img src="logo-slz.png" alt="SLZ Administradora de Condomínios"><span>Portal</span></div>
+  <nav class="abas">
   <button data-ir="geral" id="abaVoltar" hidden title="Voltar para a Visão geral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Visão<span class="rot-longo"> geral</span></span></button>
   <button data-aba="geral" id="abaGeral" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg><span>Visão<span class="rot-longo"> geral</span></span></button>
   <button data-aba="painel" class="ativa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Painel</button>
@@ -636,10 +746,34 @@
   <button data-aba="documentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>Documentos<span id="badgeDocs"></span></span></button>
   <button data-aba="usuarios" id="abaUsuarios" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.7"/></svg>Usuários</button>
 </nav>
+  <div class="rodape">SLZ Administradora de Condomínios</div>
+</aside>
+
+<header>
+  <img class="logo-topo" src="logo-slz.png" alt="SLZ Administradora de Condomínios">
+  <div class="titulo">
+    <h1 id="tituloPagina">Painel</h1>
+    <div class="sub" id="subTitulo">Controle de gastos do escritório</div>
+  </div>
+  <div class="topo-dir">
+    <span id="statusSync" aria-live="polite"></span>
+    <button class="btn sec peq" id="btnInstalar">Instalar app</button>
+    <div class="mes-nav">
+      <button id="mesAnt" title="Mês anterior" aria-label="Mês anterior"><svg class="ic" aria-hidden="true"><use href="#i-esq"/></svg></button>
+      <div class="mes" id="mesLabel"></div>
+      <button id="mesProx" title="Próximo mês" aria-label="Próximo mês"><svg class="ic" aria-hidden="true"><use href="#i-dir"/></svg></button>
+    </div>
+    <button class="btn-tema" data-tema-alternar title="Modo claro / escuro" aria-label="Alternar modo claro ou escuro"><svg class="ic" aria-hidden="true"><use href="#i-lua"/></svg></button>
+    <div class="usuario-box">
+      <span id="quemSou"></span>
+      <button class="btn sec peq" id="btnSair" title="Sair do Portal SLZ">Sair</button>
+    </div>
+  </div>
+</header>
 
 <main>
   <div class="contexto so-dev" id="barraContexto">
-    <button class="link-btn" data-ir="geral">← Visão geral</button>
+    <button class="link-btn" data-ir="geral"><svg class="ic" aria-hidden="true"><use href="#i-seta"/></svg>Visão geral</button>
     <strong id="contextoNome"></strong>
     <span class="miudo" id="contextoDica"></span>
   </div>
@@ -699,7 +833,7 @@
         <button class="btn-mais editar" id="maisFixa" title="Adicionar conta fixa" aria-label="Adicionar conta fixa" style="margin-left:auto">+</button>
       </div>
       <p class="ajuda">Toque na data para abrir o calendário, ajuste o valor da fatura e marque como paga quando quitar. <button class="link-btn editar" data-ir="config">Adicionar ou remover contas fixas</button></p>
-      <table class="resp">
+      <table class="resp tab-larga">
         <thead><tr><th>Conta</th><th>Vencimento</th><th class="num">Valor (R$)</th><th class="num">× mês anterior</th><th>Situação</th><th>Pago em</th><th></th></tr></thead>
         <tbody id="tabContas"></tbody>
       </table>
@@ -733,7 +867,7 @@
         <select id="filtroCat"></select>
         <span class="total" id="filtroTotal"></span>
       </div>
-      <table class="resp">
+      <table class="resp tab-larga">
         <thead><tr><th>Data</th><th>Conta</th><th>Item</th><th>Descrição</th><th class="num">Qtd</th><th class="num">Valor</th><th></th></tr></thead>
         <tbody id="tabDespesas"></tbody>
       </table>
@@ -747,7 +881,7 @@
       <div><strong style="font-size:18px;color:var(--azul)">Balancete Mensal do Escritório</strong><br><span class="mesTxt"></span><span id="printFiltro"></span></div>
     </div>
     <details class="card nao-imprimir" id="cardFiltro" style="margin-bottom:16px">
-      <summary>⚙️ Personalizar balancete e impressão</summary>
+      <summary><svg class="ic g" aria-hidden="true"><use href="#i-ajustes"/></svg>Personalizar balancete e impressão</summary>
       <div class="presets">
         <button class="btn sec peq" data-preset="completo">Completo</button>
         <button class="btn sec peq" data-preset="fixas">Só contas fixas</button>
@@ -853,7 +987,7 @@
       <div class="card largo">
         <div class="card-topo"><h2>Usuários do Portal SLZ</h2><button class="btn sec peq" id="btnRecarregarUsuarios" style="margin-left:auto">Atualizar</button></div>
         <p class="ajuda">Altere o nível, a equipe e os condomínios direto na linha. Bloquear impede o login sem apagar o histórico.</p>
-        <table class="resp">
+        <table class="resp tab-larga">
           <thead><tr><th>Nome</th><th>Usuário</th><th>Nível</th><th>Equipe SLZ</th><th>Condomínios</th><th>Situação</th><th></th></tr></thead>
           <tbody id="tabUsuarios"><tr><td colspan="7" class="vazio">Carregando…</td></tr></tbody>
         </table>
@@ -942,7 +1076,7 @@
         <p><a class="link-app" href="https://gerente-slz.vercel.app/" target="_blank" rel="noopener">gerente-slz.vercel.app</a></p>
         <ol class="passos">
           <li><strong>Android (Chrome):</strong> toque em “Instalar app” no topo, ou no menu ⋮ → “Instalar app”.</li>
-          <li><strong>iPhone (Safari):</strong> toque em Compartilhar <span aria-hidden="true">⬆️</span> → “Adicionar à Tela de Início”.</li>
+          <li><strong>iPhone (Safari):</strong> toque em Compartilhar e depois em “Adicionar à Tela de Início”.</li>
         </ol>
         <p class="ajuda" id="statusApp" style="margin-top:12px"></p>
       </div>
@@ -988,6 +1122,9 @@
   const SUPABASE_CHAVE = 'sb_publishable_XI9hpt1NxnumeKqggpGFjA_BNAHm_Tu';
   const DOMINIO_LOGIN = 'usuarios.portal-slz.invalid';
   const NOMES_PAPEL = { super_master: 'Super Master', master: 'Master', padrao: 'Padrão' };
+  // ícone desenhado (SVG) — o Portal não usa emojis
+  const ic = (nome, cls) => `<svg class="ic${cls ? ' ' + cls : ''}" aria-hidden="true"><use href="#i-${nome}"/></svg>`;
+  const TITULOS = { geral: 'Visão geral', painel: 'Painel', contas: 'Contas fixas', despesas: 'Despesas', balancete: 'Balancete', config: 'Ajustes', documentos: 'Documentos', usuarios: 'Usuários' };
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_CHAVE, {
     auth: { persistSession: true, autoRefreshToken: true, storageKey: 'portal-slz-sessao' }
   });
@@ -1084,9 +1221,10 @@
 
   function statusSync(estado) {
     const el = document.getElementById('statusSync');
-    const txt = { salvo: '✓ Salvo', salvando: 'Salvando…', offline: '⚠ Sem conexão — salva quando voltar', leitura: '👁 Só visualização' };
+    const txt = { salvo: 'Salvo', salvando: 'Salvando…', offline: 'Sem conexão — salva quando voltar', leitura: 'Só visualização' };
     el.className = estado || '';
-    el.textContent = txt[estado] || '';
+    el.title = txt[estado] || '';
+    el.innerHTML = txt[estado] ? (estado === 'leitura' ? ic('olho') : '<i class="ponto"></i>') + `<span class="txt">${txt[estado]}</span>` : '';
   }
 
   function salvar() {
@@ -1346,8 +1484,8 @@
         if (c.pago) return;
         const s = situacao(chave, f, c);
         const venc = fmtData(vencConta(chave, f, c));
-        if (s.cls === 'atrasada') itens.push(`<div class="alerta atrasada">⚠️ <span><strong>${esc(f.nome)}</strong> de ${nomeMes(chave)} está <strong>atrasada</strong> — venceu em ${venc} · ${brl(c.valor)}</span></div>`);
-        else if (s.dias <= 5) itens.push(`<div class="alerta proxima">🔔 <span>Lembrete: <strong>${esc(f.nome)}</strong> ${s.txt.toLowerCase()} (${venc}) · ${brl(c.valor)}</span></div>`);
+        if (s.cls === 'atrasada') itens.push(`<div class="alerta atrasada">${ic('alerta')}<span><strong>${esc(f.nome)}</strong> de ${nomeMes(chave)} está <strong>atrasada</strong> — venceu em ${venc} · ${brl(c.valor)}</span></div>`);
+        else if (s.dias <= 5) itens.push(`<div class="alerta proxima">${ic('sino')}<span>Lembrete: <strong>${esc(f.nome)}</strong> ${s.txt.toLowerCase()} (${venc}) · ${brl(c.valor)}</span></div>`);
       });
     });
     document.getElementById('alertas').innerHTML = itens.join('');
@@ -1699,6 +1837,11 @@
     document.querySelectorAll('.aba').forEach(s => s.classList.toggle('ativa', s.id === 'aba-' + nome));
     document.body.dataset.aba = nome;
     aplicarArea(areaDaAba(nome));
+    document.getElementById('tituloPagina').textContent = nome === 'usuarios' && ehDev() ? 'Acessos' : (TITULOS[nome] || 'Portal SLZ');
+    // subtítulo conforme a aba (o dev e a síndica têm o deles, definido pela área/condomínio)
+    if (!ehDev() && !document.body.classList.contains('externo'))
+      document.getElementById('subTitulo').textContent = nome === 'documentos' ? 'Notas e comprovantes dos condomínios'
+        : nome === 'usuarios' ? 'Pessoas e condomínios com acesso' : 'Controle de gastos do escritório';
     const botao = document.querySelector(`nav.abas button[data-aba="${nome}"]`);
     if (botao && botao.scrollIntoView) botao.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     try { sessionStorage.setItem('slz-aba', nome); } catch (e) {}
@@ -2114,7 +2257,7 @@
   // ---------- PWA: instalação e funcionamento offline ----------
   const statusApp = document.getElementById('statusApp');
   const instalado = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  if (instalado) statusApp.textContent = '✅ Você está usando o app instalado.';
+  if (instalado) statusApp.textContent = 'Você está usando o app instalado.';
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     // quando sai uma versão nova, ela assume o controle e a página recarrega uma vez
     const tinhaControle = !!navigator.serviceWorker.controller;
@@ -2173,7 +2316,9 @@
     podeEnviarDocs = p.papel === 'master';
     podeConferir = equipe && p.papel !== 'padrao';
     document.body.classList.toggle('externo', !equipe);
-    document.getElementById('quemSou').innerHTML = '<strong>' + esc(p.nome) + '</strong> · ' + NOMES_PAPEL[p.papel];
+    const iniciais = p.nome.split(/\s+/).filter(Boolean).map(x => x[0]).slice(0, 2).join('').toUpperCase();
+    document.getElementById('quemSou').innerHTML = `<span class="avatar" aria-hidden="true">${esc(iniciais)}</span><span class="quem"><strong>${esc(p.nome)}</strong><small>${NOMES_PAPEL[p.papel]}</small></span>`;
+    document.getElementById('quemSou').title = p.nome + ' · ' + NOMES_PAPEL[p.papel];
     await carregarCondos();
     if (!equipe) {
       // síndicas e usuários de condomínio: só a aba Documentos, do(s) condomínio(s) dela(s)
@@ -2478,7 +2623,7 @@
         await docsApi({ acao: 'confirmar', arquivo_id });
         barra.style.width = '100%'; linha.classList.add('ok');
       } catch (e) {
-        linha.classList.add('falha'); linha.querySelector('span').textContent = '⚠ ' + f.name + ': ' + e.message;
+        linha.classList.add('falha'); linha.querySelector('span').textContent = 'Falhou — ' + f.name + ': ' + e.message;
         falhas.push(f.name);
       }
     }
@@ -2566,12 +2711,12 @@
         ${d.descricao ? `<div>${esc(d.descricao)}</div>` : ''}
         ${d.status === 'pendencia' && d.comentario ? `<div class="pendencia"><strong>Correção pedida pelo escritório:</strong> ${esc(d.comentario)}</div>` : ''}
         <div class="doc-arqs">${arqs.length ? arqs.map(a => `<div class="arq" data-arq="${a.id}">
-            <span>${a.tipo_mime === 'application/pdf' ? '📄' : '🖼️'}</span><span class="nome" title="${esc(a.nome_original)}">${esc(a.nome_original)}</span><span class="miudo">${fmtTamanho(a.tamanho)}</span>
+            ${ic(a.tipo_mime === 'application/pdf' ? 'arquivo' : 'imagem')}<span class="nome" title="${esc(a.nome_original)}">${esc(a.nome_original)}</span><span class="miudo">${fmtTamanho(a.tamanho)}</span>
             <button class="btn sec" data-arq-acao="abrir">Abrir</button><button class="btn sec" data-arq-acao="baixar">Baixar</button>
-            ${editavel ? '<button class="btn perigo" data-arq-acao="excluir" title="Remover arquivo">✕</button>' : ''}</div>`).join('')
-          : '<span class="miudo">⚠ Nenhum arquivo enviado.</span>'}</div>
+            ${editavel ? '<button class="btn perigo" data-arq-acao="excluir" title="Remover arquivo" aria-label="Remover arquivo">' + ic('x') + '</button>' : ''}</div>`).join('')
+          : '<span class="miudo">' + ic('alerta') + ' Nenhum arquivo enviado.</span>'}</div>
         <div class="acoes">
-          ${podeConferir && d.status !== 'conferido' ? '<button class="btn peq" data-doc-acao="conferir">✓ Conferido</button>' : ''}
+          ${podeConferir && d.status !== 'conferido' ? '<button class="btn peq" data-doc-acao="conferir">' + ic('check') + 'Conferido</button>' : ''}
           ${podeConferir && d.status !== 'pendencia' ? '<button class="btn sec peq" data-doc-acao="pendencia">Pedir correção</button>' : ''}
           ${podeConferir && d.status === 'conferido' ? '<button class="btn sec peq" data-doc-acao="reabrir">Voltar para conferência</button>' : ''}
           ${!podeConferir && podeEnviarDocs && d.status === 'pendencia' ? '<button class="btn peq" data-doc-acao="corrigido">Já corrigi — enviar de novo</button>' : ''}
@@ -2661,7 +2806,7 @@
         b.disabled = true;
         const { blob, integro } = await baixarConferido(arq);
         baixar(arq.nome_original, blob, arq.tipo_mime);
-        toast(integro ? '✓ Arquivo íntegro — idêntico ao enviado' : '⚠ O arquivo baixado não confere com o enviado. Tente de novo.');
+        toast(integro ? 'Arquivo íntegro — idêntico ao enviado' : 'Atenção: o arquivo baixado não confere com o enviado. Tente de novo.');
         b.disabled = false;
       } else if (b.dataset.arqAcao === 'excluir') {
         if (!confirm(`Remover o arquivo "${arq.nome_original}"?`)) return;
@@ -2733,7 +2878,7 @@
       const conteudo = await zip.generateAsync({ type: 'blob' });
       const titulo = (variosCondos ? 'Condomínios' : limpo(nomeCondo(docs[0].condominio_id))) + (document.getElementById('fdTodosMeses').checked ? ' - todos os meses' : ' - ' + mesSel);
       baixar(titulo + '.zip', conteudo, 'application/zip');
-      toast(problemas ? `⚠ ${problemas} arquivo(s) não conferem com o enviado` : `✓ ZIP pronto: ${totalArqs} arquivo(s) conferidos`);
+      toast(problemas ? `Atenção: ${problemas} arquivo(s) não conferem com o enviado` : `ZIP pronto: ${totalArqs} arquivo(s) conferidos`);
     } catch (err) { alert('Não foi possível montar o ZIP: ' + err.message); }
     btn.disabled = false; btn.textContent = 'Baixar tudo (ZIP)';
   });
@@ -2764,14 +2909,16 @@
       nome.textContent = c ? c.nome : 'Condomínio';
       dica.textContent = 'Documentos e conciliação bancária';
     }
-    document.getElementById('subTitulo').textContent = area === 'escritorio' ? 'Controle de gastos do escritório' : area === 'condominio' ? 'Condomínio' : 'Visão geral do sistema';
+    const condoAtual = condosDocs.find(x => x.id === document.getElementById('fdCondo').value);
+    document.getElementById('subTitulo').textContent = area === 'escritorio' ? 'Controle de gastos do escritório'
+      : area === 'condominio' ? (condoAtual ? condoAtual.nome : 'Condomínio') : 'Escritório e condomínios';
   }
 
   // ---------- modo claro / escuro ----------
   const temaEscuro = () => (document.documentElement.dataset.tema || (matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro')) === 'escuro';
   function mostrarIconeTema() {
-    document.querySelectorAll('[data-tema-alternar]').forEach(b => { b.textContent = temaEscuro() ? '☀️' : '🌙'; b.title = temaEscuro() ? 'Mudar para o modo claro' : 'Mudar para o modo escuro'; });
-    document.querySelector('meta[name="theme-color"]').content = temaEscuro() ? '#151b45' : '#16237a';
+    document.querySelectorAll('[data-tema-alternar]').forEach(b => { b.innerHTML = ic(temaEscuro() ? 'sol' : 'lua'); b.title = temaEscuro() ? 'Mudar para o modo claro' : 'Mudar para o modo escuro'; });
+    document.querySelector('meta[name="theme-color"]').content = temaEscuro() ? '#0b0e17' : '#ffffff';
   }
   document.querySelectorAll('[data-tema-alternar]').forEach(b => b.addEventListener('click', () => {
     const novo = temaEscuro() ? 'claro' : 'escuro';
@@ -2897,13 +3044,13 @@
   const descSL = d => [d.favorecido, d.categoria, d.conta_bancaria].filter(Boolean).join(' · ');
   function linhaSL(info, sl) {
     if (!sl) return '<span class="sl-desc miudo">Consultando o Superlógica…</span>';
-    if (sl.erro) return `<span class="sl-desc miudo">⚠ Superlógica: ${esc(sl.erro)}</span>`;
+    if (sl.erro) return `<span class="sl-desc miudo">Superlógica indisponível: ${esc(sl.erro)}</span>`;
     if (sl.sem_ligacao || !info) return '';
     // várias despesas com o mesmo valor, mas todas do mesmo favorecido e conta (ex.: contas de luz): a descrição é a mesma
     const mesmaDescricao = info.ds.length && info.ds.every(d => descSL(d) === descSL(info.ds[0]));
     if (info.tipo === 'paga' || (info.tipo === 'varias' && mesmaDescricao)) return `<span class="sl-desc">Superlógica: <strong>${esc(info.ds[0].favorecido || 'sem favorecido')}</strong>${info.ds[0].categoria ? ' · ' + esc(info.ds[0].categoria) : ''}${info.ds[0].conta_bancaria ? ' · ' + esc(info.ds[0].conta_bancaria) : ''}</span>`;
     if (info.tipo === 'varias') return `<span class="sl-desc">Superlógica (mais de uma com esse valor): ${info.ds.slice(0, 3).map(d => esc(d.favorecido)).join(' ou ')}</span>`;
-    if (info.tipo === 'aberto') return `<span class="sl-desc"><span class="tag pendente">⏳ em aberto no Superlógica — falta dar baixa</span> ${esc(info.ds[0].favorecido)}${info.ds[0].vencimento ? ' · vence ' + fmtData(info.ds[0].vencimento) : ''}</span>`;
+    if (info.tipo === 'aberto') return `<span class="sl-desc"><span class="tag pendente">em aberto no Superlógica — falta dar baixa</span> ${esc(info.ds[0].favorecido)}${info.ds[0].vencimento ? ' · vence ' + fmtData(info.ds[0].vencimento) : ''}</span>`;
     return '<span class="sl-desc"><span class="tag atrasada">não lançado no Superlógica</span></span>';
   }
   let ultimaConc = null;   // para a planilha
@@ -2914,7 +3061,7 @@
     const refDoc = g => `<span class="doc-ref">${g.docs.map(d => `${TIPOS_DOC[d.tipo]} · ${esc(d.fornecedor)}${d.data_pagamento ? ' · pago ' + fmtData(d.data_pagamento) : ''}`).join('<br>')}</span>`;
     document.getElementById('concExtratos').innerHTML = extratos.length ? extratos.map(e => {
       const n = e.extrato_lancamentos.length, s = e.extrato_lancamentos.filter(l => Number(l.valor) < 0).length;
-      return `<div class="conc-extrato" data-extrato="${e.id}">📄 <strong>${esc(e.nome_arquivo)}</strong>
+      return `<div class="conc-extrato" data-extrato="${e.id}">${ic('arquivo')}<strong>${esc(e.nome_arquivo)}</strong>
         <span class="miudo">${[e.banco, e.agencia && 'ag. ' + e.agencia, e.conta && 'conta ' + e.conta].filter(Boolean).map(esc).join(' · ')}${e.periodo_inicio ? ' · ' + fmtData(e.periodo_inicio) + ' a ' + fmtData(e.periodo_fim) : ''} · ${n} lançamentos (${s} saídas)</span>
         <div class="acoes">${e.arquivo_confirmado ? '<button class="btn sec peq" data-ext-acao="baixar">Baixar OFX</button>' : '<span class="tag pendente">arquivo original não guardado</span>'}<button class="btn perigo peq" data-ext-acao="excluir">Excluir</button></div></div>`;
     }).join('') : '<p class="vazio">Nenhum extrato enviado para este condomínio neste mês.</p>';
@@ -2927,7 +3074,7 @@
     const contaSL = t => r.saidas.filter(x => (mapaSL.get(x.id) || {}).tipo === t).length;
     const pct = r.saidas.length ? Math.round(r.conciliados.length / r.saidas.length * 100) : 0;
     document.getElementById('concResumo').innerHTML = `
-      <span class="tag paga">✓ Conciliados: ${r.conciliados.length} de ${r.saidas.length} saídas (${pct}%)</span>
+      <span class="tag paga">Conciliados: ${r.conciliados.length} de ${r.saidas.length} saídas (${pct}%)</span>
       <span class="tag atrasada">Pagamentos sem comprovante: ${r.semComprovante.length} · ${brl(somaV(r.semComprovante))}</span>
       <span class="tag pendente">Comprovantes sem pagamento: ${r.semPagamento.length}</span>
       ${r.ambiguos.length ? `<span class="tag trocar">Para conferir à mão: ${r.ambiguos.length}</span>` : ''}
@@ -2935,10 +3082,10 @@
       ${sl && !sl.erro && !sl.sem_ligacao ? `<span class="tag sl">Superlógica: ${contaSL('paga') + contaSL('varias')} lançadas e pagas · ${contaSL('aberto')} falta dar baixa · ${contaSL('nada')} não lançadas</span>` : ''}`;
     const grupo = (titulo, itens, linha, vazio) => `<div class="conc-grupo"><h3>${titulo}</h3>${itens.length ? itens.map(linha).join('') : `<p class="miudo">${vazio}</p>`}</div>`;
     document.getElementById('concResultado').innerHTML =
-      grupo('⚠ Pagamentos sem comprovante', r.semComprovante, l => `<div class="conc-linha">${fmtL(l)}<span class="doc-ref">ninguém enviou a nota</span><span class="v mais">${brl(Math.abs(l.valor))}</span></div>`, 'Todas as saídas têm comprovante. 🎉') +
-      grupo('⚠ Comprovantes sem pagamento no extrato', r.semPagamento, g => `<div class="conc-linha"><span>${g.data ? fmtData(g.data) : 'sem data'}</span><span>${esc(g.fornecedor)}</span>${refDoc(g)}<span class="v">${brl(g.valor)}</span></div>`, 'Todos os comprovantes do mês aparecem no extrato.') +
-      (r.ambiguos.length ? grupo('? Para conferir à mão (mais de um comprovante com o mesmo valor)', r.ambiguos, a => `<div class="conc-linha">${fmtL(a.saida)}<span class="doc-ref">${a.grupos.map(g => esc(g.fornecedor)).join(' ou ')}</span><span class="v">${brl(Math.abs(a.saida.valor))}</span></div>`, '') : '') +
-      grupo('✓ Conciliados', r.conciliados, c => `<div class="conc-linha">${fmtL(c.saida)}${refDoc(c.grupo)}<span class="v menos">${brl(Math.abs(c.saida.valor))}</span></div>`, 'Nenhuma saída conciliada ainda.');
+      grupo(ic('alerta') + 'Pagamentos sem comprovante', r.semComprovante, l => `<div class="conc-linha">${fmtL(l)}<span class="doc-ref">ninguém enviou a nota</span><span class="v mais">${brl(Math.abs(l.valor))}</span></div>`, 'Todas as saídas têm comprovante.') +
+      grupo(ic('alerta') + 'Comprovantes sem pagamento no extrato', r.semPagamento, g => `<div class="conc-linha"><span>${g.data ? fmtData(g.data) : 'sem data'}</span><span>${esc(g.fornecedor)}</span>${refDoc(g)}<span class="v">${brl(g.valor)}</span></div>`, 'Todos os comprovantes do mês aparecem no extrato.') +
+      (r.ambiguos.length ? grupo(ic('duvida') + 'Para conferir à mão (mais de um comprovante com o mesmo valor)', r.ambiguos, a => `<div class="conc-linha">${fmtL(a.saida)}<span class="doc-ref">${a.grupos.map(g => esc(g.fornecedor)).join(' ou ')}</span><span class="v">${brl(Math.abs(a.saida.valor))}</span></div>`, '') : '') +
+      grupo(ic('check') + 'Conciliados', r.conciliados, c => `<div class="conc-linha">${fmtL(c.saida)}${refDoc(c.grupo)}<span class="v menos">${brl(Math.abs(c.saida.valor))}</span></div>`, 'Nenhuma saída conciliada ainda.');
   }
 
   // envio do OFX: lê no navegador, grava os lançamentos e guarda o arquivo original no R2
