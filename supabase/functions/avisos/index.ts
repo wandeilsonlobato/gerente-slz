@@ -23,6 +23,9 @@ async function appServer() {
 
 Deno.serve(async req => {
   if (req.method !== 'POST') return resposta({ erro: 'Use POST.' }, 405);
+  const segredo = Deno.env.get('AVISOS_WEBHOOK_SECRET');
+  if (!segredo || req.headers.get('x-portal-secret') !== segredo)
+    return resposta({ erro: 'Não autorizado.' }, 401);
   if (!Deno.env.get('VAPID_KEYS')) return resposta({ erro: 'Avisos ainda não configurados.' }, 503);
   const { documento_id } = await req.json().catch(() => ({}));
   if (typeof documento_id !== 'string') return resposta({ erro: 'documento_id faltando.' }, 400);

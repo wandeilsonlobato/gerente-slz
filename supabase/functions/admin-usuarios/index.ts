@@ -37,7 +37,13 @@ async function gravarVinculos(id: string, condominios: string[] = []) {
   }
 }
 
-async function criar(d: Dados) {
+async function auditarAdmin(ator: string | null, acao: string, id: string) {
+  if (!ator) return;
+  const { error } = await admin.from('auditoria').insert({ ator, tabela: 'perfis', acao, entidade_id: id });
+  if (error) console.error('não foi possível registrar a auditoria administrativa', error.message);
+}
+
+async function criar(d: Dados, ator: string | null = null) {
   const usuario = String(d.usuario || '').trim().toLowerCase();
   const nome = String(d.nome || '').trim();
   if (!USUARIO_OK.test(usuario)) return erro('Usuário deve ter 3 a 40 caracteres: letras minúsculas, números, ponto, hífen ou sublinhado.');
@@ -56,6 +62,7 @@ async function criar(d: Dados) {
   if (e2) { await admin.auth.admin.deleteUser(id); return erro(e2.message); }
   try { await gravarVinculos(id, d.condominios); }
   catch (e) { await admin.auth.admin.deleteUser(id); return erro(String(e)); }
+  await auditarAdmin(ator, 'INSERT', id);
   return resposta({ ok: true, id });
 }
 
@@ -98,7 +105,7 @@ Deno.serve(async req => {
         });
       }
       case 'criar':
-        return await criar(corpo);
+        return await criar(corpo, eu.id);
       case 'atualizar': {
         const id = corpo.id!;
         if (!id) return erro('Informe o usuário.');
@@ -122,6 +129,7 @@ Deno.serve(async req => {
         if (corpo.ativo !== undefined)
           await admin.auth.admin.updateUserById(id, { ban_duration: corpo.ativo ? 'none' : BLOQUEIO });
         if (corpo.condominios) await gravarVinculos(id, corpo.condominios);
+        await auditarAdmin(eu.id, 'UPDATE', id);
         return resposta({ ok: true });
       }
       case 'redefinir_senha': {
@@ -131,6 +139,7 @@ Deno.serve(async req => {
         if (error) return erro(error.message);
         // obriga a pessoa a trocar a senha no próximo acesso
         await admin.from('perfis').update({ trocar_senha: true }).eq('id', corpo.id);
+        await auditarAdmin(eu.id, 'REDEFINIR_SENHA', corpo.id);
         return resposta({ ok: true });
       }
       case 'excluir': {
@@ -138,6 +147,7 @@ Deno.serve(async req => {
         if (corpo.id === eu.id) return erro('Você não pode excluir o seu próprio usuário.');
         const { error } = await admin.auth.admin.deleteUser(corpo.id);
         if (error) return erro(error.message);
+        await auditarAdmin(eu.id, 'DELETE', corpo.id);
         return resposta({ ok: true });
       }
       default:

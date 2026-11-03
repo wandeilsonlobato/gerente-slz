@@ -3,6 +3,7 @@
 // e devolve um link assinado que vale poucos minutos, só para aquele arquivo.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
 import { AwsClient } from 'npm:aws4fetch@1.0.20';
+import { mimeConfere } from './validation.ts';
 
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SB_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -83,6 +84,12 @@ Deno.serve(async req => {
         if (!ext) return erro('Envie PDF ou foto (JPG, PNG, WEBP ou HEIC).');
         if (!(tamanho > 0) || tamanho > TAMANHO_MAX) return erro('Cada arquivo pode ter no máximo 25 MB.');
         if (!/^[0-9a-f]{64}$/.test(sha256 || '')) return erro('Assinatura do arquivo inválida.');
+        const [porMinuto, porDia] = await Promise.all([
+          admin.rpc('registrar_limite_edge', { p_escopo: 'documento-upload-minuto', p_ator: eu.id, p_limite: 30, p_janela_seg: 60 }),
+          admin.rpc('registrar_limite_edge', { p_escopo: 'documento-upload-dia', p_ator: eu.id, p_limite: 200, p_janela_seg: 86400 })
+        ]);
+        if (porMinuto.error || porDia.error) return erro('Não foi possível validar o limite de envios. Tente novamente.', 503);
+        if (!porMinuto.data || !porDia.data) return erro('Limite temporário de envios atingido. Aguarde antes de tentar novamente.', 429);
         const { doc, falha } = await documentoEditavel(documento_id);
         if (falha) return falha;
         const { count } = await admin.from('documento_arquivos').select('id', { count: 'exact', head: true }).eq('documento_id', doc.id);
@@ -97,16 +104,29 @@ Deno.serve(async req => {
       }
 
       case 'confirmar': {
-        // confere no R2 se o arquivo chegou inteiro (mesmo tamanho) antes de marcar como recebido
+        // Confere permissão, assinatura, tipo real e tamanho antes de marcar como recebido.
         const { data: arq } = await admin.from('documento_arquivos').select('*').eq('id', corpo.arquivo_id).maybeSingle();
         if (!arq || arq.criado_por !== eu.id) return erro('Arquivo não encontrado.', 404);
+        const { falha } = await documentoEditavel(arq.documento_id);
+        if (falha) return falha;
         const cab = await r2.fetch(urlObjeto(arq.chave), { method: 'HEAD' });
-        if (!cab.ok || Number(cab.headers.get('content-length')) !== Number(arq.tamanho)) {
+        if (!cab.ok || Number(cab.headers.get('content-length')) !== Number(arq.tamanho) || Number(arq.tamanho) > TAMANHO_MAX) {
           await apagarObjeto(arq.chave);
           await admin.from('documento_arquivos').delete().eq('id', arq.id);
           return erro('O arquivo não chegou inteiro. Tente enviar de novo.');
         }
-        await admin.from('documento_arquivos').update({ confirmado: true }).eq('id', arq.id);
+        const arquivoR2 = await r2.fetch(urlObjeto(arq.chave));
+        if (!arquivoR2.ok) return erro('Não foi possível conferir o arquivo recebido. Tente novamente.');
+        const bytes = await arquivoR2.arrayBuffer();
+        const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+        if (bytes.byteLength !== Number(arq.tamanho) || hash !== arq.sha256 || !mimeConfere(arq.tipo_mime, new Uint8Array(bytes))) {
+          await apagarObjeto(arq.chave);
+          await admin.from('documento_arquivos').delete().eq('id', arq.id);
+          return erro('O arquivo não confere com o formato, tamanho ou conteúdo informado. Tente enviar de novo.');
+        }
+        const { error } = await admin.from('documento_arquivos').update({ confirmado: true }).eq('id', arq.id);
+        if (error) return erro('Não foi possível confirmar o arquivo.');
         return resposta({ ok: true });
       }
 
